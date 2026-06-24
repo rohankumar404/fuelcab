@@ -10,13 +10,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('order_items', function (Blueprint $table): void {
+        Schema::create('settings', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->uuid('order_id');
-            $table->uuid('product_id');
-            $table->decimal('quantity', 12, 2);
-            $table->decimal('price_per_unit', 12, 4);
-            $table->decimal('total_price', 12, 2);
+            $table->uuid('company_id')->nullable();
+            $table->string('key', 100);
+            $table->text('value')->nullable();
+            $table->string('cast_type', 50)->default('string');
 
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
@@ -25,16 +24,18 @@ return new class extends Migration
             $table->softDeletes();
 
             // Foreign Keys
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('restrict');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+
+            // Unique key per scope
+            $table->unique(['company_id', 'key']);
 
             // Indexes
-            $table->index('order_id');
+            $table->index('key');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('order_items');
+        Schema::dropIfExists('settings');
     }
 };

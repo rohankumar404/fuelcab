@@ -10,16 +10,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table): void {
+        Schema::create('vendor_documents', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->uuid('order_id')->unique();
-            $table->string('payment_gateway', 100);
-            $table->string('gateway_transaction_id', 255)->unique()->nullable();
+            $table->uuid('vendor_id');
+            $table->string('document_type', 100);
+            $table->string('file_path', 512);
             $table->string('status', 50)->default('pending');
-            $table->decimal('amount', 12, 2);
-            $table->string('currency', 10)->default('INR');
-            $table->text('error_message')->nullable();
-            $table->timestamp('paid_at')->nullable();
+            $table->timestamp('verified_at')->nullable();
+            $table->uuid('verified_by')->nullable();
+            $table->date('expires_at')->nullable();
 
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
@@ -28,15 +27,17 @@ return new class extends Migration
             $table->softDeletes();
 
             // Foreign Keys
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('restrict');
+            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('cascade');
+            $table->foreign('verified_by')->references('id')->on('users')->onDelete('set null');
 
             // Indexes
+            $table->index('vendor_id');
             $table->index('status');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('vendor_documents');
     }
 };

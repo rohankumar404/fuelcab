@@ -10,13 +10,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('vendors', function (Blueprint $table): void {
+        Schema::create('carts', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->uuid('company_id')->unique();
-            $table->string('brand_name');
-            $table->string('status', 50)->default('pending');
-            $table->decimal('commission_rate', 5, 2)->default(0.00);
-            $table->integer('service_radius_meters')->default(5000);
+            $table->uuid('user_id')->unique();
 
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
@@ -25,15 +21,12 @@ return new class extends Migration
             $table->softDeletes();
 
             // Foreign Keys
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-
-            // Indexes
-            $table->index('status');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('vendors');
+        Schema::dropIfExists('carts');
     }
 };

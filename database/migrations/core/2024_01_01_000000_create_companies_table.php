@@ -10,30 +10,26 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('vendors', function (Blueprint $table): void {
+        Schema::create('companies', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->uuid('company_id')->unique();
-            $table->string('brand_name');
-            $table->string('status', 50)->default('pending');
-            $table->decimal('commission_rate', 5, 2)->default(0.00);
-            $table->integer('service_radius_meters')->default(5000);
-
+            $table->string('name');
+            $table->string('tax_number', 100)->nullable()->unique();
+            $table->string('status', 50)->default('active');
+            
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            // Foreign Keys
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-
             // Indexes
             $table->index('status');
+            $table->index('deleted_at');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('vendors');
+        Schema::dropIfExists('companies');
     }
 };
