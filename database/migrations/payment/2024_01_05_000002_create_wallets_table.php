@@ -12,9 +12,18 @@ return new class extends Migration
     {
         Schema::create('wallets', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            // TODO: Define columns for wallets.
+            $table->uuid('user_id')->unique();
+            $table->decimal('balance', 12, 2)->default(0.00);
+            $table->string('currency', 10)->default('INR');
+
+            // Audit & Timestamps
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            // Foreign Keys
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

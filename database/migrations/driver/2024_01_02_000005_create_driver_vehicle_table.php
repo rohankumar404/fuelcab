@@ -12,9 +12,21 @@ return new class extends Migration
     {
         Schema::create('driver_vehicle', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            // TODO: Define columns for driver_vehicle.
+            $table->uuid('driver_id');
+            $table->uuid('vehicle_id');
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('assigned_at')->useCurrent();
+            $table->timestamp('unassigned_at')->nullable();
+
+            // Timestamps
             $table->timestamps();
-            $table->softDeletes();
+
+            // Foreign Keys
+            $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('cascade');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles')->onDelete('cascade');
+
+            // Unique active assignment
+            $table->unique(['driver_id', 'vehicle_id']);
         });
     }
 

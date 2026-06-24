@@ -12,9 +12,24 @@ return new class extends Migration
     {
         Schema::create('wallet_transactions', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            // TODO: Define columns for wallet_transactions.
+            $table->uuid('wallet_id');
+            $table->string('type', 50); // credit, debit
+            $table->decimal('amount', 12, 2);
+            $table->decimal('balance_before', 12, 2);
+            $table->decimal('balance_after', 12, 2);
+            $table->string('description')->nullable();
+            $table->uuid('reference_id')->nullable(); // Payment / Order UUID
+            $table->string('reference_type', 100)->nullable(); // 'payment', 'order', 'topup', 'refund'
+
+            // Timestamps only — wallet txn are immutable records
             $table->timestamps();
-            $table->softDeletes();
+
+            // Foreign Keys
+            $table->foreign('wallet_id')->references('id')->on('wallets')->onDelete('cascade');
+
+            // Indexes
+            $table->index('wallet_id');
+            $table->index(['reference_id', 'reference_type']);
         });
     }
 

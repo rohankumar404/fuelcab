@@ -12,9 +12,27 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            // TODO: Define columns for vehicles.
+            $table->uuid('vendor_id');
+            $table->string('registration_number', 50)->unique();
+            $table->string('make', 100);
+            $table->string('model', 100);
+            $table->year('year');
+            $table->decimal('capacity_liters', 10, 2);
+            $table->string('fuel_type', 50)->default('diesel');
+            $table->string('status', 50)->default('active'); // active, maintenance, retired
+
+            // Audit & Timestamps
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            // Foreign Keys
+            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('cascade');
+
+            // Indexes
+            $table->index('vendor_id');
+            $table->index('status');
         });
     }
 

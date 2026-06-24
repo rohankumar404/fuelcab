@@ -12,9 +12,21 @@ return new class extends Migration
     {
         Schema::create('push_tokens', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            // TODO: Define columns for push_tokens.
+            $table->uuid('user_id');
+            $table->string('token', 512)->unique();
+            $table->string('platform', 50); // ios, android, web
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('last_used_at')->nullable();
+
+            // Timestamps
             $table->timestamps();
             $table->softDeletes();
+
+            // Foreign Keys
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
+            // Indexes
+            $table->index('user_id');
         });
     }
 

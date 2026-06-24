@@ -12,9 +12,29 @@ return new class extends Migration
     {
         Schema::create('drivers', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            // TODO: Define columns for drivers.
+            $table->uuid('user_id')->unique();
+            $table->uuid('vendor_id')->nullable();
+            $table->string('license_number', 100)->unique();
+            $table->date('license_expiry');
+            $table->string('status', 50)->default('offline'); // offline, available, on_trip, suspended
+            $table->boolean('is_approved')->default(false);
+            $table->timestamp('approved_at')->nullable();
+            $table->uuid('approved_by')->nullable();
+
+            // Audit & Timestamps
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            // Foreign Keys
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('set null');
+            $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');
+
+            // Indexes
+            $table->index('status');
+            $table->index('vendor_id');
         });
     }
 

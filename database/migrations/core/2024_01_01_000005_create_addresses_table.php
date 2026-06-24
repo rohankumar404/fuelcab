@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->string('state', 100);
             $table->string('postal_code', 20);
             $table->string('country', 100)->default('India');
+            // Spatial coordinates stored as high-precision decimals (fallback for non-PostGIS setups)
             $table->decimal('latitude', 9, 6);
             $table->decimal('longitude', 9, 6);
             $table->boolean('is_primary')->default(false);
@@ -38,11 +40,22 @@ return new class extends Migration
             // Indexes
             $table->index('user_id');
             $table->index('company_id');
+            // Composite index for common geo bounding-box queries (without PostGIS)
+            $table->index(['latitude', 'longitude'], 'idx_addresses_lat_lng');
         });
 
-        // Add PostGIS point column & index using raw queries (PostgreSQL specific)
-        DB::statement('ALTER TABLE addresses ADD COLUMN geo_point GEOGRAPHY(POINT, 4326) NULL');
-        DB::statement('CREATE INDEX idx_addresses_geo_point ON addresses USING GIST (geo_point)');
+        // Add PostGIS geo_point column ONLY if PostGIS extension is available in this PostgreSQL instance.
+        // This is a no-op in non-PostGIS environments (e.g. XAMPP local setup).
+        // In production, install PostGIS via: apt install postgresql-16-postgis-3
+        $postgisAvailable = DB::select(
+            "SELECT 1 FROM pg_available_extensions WHERE name = 'postgis'"
+        );
+
+        if (!empty($postgisAvailable)) {
+            DB::statement("CREATE EXTENSION IF NOT EXISTS postgis");
+            DB::statement('ALTER TABLE addresses ADD COLUMN geo_point GEOGRAPHY(POINT, 4326) NULL');
+            DB::statement('CREATE INDEX idx_addresses_geo_point ON addresses USING GIST (geo_point)');
+        }
     }
 
     public function down(): void

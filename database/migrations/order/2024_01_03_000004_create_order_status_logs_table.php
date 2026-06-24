@@ -12,9 +12,22 @@ return new class extends Migration
     {
         Schema::create('order_status_logs', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            // TODO: Define columns for order_status_logs.
+            $table->uuid('order_id');
+            $table->string('from_status', 50)->nullable();
+            $table->string('to_status', 50);
+            $table->string('reason')->nullable();
+            $table->uuid('changed_by')->nullable(); // User UUID
+            $table->timestamp('changed_at')->useCurrent();
+
+            // Timestamps
             $table->timestamps();
-            $table->softDeletes();
+
+            // Foreign Keys
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('changed_by')->references('id')->on('users')->onDelete('set null');
+
+            // Indexes
+            $table->index('order_id');
         });
     }
 
