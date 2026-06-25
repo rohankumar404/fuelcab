@@ -9,11 +9,19 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\HasUuid;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasUuid;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, HasUuid;
+
+    /**
+     * The guard name for Spatie permissions.
+     *
+     * @var string
+     */
+    protected string $guard_name = 'api';
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +31,14 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
+        'google_id',
+        'google_token',
+        'google_avatar',
+        'role_type',
+        'status',
+        'email_verified_at',
     ];
 
     /**
@@ -46,6 +61,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role_type' => \App\Enums\UserRole::class,
         ];
     }
 }

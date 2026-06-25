@@ -44,17 +44,16 @@ return new class extends Migration
             $table->index(['latitude', 'longitude'], 'idx_addresses_lat_lng');
         });
 
-        // Add PostGIS geo_point column ONLY if PostGIS extension is available in this PostgreSQL instance.
-        // This is a no-op in non-PostGIS environments (e.g. XAMPP local setup).
-        // In production, install PostGIS via: apt install postgresql-16-postgis-3
-        $postgisAvailable = DB::select(
-            "SELECT 1 FROM pg_available_extensions WHERE name = 'postgis'"
-        );
+        if (DB::getDriverName() === 'pgsql') {
+            $postgisAvailable = DB::select(
+                "SELECT 1 FROM pg_available_extensions WHERE name = 'postgis'"
+            );
 
-        if (!empty($postgisAvailable)) {
-            DB::statement("CREATE EXTENSION IF NOT EXISTS postgis");
-            DB::statement('ALTER TABLE addresses ADD COLUMN geo_point GEOGRAPHY(POINT, 4326) NULL');
-            DB::statement('CREATE INDEX idx_addresses_geo_point ON addresses USING GIST (geo_point)');
+            if (!empty($postgisAvailable)) {
+                DB::statement("CREATE EXTENSION IF NOT EXISTS postgis");
+                DB::statement('ALTER TABLE addresses ADD COLUMN geo_point GEOGRAPHY(POINT, 4326) NULL');
+                DB::statement('CREATE INDEX idx_addresses_geo_point ON addresses USING GIST (geo_point)');
+            }
         }
     }
 
