@@ -31,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
         $this->registerMigrationPaths();
         $this->registerRateLimiters();
 
+        // Use custom UUID-based PersonalAccessToken model
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(
+            \App\Models\PersonalAccessToken::class
+        );
+
         // Implicitly grant "Super Admin" role all permissions
         // This is the Spatie standard practice for Laravel architectures
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
