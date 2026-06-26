@@ -1,0 +1,117 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Providers\Filament;
+
+use App\Enums\UserRole;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Widgets;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+
+class VendorPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->id('vendor')
+            ->path('vendor')
+            ->login()
+            ->brandName('FuelCab — Vendor Portal')
+            ->colors([
+                'primary' => Color::Emerald,
+                'danger'  => Color::Rose,
+                'success' => Color::Teal,
+                'warning' => Color::Orange,
+                'info'    => Color::Sky,
+            ])
+            ->font('Inter', 'https://fonts.bunny.net/css?family=inter:100,200,300,400,500,600,700,800,900')
+            ->darkMode(true)
+            ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                NavigationGroup::make('Dashboard')
+                    ->icon('heroicon-o-home'),
+                NavigationGroup::make('Orders')
+                    ->icon('heroicon-o-clipboard-document-list'),
+                NavigationGroup::make('Drivers')
+                    ->icon('heroicon-o-user-group')
+                    ->collapsed(),
+                NavigationGroup::make('Fleet')
+                    ->icon('heroicon-o-truck')
+                    ->collapsed(),
+                NavigationGroup::make('Fuel & Inventory')
+                    ->icon('heroicon-o-beaker')
+                    ->collapsed(),
+                NavigationGroup::make('Staff')
+                    ->icon('heroicon-o-users')
+                    ->collapsed(),
+                NavigationGroup::make('Earnings')
+                    ->icon('heroicon-o-banknotes')
+                    ->collapsed(),
+                NavigationGroup::make('Documents')
+                    ->icon('heroicon-o-document-text')
+                    ->collapsed(),
+            ])
+            ->discoverResources(
+                in: app_path('Filament/Vendor/Resources'),
+                for: 'App\\Filament\\Vendor\\Resources'
+            )
+            ->discoverPages(
+                in: app_path('Filament/Vendor/Pages'),
+                for: 'App\\Filament\\Vendor\\Pages'
+            )
+            ->pages([
+                Pages\Dashboard::class,
+            ])
+            ->discoverWidgets(
+                in: app_path('Filament/Vendor/Widgets'),
+                for: 'App\\Filament\\Vendor\\Widgets'
+            )
+            ->widgets([
+                Widgets\AccountWidget::class,
+            ])
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                VerifyCsrfToken::class,
+                SubstituteBindings::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+            ])
+            ->authMiddleware([
+                Authenticate::class,
+            ])
+            ->authGuard('web');
+    }
+
+    /**
+     * Authorize panel access — vendor_admin and vendor_staff roles allowed.
+     */
+    public static function canAccess(): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        return auth()->user()->hasAnyRole([
+            UserRole::VendorAdmin->value,
+            UserRole::VendorStaff->value,
+        ]);
+    }
+}
