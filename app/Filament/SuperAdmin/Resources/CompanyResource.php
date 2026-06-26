@@ -52,7 +52,7 @@ class CompanyResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
             ])
-            ->actions([Tables\Actions\EditAction::make()])
+            ->actions([Tables\Actions\EditAction::make(), Tables\Actions\DeleteAction::make()])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
 

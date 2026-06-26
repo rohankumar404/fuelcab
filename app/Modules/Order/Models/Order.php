@@ -6,19 +6,44 @@ namespace App\Modules\Order\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\HasUuid;
 use App\Traits\HasTenantScope;
 use App\Traits\Auditable;
 use App\Traits\Filterable;
+use App\Models\User;
+use App\Models\Address;
+use App\Modules\Vendor\Models\Vendor;
+
 class Order extends Model
 {
     use SoftDeletes;
-    use HasUuid,HasTenantScope,Auditable,Filterable;
+    use HasUuid, HasTenantScope, Auditable, Filterable;
 
     protected $guarded = ['id'];
 
     protected function casts(): array
     {
         return [];
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'driver_id');
+    }
+
+    public function deliveryAddress(): BelongsTo
+    {
+        return $this->belongsTo(Address::class, 'delivery_address_id');
     }
 }

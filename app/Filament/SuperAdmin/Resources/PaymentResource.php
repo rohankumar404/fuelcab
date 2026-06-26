@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\PaymentResource\Pages;
-use App\Enums\PaymentStatus;
+use App\Modules\Payment\Models\Payment;
+use App\Modules\Order\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,7 +15,7 @@ use Filament\Tables\Table;
 
 class PaymentResource extends Resource
 {
-    protected static ?string $model = \App\Modules\Payment\Models\Payment::class;
+    protected static ?string $model = Payment::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationGroup = 'Payments & Finance';
     protected static ?int $navigationSort = 1;
@@ -22,11 +23,42 @@ class PaymentResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('transaction_id')->disabled(),
-            Forms\Components\TextInput::make('amount')->numeric()->disabled(),
-            Forms\Components\Select::make('status')
-                ->options(['pending' => 'Pending', 'success' => 'Success', 'failed' => 'Failed', 'refunded' => 'Refunded'])
-                ->required(),
+            Forms\Components\Section::make('Payment Details')
+                ->schema([
+                    Forms\Components\Select::make('order_id')
+                        ->label('Order')
+                        ->options(Order::pluck('order_number', 'id'))
+                        ->searchable()
+                        ->required(),
+                    Forms\Components\TextInput::make('payment_gateway')
+                        ->required()
+                        ->maxLength(100),
+                    Forms\Components\TextInput::make('gateway_transaction_id')
+                        ->label('Transaction ID')
+                        ->maxLength(255)
+                        ->nullable(),
+                    Forms\Components\TextInput::make('amount')
+                        ->numeric()
+                        ->prefix('₹')
+                        ->required(),
+                    Forms\Components\TextInput::make('currency')
+                        ->default('INR')
+                        ->required(),
+                    Forms\Components\Select::make('status')
+                        ->options([
+                            'pending' => 'Pending',
+                            'success' => 'Success',
+                            'failed' => 'Failed',
+                            'refunded' => 'Refunded'
+                        ])
+                        ->default('pending')
+                        ->required(),
+                    Forms\Components\DateTimePicker::make('paid_at')
+                        ->nullable(),
+                    Forms\Components\Textarea::make('error_message')
+                        ->columnSpanFull()
+                        ->nullable(),
+                ])->columns(2)
         ]);
     }
 
@@ -35,26 +67,63 @@ class PaymentResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('transaction_id')->searchable()->copyable(),
-                Tables\Columns\TextColumn::make('order.order_number')->label('Order')->searchable(),
-                Tables\Columns\TextColumn::make('amount')->money('INR')->sortable(),
-                Tables\Columns\TextColumn::make('gateway')->badge(),
+                Tables\Columns\TextColumn::make('gateway_transaction_id')
+                    ->label('Transaction ID')
+                    ->searchable()
+                    ->copyable(),
+                Tables\Columns\TextColumn::make('order.order_number')
+                    ->label('Order')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('amount')
+                    ->money('INR')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('payment_gateway')
+                    ->label('Gateway')
+                    ->badge(),
                 Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['warning' => 'pending', 'success' => 'success', 'danger' => 'failed', 'gray' => 'refunded']),
-                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'success',
+                        'danger' => 'failed',
+                        'gray' => 'refunded',
+                    ])
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('paid_at')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->options(['pending' => 'Pending', 'success' => 'Success', 'failed' => 'Failed', 'refunded' => 'Refunded']),
+                    ->options([
+                        'pending' => 'Pending',
+                        'success' => 'Success',
+                        'failed' => 'Failed',
+                        'refunded' => 'Refunded',
+                    ]),
             ])
-            ->actions([Tables\Actions\ViewAction::make()])
-            ->bulkActions([]);
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListPayments::route('/'),
+            'create' => Pages\CreatePayment::route('/create'),
+            'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
     }
 }
