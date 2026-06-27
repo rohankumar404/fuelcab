@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import HeroSection from "@/components/hero/HeroSection";
 import FuelCategories from "@/components/sections/FuelCategories";
 import HowItWorks from "@/components/sections/HowItWorks";
+import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
 
 export default function HomePage() {
   return (
@@ -23,6 +24,9 @@ export default function HomePage() {
 
         {/* How It Works Section */}
         <HowItWorks />
+
+        {/* Industries We Serve Section */}
+        <IndustriesWeServe />
       </main>
     </>
   );
