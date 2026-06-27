@@ -2,6 +2,7 @@ import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Navbar from "@/components/layout/Navbar";
 import HeroSection from "@/components/hero/HeroSection";
 import FuelCategories from "@/components/sections/FuelCategories";
+import HowItWorks from "@/components/sections/HowItWorks";
 
 export default function HomePage() {
   return (
@@ -19,6 +20,9 @@ export default function HomePage() {
 
         {/* Fuel Categories Section */}
         <FuelCategories />
+
+        {/* How It Works Section */}
+        <HowItWorks />
       </main>
     </>
   );
