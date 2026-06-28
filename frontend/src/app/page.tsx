@@ -4,6 +4,7 @@ import HeroSection from "@/components/hero/HeroSection";
 import FuelCategories from "@/components/sections/FuelCategories";
 import HowItWorks from "@/components/sections/HowItWorks";
 import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
+import Testimonials from "@/components/sections/Testimonials";
 
 export default function HomePage() {
   return (
@@ -27,6 +28,9 @@ export default function HomePage() {
 
         {/* Industries We Serve Section */}
         <IndustriesWeServe />
+
+        {/* Testimonials & Statistics Section */}
+        <Testimonials />
       </main>
     </>
   );
