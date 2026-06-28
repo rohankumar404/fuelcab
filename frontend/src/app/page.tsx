@@ -5,6 +5,7 @@ import FuelCategories from "@/components/sections/FuelCategories";
 import HowItWorks from "@/components/sections/HowItWorks";
 import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
 import Testimonials from "@/components/sections/Testimonials";
+import FAQ from "@/components/sections/FAQ";
 
 export default function HomePage() {
   return (
@@ -31,6 +32,9 @@ export default function HomePage() {
 
         {/* Testimonials & Statistics Section */}
         <Testimonials />
+
+        {/* FAQ Accordion Section */}
+        <FAQ />
       </main>
     </>
   );
