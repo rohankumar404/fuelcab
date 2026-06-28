@@ -6,6 +6,7 @@ import HowItWorks from "@/components/sections/HowItWorks";
 import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
 import Testimonials from "@/components/sections/Testimonials";
 import FAQ from "@/components/sections/FAQ";
+import Footer from "@/components/layout/Footer";
 
 export default function HomePage() {
   return (
@@ -17,7 +18,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* Main Layout Sections */}
-      <main id="main-content">
+      <main id="main-content" className="flex-1">
         {/* Hero Section */}
         <HeroSection />
 
@@ -36,6 +37,9 @@ export default function HomePage() {
         {/* FAQ Accordion Section */}
         <FAQ />
       </main>
+
+      {/* Footer Section */}
+      <Footer />
     </>
   );
 }
