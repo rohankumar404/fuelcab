@@ -69,6 +69,15 @@ use App\Modules\Fuel\Events\InventorySynced;
 use App\Modules\Fuel\Listeners\LogInventoryChange;
 use App\Modules\Fuel\Listeners\NotifyLowStock;
 
+// Cart Events
+use App\Modules\Cart\Events\CartItemAdded;
+use App\Modules\Cart\Events\CartItemRemoved;
+use App\Modules\Cart\Events\CartCleared;
+use App\Modules\Cart\Events\GuestCartMerged;
+
+// Cart Listeners
+use App\Modules\Cart\Listeners\RevalidateCartPrices;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -138,5 +147,13 @@ class EventServiceProvider extends ServiceProvider
             LogInventoryChange::class,
             NotifyLowStock::class,
         ],
+
+        // ─── Cart ─────────────────────────────────────────────────────────
+        CartItemAdded::class => [
+            RevalidateCartPrices::class,
+        ],
+        CartItemRemoved::class => [],
+        CartCleared::class     => [],
+        GuestCartMerged::class => [],
     ];
 }
