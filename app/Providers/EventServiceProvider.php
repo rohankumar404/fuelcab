@@ -61,6 +61,14 @@ use App\Modules\Auth\Listeners\SendOtpViaSms;
 // Wallet Events
 use App\Modules\Wallet\Events\WalletToppedUp;
 
+// Fuel / Product Events
+use App\Modules\Fuel\Events\ProductStatusChanged;
+use App\Modules\Fuel\Events\InventorySynced;
+
+// Fuel / Product Listeners
+use App\Modules\Fuel\Listeners\LogInventoryChange;
+use App\Modules\Fuel\Listeners\NotifyLowStock;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -123,5 +131,12 @@ class EventServiceProvider extends ServiceProvider
 
         // ─── Wallet ──────────────────────────────────────────────────────
         WalletToppedUp::class => [],
+
+        // ─── Fuel / Product ──────────────────────────────────────────────
+        ProductStatusChanged::class => [],
+        InventorySynced::class => [
+            LogInventoryChange::class,
+            NotifyLowStock::class,
+        ],
     ];
 }
