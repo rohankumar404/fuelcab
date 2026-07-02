@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Fuel\Models\Product;
 use App\Modules\Fuel\Models\FuelInventory;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,12 +30,21 @@ class ProductTest extends TestCase
             'description' => 'Premium high speed diesel',
         ]);
 
+        $companyId = \Illuminate\Support\Str::uuid()->toString();
+        \Illuminate\Support\Facades\DB::table('companies')->insert([
+            'id'         => $companyId,
+            'name'       => 'Apex Logistics LLC',
+            'status'     => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $this->vendor = Vendor::create([
-            'business_name' => 'Apex Fuel Station',
-            'contact_name' => 'Alice Smith',
-            'contact_email' => 'alice@apexfuel.com',
-            'contact_phone' => '9876543210',
-            'status' => 'approved',
+            'company_id'            => $companyId,
+            'brand_name'            => 'Apex Fuel Station',
+            'status'                => 'approved',
+            'commission_rate'       => 0.00,
+            'service_radius_meters' => 5000,
         ]);
 
         $this->product = Product::create([
@@ -48,6 +58,16 @@ class ProductTest extends TestCase
             'is_active' => true,
             'status' => 'active',
         ]);
+
+        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $user = User::create([
+            'name'      => 'Admin User',
+            'email'     => 'admin@fuelcab.com',
+            'password'  => bcrypt('password123'),
+            'role_type' => \App\Enums\UserRole::SuperAdmin,
+        ]);
+        $user->assignRole('super_admin');
+        \Laravel\Sanctum\Sanctum::actingAs($user);
     }
 
     /**

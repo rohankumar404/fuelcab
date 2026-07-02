@@ -24,7 +24,15 @@ class Order extends Model
 
     protected function casts(): array
     {
-        return [];
+        return [
+            'status' => \App\Modules\Order\Enums\OrderStatus::class,
+            'scheduled_delivery_at' => 'datetime',
+            'delivered_at' => 'datetime',
+            'subtotal_amount' => 'float',
+            'delivery_fee' => 'float',
+            'tax_amount' => 'float',
+            'total_amount' => 'float',
+        ];
     }
 
     public function customer(): BelongsTo

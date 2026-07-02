@@ -8,7 +8,9 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 
 // Order Events
 use App\Modules\Order\Events\OrderCreated;
+use App\Modules\Order\Events\OrderAccepted;
 use App\Modules\Order\Events\OrderAssigned;
+use App\Modules\Order\Events\OrderDispatched;
 use App\Modules\Order\Events\OrderCompleted;
 use App\Modules\Order\Events\OrderCancelled;
 
@@ -24,6 +26,7 @@ use App\Modules\Order\Listeners\TriggerPaymentSettlement;
 use App\Modules\Order\Listeners\GenerateInvoice;
 use App\Modules\Order\Listeners\RefundPaymentIfApplicable;
 use App\Modules\Order\Listeners\ReleaseDriver;
+use App\Modules\Order\Listeners\LogOrderStatusChange;
 
 // Payment Events
 use App\Modules\Payment\Events\PaymentVerified;
@@ -91,20 +94,30 @@ class EventServiceProvider extends ServiceProvider
             NotifyNearbyDrivers::class,
             SendOrderConfirmationToCustomer::class,
             LogOrderActivity::class,
+            LogOrderStatusChange::class,
+        ],
+        OrderAccepted::class => [
+            LogOrderStatusChange::class,
         ],
         OrderAssigned::class => [
             NotifyDriverOfNewOrder::class,
             NotifyCustomerOfDriverAssignment::class,
+            LogOrderStatusChange::class,
+        ],
+        OrderDispatched::class => [
+            LogOrderStatusChange::class,
         ],
         OrderCompleted::class => [
             UpdateDriverEarnings::class,
             DeductFuelInventory::class,
             TriggerPaymentSettlement::class,
             GenerateInvoice::class,
+            LogOrderStatusChange::class,
         ],
         OrderCancelled::class => [
             RefundPaymentIfApplicable::class,
             ReleaseDriver::class,
+            LogOrderStatusChange::class,
         ],
 
         // ─── Payment ─────────────────────────────────────────────────────
