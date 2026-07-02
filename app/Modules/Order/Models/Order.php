@@ -54,4 +54,19 @@ class Order extends Model
     {
         return $this->belongsTo(Address::class, 'delivery_address_id');
     }
+
+    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
+    public function statusLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(OrderStatusLog::class, 'order_id');
+    }
+
+    public function tracking(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(OrderTracking::class, 'order_id');
+    }
 }

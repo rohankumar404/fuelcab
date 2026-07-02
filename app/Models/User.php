@@ -39,6 +39,8 @@ class User extends Authenticatable
         'role_type',
         'status',
         'email_verified_at',
+        'company_id',
+        'vendor_id',
     ];
 
     /**
@@ -63,5 +65,15 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role_type' => \App\Enums\UserRole::class,
         ];
+    }
+
+    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Vendor\Models\Vendor::class);
+    }
+
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Company::class);
     }
 }

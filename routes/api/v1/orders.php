@@ -13,6 +13,10 @@ use App\Modules\Order\Http\Controllers\OrderTrackingController;
 */
 
 Route::middleware('auth:sanctum')->prefix('orders')->group(function (): void {
+    // CRUD Endpoints
+    Route::get('/',                     [OrderController::class, 'index']);
+    Route::get('{id}',                  [OrderController::class, 'show']);
+
     // Status Transitions
     Route::patch('{id}/accept',         [OrderController::class, 'accept']);
     Route::patch('{id}/assign-driver',  [OrderController::class, 'assignDriver']);

@@ -19,7 +19,7 @@ class LogOrderActivity implements ShouldQueue
     {
         $order = $event->order;
 
-        Log::channel('orders')->info('New order created', [
+        Log::info('New order created', [
             'order_id'    => $order->id,
             'customer_id' => $order->customer_id,
             'vendor_id'   => $order->vendor_id,

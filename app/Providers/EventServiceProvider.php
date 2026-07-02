@@ -26,6 +26,7 @@ use App\Modules\Order\Listeners\TriggerPaymentSettlement;
 use App\Modules\Order\Listeners\GenerateInvoice;
 use App\Modules\Order\Listeners\RefundPaymentIfApplicable;
 use App\Modules\Order\Listeners\ReleaseDriver;
+use App\Modules\Order\Listeners\NotifyCustomerOfOrderAcceptance;
 use App\Modules\Order\Listeners\LogOrderStatusChange;
 
 // Payment Events
@@ -97,6 +98,7 @@ class EventServiceProvider extends ServiceProvider
             LogOrderStatusChange::class,
         ],
         OrderAccepted::class => [
+            NotifyCustomerOfOrderAcceptance::class,
             LogOrderStatusChange::class,
         ],
         OrderAssigned::class => [
@@ -105,11 +107,11 @@ class EventServiceProvider extends ServiceProvider
             LogOrderStatusChange::class,
         ],
         OrderDispatched::class => [
+            DeductFuelInventory::class,
             LogOrderStatusChange::class,
         ],
         OrderCompleted::class => [
             UpdateDriverEarnings::class,
-            DeductFuelInventory::class,
             TriggerPaymentSettlement::class,
             GenerateInvoice::class,
             LogOrderStatusChange::class,

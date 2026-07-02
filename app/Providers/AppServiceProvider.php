@@ -36,6 +36,17 @@ class AppServiceProvider extends ServiceProvider
             \App\Models\PersonalAccessToken::class
         );
 
+        // Register policies explicitly
+        \Illuminate\Support\Facades\Gate::policy(
+            \App\Modules\Order\Models\Order::class,
+            \App\Modules\Order\Policies\OrderPolicy::class
+        );
+
+        // Register custom notifications database channel
+        $this->app->make(\Illuminate\Notifications\ChannelManager::class)->extend('database', function ($app) {
+            return new \App\Modules\Notification\Channels\CustomDatabaseChannel();
+        });
+
         // Implicitly grant "Super Admin" role all permissions
         // This is the Spatie standard practice for Laravel architectures
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
