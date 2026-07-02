@@ -20,6 +20,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     require __DIR__.'/api/v1/orders.php';
     require __DIR__.'/api/v1/fuel.php';
     require __DIR__.'/api/v1/cart.php';
+    require __DIR__.'/api/v1/checkout.php';
     require __DIR__.'/api/v1/payments.php';
     require __DIR__.'/api/v1/vendors.php';
     require __DIR__.'/api/v1/wallets.php';
