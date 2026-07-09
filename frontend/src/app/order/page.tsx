@@ -32,36 +32,36 @@ const FUEL_TYPES = [
     icon: "🔴", emoji: "⚡",
     pricePerL: 102.46, unit: "L", unitLabel: "per litre",
     minQty: 100, maxQty: 10000, step: 50,
-    tag: "Fast Delivery", tagColor: "bg-red-100 text-red-700",
-    gradient: "from-red-400 to-rose-500",
+    tag: "Coming Soon", tagColor: "bg-gray-100 text-gray-500",
+    gradient: "from-red-300 to-rose-400",
     cardBg: "bg-red-50 border-red-200",
     activeBg: "border-[#155c32] bg-[#155c32]/5",
     desc: "Motor Spirit for vehicles, small engines & equipment",
-    available: true,
+    available: false,
   },
   {
     id: "cng", label: "CNG", shortLabel: "CNG",
     icon: "🌿", emoji: "💨",
     pricePerL: 76.59, unit: "Kg", unitLabel: "per kg",
     minQty: 50, maxQty: 5000, step: 25,
-    tag: "Eco Friendly", tagColor: "bg-green-100 text-green-700",
-    gradient: "from-green-400 to-emerald-500",
+    tag: "Coming Soon", tagColor: "bg-gray-100 text-gray-500",
+    gradient: "from-green-300 to-emerald-400",
     cardBg: "bg-green-50 border-green-200",
     activeBg: "border-[#155c32] bg-[#155c32]/5",
     desc: "Compressed Natural Gas — cleaner fuel for fleets",
-    available: true,
+    available: false,
   },
   {
     id: "lubes", label: "Lubricants", shortLabel: "Lubes",
     icon: "🔵", emoji: "🛠️",
     pricePerL: 280.0, unit: "L", unitLabel: "per litre",
     minQty: 20, maxQty: 2000, step: 10,
-    tag: "Industrial", tagColor: "bg-blue-100 text-blue-700",
-    gradient: "from-blue-400 to-indigo-500",
+    tag: "Coming Soon", tagColor: "bg-gray-100 text-gray-500",
+    gradient: "from-blue-300 to-indigo-400",
     cardBg: "bg-blue-50 border-blue-200",
     activeBg: "border-[#155c32] bg-[#155c32]/5",
     desc: "Engine & industrial oils for heavy machinery",
-    available: true,
+    available: false,
   },
 ];
 
@@ -212,9 +212,15 @@ export default function OrderPage() {
   }, [step]);
 
   // ── Quantity controls ──
+  // liveQty ref: always reflects the latest qty value without stale closures.
+  // Updated synchronously every time applyQty runs, so the hold interval
+  // always accumulates from the real current value.
+  const liveQty = useRef(qty);
+
   const applyQty = useCallback(
     (val: number) => {
       const clamped = Math.max(fuel.minQty, Math.min(fuel.maxQty, val));
+      liveQty.current = clamped; // ← sync update BEFORE setState
       setQty(clamped);
       setQtyInput(String(clamped));
       if (val < fuel.minQty) setQtyError(`Minimum order is ${fuel.minQty} ${fuel.unit}`);
@@ -224,19 +230,26 @@ export default function OrderPage() {
     [fuel]
   );
 
-  const qtySnapshot = useRef(qty);
-  useEffect(() => { qtySnapshot.current = qty; }, [qty]);
+  // Sync liveQty whenever fuel changes (resets qty)
+  useEffect(() => { liveQty.current = qty; }, [fuel]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const startHold = (dir: 1 | -1) => {
-    applyQty(qtySnapshot.current + dir * fuel.step);
+  const startHold = useCallback((dir: 1 | -1) => {
+    // Fire once immediately on press
+    const next = liveQty.current + dir * fuel.step;
+    applyQty(next);
+    // Then keep firing while held
     qtyRef.current = setInterval(() => {
-      qtySnapshot.current = qtySnapshot.current + dir * fuel.step;
-      applyQty(qtySnapshot.current);
-    }, 150);
-  };
-  const stopHold = () => {
-    if (qtyRef.current) clearInterval(qtyRef.current);
-  };
+      const stepped = liveQty.current + dir * fuel.step;
+      applyQty(stepped);
+    }, 120);
+  }, [fuel, applyQty]);
+
+  const stopHold = useCallback(() => {
+    if (qtyRef.current) {
+      clearInterval(qtyRef.current);
+      qtyRef.current = null;
+    }
+  }, []);
 
   // ── Validators ──
   const validateAddress = (): boolean => {
@@ -499,50 +512,60 @@ export default function OrderPage() {
 
                     {/* ± Quantity control */}
                     <div className="flex items-center gap-4 mb-4">
+                      {/* Decrease button — fires immediately on click; hold for repeat */}
                       <button
                         type="button"
-                        onMouseDown={() => startHold(-1)}
+                        onClick={() => applyQty(liveQty.current - fuel.step)}
+                        onMouseDown={(e) => { e.preventDefault(); startHold(-1); }}
                         onMouseUp={stopHold}
                         onMouseLeave={stopHold}
-                        onTouchStart={() => startHold(-1)}
+                        onTouchStart={(e) => { e.preventDefault(); startHold(-1); }}
                         onTouchEnd={stopHold}
+                        onTouchCancel={stopHold}
                         disabled={qty <= fuel.minQty}
-                        className="w-14 h-14 rounded-2xl bg-[#f4f8f5] border-2 border-[#e7ece8] flex items-center justify-center text-[#155c32] hover:bg-[#155c32] hover:text-white hover:border-[#155c32] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed text-2xl font-bold select-none"
+                        className="w-14 h-14 rounded-2xl bg-[#f4f8f5] border-2 border-[#e7ece8] flex items-center justify-center text-[#155c32] hover:bg-[#155c32] hover:text-white hover:border-[#155c32] active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+                        aria-label="Decrease quantity"
                       >
                         <Minus className="w-5 h-5" />
                       </button>
 
-                      {/* Manual input */}
+                      {/* Manual text input */}
                       <div className="flex-1 text-center">
                         <div className="relative">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
                             value={qtyInput}
-                            min={fuel.minQty}
-                            max={fuel.maxQty}
-                            step={fuel.step}
                             onChange={(e) => {
-                              setQtyInput(e.target.value);
-                              const v = parseInt(e.target.value);
+                              const raw = e.target.value.replace(/[^0-9]/g, "");
+                              setQtyInput(raw);
+                              const v = parseInt(raw, 10);
                               if (!isNaN(v)) applyQty(v);
                             }}
-                            onBlur={() => applyQty(parseInt(qtyInput) || fuel.minQty)}
-                            className="w-full h-16 text-center text-3xl font-extrabold text-[#1a1a1a] border-2 border-[#e7ece8] rounded-2xl bg-[#fafbfa] focus:outline-none focus:border-[#155c32] focus:ring-4 focus:ring-[#155c32]/10 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            onBlur={() => {
+                              const v = parseInt(qtyInput, 10);
+                              applyQty(isNaN(v) ? fuel.minQty : v);
+                            }}
+                            className="w-full h-16 text-center text-3xl font-extrabold text-[#1a1a1a] border-2 border-[#e7ece8] rounded-2xl bg-[#fafbfa] focus:outline-none focus:border-[#155c32] focus:ring-4 focus:ring-[#155c32]/10 transition"
                           />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#aaa]">{fuel.unit}</span>
                         </div>
-                        <p className="text-xs text-[#aaa] mt-1.5">Enter quantity manually or use ±</p>
+                        <p className="text-xs text-[#aaa] mt-1.5">Type a value or hold ± to change</p>
                       </div>
 
+                      {/* Increase button */}
                       <button
                         type="button"
-                        onMouseDown={() => startHold(1)}
+                        onClick={() => applyQty(liveQty.current + fuel.step)}
+                        onMouseDown={(e) => { e.preventDefault(); startHold(1); }}
                         onMouseUp={stopHold}
                         onMouseLeave={stopHold}
-                        onTouchStart={() => startHold(1)}
+                        onTouchStart={(e) => { e.preventDefault(); startHold(1); }}
                         onTouchEnd={stopHold}
+                        onTouchCancel={stopHold}
                         disabled={qty >= fuel.maxQty}
-                        className="w-14 h-14 rounded-2xl bg-[#f4f8f5] border-2 border-[#e7ece8] flex items-center justify-center text-[#155c32] hover:bg-[#155c32] hover:text-white hover:border-[#155c32] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+                        className="w-14 h-14 rounded-2xl bg-[#f4f8f5] border-2 border-[#e7ece8] flex items-center justify-center text-[#155c32] hover:bg-[#155c32] hover:text-white hover:border-[#155c32] active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+                        aria-label="Increase quantity"
                       >
                         <Plus className="w-5 h-5" />
                       </button>
