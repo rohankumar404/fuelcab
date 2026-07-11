@@ -11,10 +11,11 @@ return [
     */
 
     'types' => [
-        'petrol',
         'diesel',
         'cng',
         'lpg',
+        'def',
+        'lubricants',
         'ev',
     ],
 

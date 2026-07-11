@@ -18,6 +18,19 @@ class Vendor extends Model
 
     protected function casts(): array
     {
-        return [];
+        return [
+            'is_first_party' => 'boolean',
+            'commission_rate' => 'decimal:2',
+        ];
+    }
+
+    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Modules\Fuel\Models\Product::class);
+    }
+
+    public function settlements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\Settlement::class);
     }
 }

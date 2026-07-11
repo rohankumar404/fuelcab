@@ -18,11 +18,12 @@ class ProductSeeder extends Seeder
         // ── Step 2: Upsert FuelCab Platform Vendor ───────────────────────
         $vendorId = $this->upsertVendor($companyId);
 
-        // ── Step 3: Upsert fuel categories ───────────────────────────────
+        // ── Step 3: Upsert FuelCab Direct fuel categories ─────────────────
         $fuelCategoryId = $this->upsertCategory('Fuel', 'fuel', 'All liquid and gas fuel products');
         $lubeCategoryId = $this->upsertCategory('Lubricants', 'lubricants', 'Engine oils, greases and transmission fluids');
+        $defCategoryId = $this->upsertCategory('DEF', 'def', 'Diesel Exhaust Fluid / AdBlue');
 
-        // ── Step 4: Upsert 5 core fuel products ──────────────────────────
+        // ── Step 4: Upsert 5 core direct fuel products (NO PETROL) ────────
         $products = [
             [
                 'sku'             => 'FC-DSL-001',
@@ -35,18 +36,6 @@ class ProductSeeder extends Seeder
                 'unit_of_measure' => 'liter',
                 'status'          => 'active',
                 'is_active'       => true,
-            ],
-            [
-                'sku'             => 'FC-PET-001',
-                'category_id'     => $fuelCategoryId,
-                'vendor_id'       => $vendorId,
-                'name'            => 'Petrol (MS)',
-                'slug'            => 'petrol-ms',
-                'description'     => 'High-octane motor spirit for commercial passenger fleets and lightweight generators.',
-                'price_per_unit'  => 94.72,
-                'unit_of_measure' => 'liter',
-                'status'          => 'soon',
-                'is_active'       => false,
             ],
             [
                 'sku'             => 'FC-CNG-001',
@@ -69,6 +58,18 @@ class ProductSeeder extends Seeder
                 'description'     => 'Liquefied Petroleum Gas for industrial heating and commercial kitchen systems.',
                 'price_per_unit'  => 860.00,
                 'unit_of_measure' => 'cylinder',
+                'status'          => 'soon',
+                'is_active'       => false,
+            ],
+            [
+                'sku'             => 'FC-DEF-001',
+                'category_id'     => $defCategoryId,
+                'vendor_id'       => $vendorId,
+                'name'            => 'DEF (AdBlue)',
+                'slug'            => 'def-adblue',
+                'description'     => 'Premium Diesel Exhaust Fluid maintaining strict emission compliance in modern SCR diesel engines.',
+                'price_per_unit'  => 45.00,
+                'unit_of_measure' => 'liter',
                 'status'          => 'soon',
                 'is_active'       => false,
             ],
@@ -105,12 +106,13 @@ class ProductSeeder extends Seeder
             }
         }
 
-        $this->command->info('✅ ProductSeeder: 5 fuel products seeded successfully.');
-        $this->command->info('   — Diesel (HSD)  → ACTIVE');
-        $this->command->info('   — Petrol (MS)   → COMING SOON');
-        $this->command->info('   — CNG           → COMING SOON');
-        $this->command->info('   — LPG           → COMING SOON');
-        $this->command->info('   — Lubricants    → COMING SOON');
+        // Clean up any old Petrol product if left in database (to ensure no petrol reference survives)
+        DB::table('products')->where('slug', 'petrol-ms')->delete();
+
+        $this->command->info('✅ ProductSeeder: Direct fuel products seeded successfully (Petrol removed).');
+
+        // ── Step 5: Seed Marketplace Categories & Subcategories ───────────
+        $this->seedMarketplaceCategories();
     }
 
     private function upsertCompany(): string
@@ -136,6 +138,11 @@ class ProductSeeder extends Seeder
     {
         $existing = DB::table('vendors')->where('company_id', $companyId)->first();
         if ($existing) {
+            // Update to ensure is_first_party is true
+            DB::table('vendors')->where('company_id', $companyId)->update([
+                'is_first_party' => true,
+                'brand_name' => 'FuelCab Direct',
+            ]);
             return $existing->id;
         }
 
@@ -144,6 +151,7 @@ class ProductSeeder extends Seeder
             'id'                     => $id,
             'company_id'             => $companyId,
             'brand_name'             => 'FuelCab Direct',
+            'is_first_party'         => true,
             'status'                 => 'approved',
             'commission_rate'        => 0.00,
             'service_radius_meters'  => 999999,
@@ -154,23 +162,119 @@ class ProductSeeder extends Seeder
         return $id;
     }
 
-    private function upsertCategory(string $name, string $slug, string $description): string
+    private function upsertCategory(string $name, string $slug, string $description, ?string $parentId = null, string $type = 'liquid', bool $isComingSoon = false): string
     {
-        $existing = DB::table('categories')->where('slug', $slug)->first();
+        // Query by name or slug to respect name and slug uniqueness
+        $existing = DB::table('categories')
+            ->where('name', $name)
+            ->orWhere('slug', $slug)
+            ->first();
+
         if ($existing) {
+            DB::table('categories')->where('id', $existing->id)->update([
+                'name' => $name,
+                'slug' => $slug,
+                'description' => $description,
+                'parent_id' => $parentId,
+                'type' => $type,
+                'is_coming_soon' => $isComingSoon,
+                'updated_at' => now(),
+            ]);
             return $existing->id;
         }
 
         $id = Str::uuid()->toString();
         DB::table('categories')->insert([
-            'id'          => $id,
-            'name'        => $name,
-            'slug'        => $slug,
-            'description' => $description,
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'id'             => $id,
+            'name'           => $name,
+            'slug'           => $slug,
+            'description'    => $description,
+            'parent_id'      => $parentId,
+            'type'           => $type,
+            'is_coming_soon' => $isComingSoon,
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
 
         return $id;
+    }
+
+    private function seedMarketplaceCategories(): void
+    {
+        // 1. SOLID FUELS
+        $solidId = $this->upsertCategory('Solid Fuels', 'solid-fuels', 'Industrial solid fuels and biomass options', null, 'solid');
+        
+        $solidSubcategories = [
+            'Animal Tallow' => 'animal-tallow',
+            'Chicken Tallow' => 'chicken-tallow',
+            'Palm Stearin' => 'palm-stearin',
+            'PP/HDPE Waste' => 'pp-hdpe-waste',
+            'LDP/MHW' => 'ldp-mhw',
+            'Tyre Waste' => 'tyre-waste',
+            'Saw Dust' => 'saw-dust',
+            'Wood Chips' => 'wood-chips',
+            'Rice Husk' => 'rice-husk',
+            'Coffee Husk' => 'coffee-husk',
+            'Ground Nut Cell' => 'ground-nut-cell',
+            'Soya Husk' => 'soya-husk',
+            'Carbon Black' => 'carbon-black',
+            'Bio-Mass Pellets' => 'bio-mass-pellets',
+            'Starch Based Raw Materials' => 'starch-based-raw-materials',
+            'RDF (Refuse Derived Fuel)' => 'rdf',
+            'Biomass Briquettes / Bio Coal' => 'biomass-briquettes-bio-coal',
+            'Other Bio Mass' => 'other-bio-mass',
+        ];
+
+        foreach ($solidSubcategories as $name => $slug) {
+            $this->upsertCategory($name, $slug, "Industrial Solid Fuel: {$name}", $solidId, 'solid');
+        }
+
+        // 2. LIQUID FUELS
+        $liquidId = $this->upsertCategory('Liquid Fuels', 'liquid-fuels', 'Industrial liquid fuels, additives and bio-liquids', null, 'liquid');
+        
+        $liquidSubcategories = [
+            'High Speed Diesel' => 'marketplace-high-speed-diesel',
+            'Bio Diesel (B-100)' => 'bio-diesel-b100',
+            'LDO' => 'ldo',
+            'Bio-LDO' => 'bio-ldo',
+            'Furnace Oil' => 'furnace-oil',
+            'Base Oil' => 'base-oil',
+            'Bitumen' => 'bitumen',
+            'UCO' => 'uco',
+            'MTO' => 'mto',
+            'MTO Cut' => 'mto-cut',
+            'MHO' => 'mho',
+            'Bio-Ethanol' => 'bio-ethanol',
+            'Bio-Furnace Oil' => 'bio-furnace-oil',
+            'Bio-Fuel Additives' => 'bio-fuel-additives',
+            'Acid Oil' => 'acid-oil',
+            'Other Vegetable Oil' => 'other-vegetable-oil',
+            'Bio-Lubricants' => 'bio-lubricants',
+            'Industrial Lubricants' => 'marketplace-lubricants',
+            'New Bitumen' => 'new-bitumen',
+        ];
+
+        foreach ($liquidSubcategories as $name => $slug) {
+            $this->upsertCategory($name, $slug, "Industrial Liquid Fuel: {$name}", $liquidId, 'liquid');
+        }
+
+        // 3. GAS FUELS
+        $gasId = $this->upsertCategory('Gas Fuels', 'gas-fuels', 'Alternative and industrial gas fuels', null, 'gas');
+        
+        $gasSubcategories = [
+            'Bio-CNG / CBG' => 'bio-cng-cbg',
+            'CNG' => 'marketplace-cng',
+            'LNG' => 'lng',
+            'Green Hydrogen' => 'green-hydrogen',
+        ];
+
+        foreach ($gasSubcategories as $name => $slug) {
+            $this->upsertCategory($name, $slug, "Industrial Gas Fuel: {$name}", $gasId, 'gas');
+        }
+
+        // 4. EV
+        $this->upsertCategory('EV', 'ev', 'Electric Vehicle Charging network services', null, 'ev', true);
+
+        $this->command->info('✅ ProductSeeder: Marketplace subcategories seeded successfully.');
     }
 }
