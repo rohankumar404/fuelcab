@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\SuperAdmin\Resources;
+namespace App\Filament\Operations\Resources;
 
-use App\Filament\SuperAdmin\Resources\ProductResource\Pages;
+use App\Filament\Operations\Resources\ProductResource\Pages;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductResource extends Resource
 {
@@ -17,6 +18,15 @@ class ProductResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
     protected static ?string $navigationGroup = 'Fuel & Products';
     protected static ?int $navigationSort = 1;
+
+    public static function getEloquentQuery(): Builder
+    {
+        // Operations team can only view and manage FuelCab Direct (first party) products
+        return parent::getEloquentQuery()
+            ->whereHas('vendor', function ($q) {
+                $q->where('is_first_party', true);
+            });
+    }
 
     public static function form(Form $form): Form
     {
@@ -33,11 +43,11 @@ class ProductResource extends Resource
                         Forms\Components\TextInput::make('sku')->label('SKU')->required()->maxLength(100),
                         Forms\Components\Select::make('category_id')
                             ->label('Category')
-                            ->relationship('category', 'name')
+                            ->relationship('category', 'name', fn ($query) => $query->whereNull('parent_id'))
                             ->required(),
                         Forms\Components\Select::make('vendor_id')
                             ->label('Vendor')
-                            ->relationship('vendor', 'brand_name')
+                            ->relationship('vendor', 'brand_name', fn ($query) => $query->where('is_first_party', true))
                             ->required(),
                         Forms\Components\TextInput::make('price_per_unit')->numeric()->prefix('₹')->required(),
                         Forms\Components\Select::make('unit_of_measure')

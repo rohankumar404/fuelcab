@@ -38,15 +38,6 @@ const FUEL_PRODUCTS: FuelProduct[] = [
     badgeText: "Most Popular",
   },
   {
-    id: "petrol",
-    name: "Petrol (MS)",
-    description: "High-octane motor spirit suitable for commercial passenger fleets and lightweight portable generators.",
-    status: "soon",
-    icon: Fuel,
-    colorClass: "from-[#33b248] to-[#155c32]",
-    badgeText: "Coming Soon",
-  },
-  {
     id: "cng",
     name: "CNG",
     description: "Compressed Natural Gas for eco-friendly public transport systems and green logistics operations.",

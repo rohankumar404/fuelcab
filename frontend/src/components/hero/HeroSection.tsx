@@ -70,15 +70,16 @@ export default function HeroSection() {
 
             {/* Main Heading */}
             <h1 className="animate-fade-up-delay-1 text-4xl sm:text-5xl lg:text-[3.4rem] xl:text-6xl font-extrabold tracking-tight leading-[1.08] text-[#1a1a1a] mb-6">
-              Fueling Business,{" "}
+              India&apos;s Trusted{" "}
               <span className="text-[#155c32] relative">
-                Powering Progress
+                Diesel Delivery
                 {/* Underline accent */}
                 <span
                   className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full bg-[#33b248]/50"
                   aria-hidden="true"
                 />
-              </span>
+              </span>{" "}
+              Platform
             </h1>
 
             {/* Sub-paragraph */}

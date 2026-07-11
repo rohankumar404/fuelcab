@@ -14,39 +14,39 @@ class ProductPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin', 'operations', 'vendor']);
+        return $user->hasAnyRole(['super_admin', 'operations_team', 'vendor_admin', 'vendor_staff']);
     }
 
     public function view(User $user, Product $product): bool
     {
-        if ($user->hasAnyRole(['super-admin', 'operations'])) {
+        if ($user->hasAnyRole(['super_admin', 'operations_team'])) {
             return true;
         }
 
         // Vendors can only view their own products
-        return $user->hasRole('vendor') && $product->vendor_id === $user->vendor?->id;
+        return $user->hasAnyRole(['vendor_admin', 'vendor_staff']) && $product->vendor_id === $user->vendor_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin', 'operations', 'vendor']);
+        return $user->hasAnyRole(['super_admin', 'operations_team', 'vendor_admin', 'vendor_staff']);
     }
 
     public function update(User $user, Product $product): bool
     {
-        if ($user->hasAnyRole(['super-admin', 'operations'])) {
+        if ($user->hasAnyRole(['super_admin', 'operations_team'])) {
             return true;
         }
 
-        return $user->hasRole('vendor') && $product->vendor_id === $user->vendor?->id;
+        return $user->hasAnyRole(['vendor_admin', 'vendor_staff']) && $product->vendor_id === $user->vendor_id;
     }
 
     /**
-     * Only super-admin can update product ordering status.
+     * Only super-admin or operations can update product ordering status.
      */
     public function updateStatus(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin', 'operations']);
+        return $user->hasAnyRole(['super_admin', 'operations_team']);
     }
 
     /**
@@ -54,15 +54,15 @@ class ProductPolicy
      */
     public function syncInventory(User $user, Product $product): bool
     {
-        if ($user->hasAnyRole(['super-admin', 'operations'])) {
+        if ($user->hasAnyRole(['super_admin', 'operations_team'])) {
             return true;
         }
 
-        return $user->hasRole('vendor') && $product->vendor_id === $user->vendor?->id;
+        return $user->hasAnyRole(['vendor_admin', 'vendor_staff']) && $product->vendor_id === $user->vendor_id;
     }
 
     public function delete(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin']);
+        return $user->hasAnyRole(['super_admin']);
     }
 }

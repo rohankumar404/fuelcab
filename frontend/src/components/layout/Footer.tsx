@@ -37,8 +37,8 @@ const SECTIONS: FooterSection[] = [
     title: "Products",
     links: [
       { label: "Diesel (HSD)", href: "#products" },
-      { label: "Petrol (MS)", href: "#products" },
       { label: "CNG & LPG", href: "#products" },
+      { label: "DEF (AdBlue)", href: "#products" },
       { label: "Lubricants", href: "#products" },
     ],
   },

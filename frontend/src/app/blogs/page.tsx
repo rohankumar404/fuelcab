@@ -208,7 +208,7 @@ export default function BlogsPage() {
           {/* CTA */}
           <div className="mt-14 bg-gradient-to-r from-[#155c32] to-[#0d3a1f] rounded-2xl p-8 text-center">
             <h3 className="text-xl font-bold text-white mb-2">Ready to Order Fuel?</h3>
-            <p className="text-gray-300 text-sm mb-6">Get bulk diesel and petrol delivered to your site, today.</p>
+            <p className="text-gray-300 text-sm mb-6">Get bulk diesel and commercial fuel delivered to your site, today.</p>
             <Link
               href="/order"
               className="inline-flex items-center gap-2 h-11 px-7 rounded-xl bg-[#33b248] text-white font-semibold text-sm hover:bg-[#2a9a3d] transition hover:-translate-y-px"

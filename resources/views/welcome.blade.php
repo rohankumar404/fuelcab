@@ -313,42 +313,61 @@
                     </a>
                 </div>
 
-                <!-- Petrol Card -->
+                <!-- CNG Card -->
                 <div class="bg-white text-darkText rounded-[20px] p-8 shadow-sm hover:shadow-xl hover:border-secondaryGreen border border-borderLight flex flex-col justify-between h-[360px] hover:-translate-y-2 transition-all duration-300 group">
                     <div>
                         <div class="flex justify-between items-start mb-6">
                             <div class="bg-primaryGreen/10 p-3 rounded-xl">
-                                <i data-lucide="droplet" class="w-8 h-8 text-primaryGreen fill-primaryGreen"></i>
+                                <i data-lucide="wind" class="w-8 h-8 text-primaryGreen"></i>
                             </div>
+                            <span class="bg-borderLight text-[#555] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Coming Soon</span>
                         </div>
-                        <h3 class="text-xl font-bold mb-3">Petrol</h3>
+                        <h3 class="text-xl font-bold mb-3">CNG</h3>
                         <p class="text-sm text-bodyText leading-relaxed">
-                            Quality petrol for generators, equipment and light commercial vehicles.
+                            Compressed Natural Gas for clean, eco-friendly public transport and green logistics.
                         </p>
                     </div>
-                    <a href="/admin/login" class="border border-borderLight text-darkText hover:border-primaryGreen py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primaryGreen/5 transition">
-                        Order Now
-                        <i data-lucide="arrow-right" class="w-4 h-4 transition group-hover:translate-x-1"></i>
-                    </a>
+                    <button class="border border-borderLight text-[#aaa] py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed w-full text-center text-xs" disabled>
+                        Coming Soon
+                    </button>
                 </div>
 
-                <!-- HSD Card -->
+                <!-- LPG Card -->
                 <div class="bg-white text-darkText rounded-[20px] p-8 shadow-sm hover:shadow-xl hover:border-secondaryGreen border border-borderLight flex flex-col justify-between h-[360px] hover:-translate-y-2 transition-all duration-300 group">
                     <div>
                         <div class="flex justify-between items-start mb-6">
-                            <div class="bg-secondaryGreen/10 p-3 rounded-xl">
-                                <i data-lucide="droplets" class="w-8 h-8 text-secondaryGreen fill-secondaryGreen"></i>
+                            <div class="bg-primaryGreen/10 p-3 rounded-xl">
+                                <i data-lucide="flame" class="w-8 h-8 text-primaryGreen"></i>
                             </div>
+                            <span class="bg-borderLight text-[#555] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Coming Soon</span>
                         </div>
-                        <h3 class="text-xl font-bold mb-3">HSD</h3>
+                        <h3 class="text-xl font-bold mb-3">LPG</h3>
                         <p class="text-sm text-bodyText leading-relaxed">
-                            High Speed Diesel for heavy construction vehicles and turbines.
+                            Liquefied Petroleum Gas for high-efficiency industrial heating and commercial systems.
                         </p>
                     </div>
-                    <a href="/admin/login" class="border border-borderLight text-darkText hover:border-primaryGreen py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primaryGreen/5 transition">
-                        Order Now
-                        <i data-lucide="arrow-right" class="w-4 h-4 transition group-hover:translate-x-1"></i>
-                    </a>
+                    <button class="border border-borderLight text-[#aaa] py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed w-full text-center text-xs" disabled>
+                        Coming Soon
+                    </button>
+                </div>
+
+                <!-- DEF Card -->
+                <div class="bg-white text-darkText rounded-[20px] p-8 shadow-sm hover:shadow-xl hover:border-secondaryGreen border border-borderLight flex flex-col justify-between h-[360px] hover:-translate-y-2 transition-all duration-300 group">
+                    <div>
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="bg-primaryGreen/10 p-3 rounded-xl">
+                                <i data-lucide="shield-check" class="w-8 h-8 text-primaryGreen"></i>
+                            </div>
+                            <span class="bg-borderLight text-[#555] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Coming Soon</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">DEF (AdBlue)</h3>
+                        <p class="text-sm text-bodyText leading-relaxed">
+                            Premium Diesel Exhaust Fluid maintaining strict emission compliance in modern SCR engines.
+                        </p>
+                    </div>
+                    <button class="border border-borderLight text-[#aaa] py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed w-full text-center text-xs" disabled>
+                        Coming Soon
+                    </button>
                 </div>
 
                 <!-- Lubricants Card -->
@@ -358,35 +377,16 @@
                             <div class="bg-primaryGreen/10 p-3 rounded-xl">
                                 <i data-lucide="cog" class="w-8 h-8 text-primaryGreen"></i>
                             </div>
+                            <span class="bg-borderLight text-[#555] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Coming Soon</span>
                         </div>
                         <h3 class="text-xl font-bold mb-3">Lubricants</h3>
                         <p class="text-sm text-bodyText leading-relaxed">
-                            Premium oils & lubricants to keep your engines running smoothly.
+                            Premium oils and lubricants to protect and keep your industrial engines running smoothly.
                         </p>
                     </div>
-                    <a href="/admin/login" class="border border-borderLight text-darkText hover:border-primaryGreen py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primaryGreen/5 transition">
-                        Order Now
-                        <i data-lucide="arrow-right" class="w-4 h-4 transition group-hover:translate-x-1"></i>
-                    </a>
-                </div>
-
-                <!-- Others Card -->
-                <div class="bg-white text-darkText rounded-[20px] p-8 shadow-sm hover:shadow-xl hover:border-secondaryGreen border border-borderLight flex flex-col justify-between h-[360px] hover:-translate-y-2 transition-all duration-300 group">
-                    <div>
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="bg-secondaryGreen/10 p-3 rounded-xl">
-                                <i data-lucide="sparkles" class="w-8 h-8 text-secondaryGreen"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Others</h3>
-                        <p class="text-sm text-bodyText leading-relaxed">
-                            Explore our range of other fuel products tailored for your specific needs.
-                        </p>
-                    </div>
-                    <a href="/admin/login" class="border border-borderLight text-darkText hover:border-primaryGreen py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primaryGreen/5 transition">
-                        Order Now
-                        <i data-lucide="arrow-right" class="w-4 h-4 transition group-hover:translate-x-1"></i>
-                    </a>
+                    <button class="border border-borderLight text-[#aaa] py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed w-full text-center text-xs" disabled>
+                        Coming Soon
+                    </button>
                 </div>
 
             </div>
@@ -703,11 +703,11 @@
             <div class="text-left">
                 <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-6">Products</h4>
                 <ul class="space-y-3 text-sm">
-                    <li><a href="#products" class="hover:text-white transition">Diesel</a></li>
-                    <li><a href="#products" class="hover:text-white transition">Petrol</a></li>
-                    <li><a href="#products" class="hover:text-white transition">HSD</a></li>
-                    <li><a href="#products" class="hover:text-white transition">Lubricants</a></li>
-                    <li><a href="#products" class="hover:text-white transition">Others</a></li>
+                    <li><a href="#products" class="hover:text-white transition">Diesel (HSD)</a></li>
+                    <li><a href="#products" class="hover:text-white transition">CNG (Soon)</a></li>
+                    <li><a href="#products" class="hover:text-white transition">LPG (Soon)</a></li>
+                    <li><a href="#products" class="hover:text-white transition">DEF / AdBlue (Soon)</a></li>
+                    <li><a href="#products" class="hover:text-white transition">Lubricants (Soon)</a></li>
                 </ul>
             </div>
 

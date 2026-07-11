@@ -12,8 +12,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "FuelCab — B2B Fuel Delivery Platform",
   description:
-    "FuelCab is a multi-vendor B2B fuel delivery platform. Order Diesel, Petrol, HSD and more in minimum 100 liters delivered to your business site, fast and reliably.",
-  keywords: "fuel delivery, B2B diesel, bulk fuel, HSD delivery, petrol supply",
+    "FuelCab is India's trusted on-demand diesel & commercial fuel delivery platform. Order Diesel, HSD, AdBlue, and lubricants delivered directly to your business site.",
+  keywords: "fuel delivery, B2B diesel, bulk fuel, HSD delivery, AdBlue, lubricants",
 };
 
 export default function RootLayout({

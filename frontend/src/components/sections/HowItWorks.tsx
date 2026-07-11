@@ -24,7 +24,7 @@ const STEPS: Step[] = [
   {
     number: 1,
     title: "Select Fuel",
-    description: "Choose your required fuel type (Diesel HSD, Petrol, or specialized lubricants) from our premium verified selection.",
+    description: "Choose your required fuel type (Diesel HSD, AdBlue/DEF, or specialized lubricants) from our premium verified selection.",
     icon: Flame,
     color: "bg-[#155c32]/10 text-[#155c32] border-[#155c32]/25",
   },

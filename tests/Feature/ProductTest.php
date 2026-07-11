@@ -54,7 +54,7 @@ class ProductTest extends TestCase
             'slug' => 'ultra-diesel',
             'sku' => 'DSL-ULTRA-01',
             'price_per_unit' => 88.50,
-            'unit_of_measure' => 'liter',
+            'unit_of_measure' => 'litres',
             'is_active' => true,
             'status' => 'active',
         ]);
@@ -118,5 +118,46 @@ class ProductTest extends TestCase
             'product_id' => $this->product->id,
             'quantity_available' => 15000.50,
         ]);
+    }
+
+    /**
+     * Test direct product catalog scopes, enum casting, and API responses.
+     */
+    public function test_direct_product_catalog_properties(): void
+    {
+        // Set first-party vendor flag
+        $this->vendor->update(['is_first_party' => true]);
+
+        // Update product catalog details
+        $this->product->update([
+            'short_description' => 'Test short description',
+            'full_description' => 'Test full description',
+            'is_featured' => true,
+            'ordering_enabled' => true,
+            'display_order' => 1,
+            'unit_of_measure' => \App\Enums\UnitOfMeasure::Litres,
+        ]);
+
+        // Check enum casting
+        $this->assertEquals(\App\Enums\UnitOfMeasure::Litres, $this->product->fresh()->unit_of_measure);
+
+        // Check query scopes
+        $this->assertTrue(Product::direct()->where('id', $this->product->id)->exists());
+        $this->assertTrue(Product::featured()->where('id', $this->product->id)->exists());
+
+        // Check API response fields
+        $response = $this->getJson("/api/v1/products/{$this->product->id}");
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'id' => $this->product->id,
+                    'short_description' => 'Test short description',
+                    'full_description' => 'Test full description',
+                    'is_featured' => true,
+                    'ordering_enabled' => true,
+                    'unit_of_measure' => 'litres',
+                    'display_order' => 1,
+                ]
+            ]);
     }
 }

@@ -23,6 +23,7 @@ class ProductRepository
                 $q->where('name', 'like', "%{$filters['search']}%")
                   ->orWhere('sku', 'like', "%{$filters['search']}%");
             }))
+            ->orderBy('display_order', 'asc')
             ->latest();
 
         return $query->paginate($perPage);
@@ -36,7 +37,7 @@ class ProductRepository
         return Product::with(['category', 'inventory'])
             ->where('status', 'active')
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('display_order', 'asc')
             ->get();
     }
 

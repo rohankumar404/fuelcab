@@ -116,7 +116,7 @@ class CheckoutModuleTest extends TestCase
             'slug'            => 'premium-diesel',
             'sku'             => 'DSL-PRM-001',
             'price_per_unit'  => 90.00,
-            'unit_of_measure' => 'liter',
+            'unit_of_measure' => 'litres',
             'is_active'       => true,
             'status'          => 'active',
         ]);

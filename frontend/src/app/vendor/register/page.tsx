@@ -14,7 +14,7 @@ import {
 } from "@/lib/auth-validation";
 import { sendOtp, verifyOtp } from "@/lib/authkey";
 
-const FUEL_TYPES = ["Diesel (HSD)", "Petrol (MS)", "CNG", "LPG", "Lubricants", "AdBlue"];
+const FUEL_TYPES = ["Diesel (HSD)", "CNG", "LPG", "Lubricants", "AdBlue"];
 const STATES = [
   "Delhi", "Uttar Pradesh", "Maharashtra", "Haryana", "Rajasthan",
   "Punjab", "Gujarat", "Karnataka", "Tamil Nadu", "Telangana", "Madhya Pradesh",
