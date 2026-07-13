@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Cart\Actions;
 
+use App\Enums\SalesChannel;
 use App\Modules\Cart\DTOs\AddCartItemDTO;
 use App\Modules\Cart\Events\CartItemAdded;
 use App\Modules\Cart\Models\Cart;
@@ -13,36 +14,39 @@ use Illuminate\Support\Facades\DB;
 
 class AddItemToCartAction
 {
-    private const MIN_QUANTITY = 100.0;
-
     public function execute(Cart $cart, AddCartItemDTO $dto): CartItem
     {
         return DB::transaction(function () use ($cart, $dto) {
-            $product = Product::findOrFail($dto->productId);
+            $product = Product::with('vendor')->findOrFail($dto->productId);
 
-            // Validate product is orderable
+            // ── Guard: product must be orderable ──────────────────────────
             if (! $product->isOrderingEnabled()) {
                 throw new \DomainException("Product '{$product->name}' is not available for ordering.");
             }
 
-            // Enforce minimum quantity
-            if ($dto->quantity < self::MIN_QUANTITY) {
-                throw new \DomainException("Minimum order quantity is " . self::MIN_QUANTITY . " litres.");
-            }
+            // ── Resolve unit snapshot ─────────────────────────────────────
+            $unitSnapshot = $product->unit_of_measure instanceof \App\Enums\UnitOfMeasure
+                ? $product->unit_of_measure->value
+                : ($product->unit_of_measure ?? 'units');
 
-            // Enforce single-vendor cart constraint
-            if ($cart->vendor_id && $cart->vendor_id !== $product->vendor_id) {
+            // ── Guard: min order quantity ─────────────────────────────────
+            $minQty = $product->min_order_quantity ?? 1.0;
+            if ($dto->quantity < $minQty) {
                 throw new \DomainException(
-                    "Cart is locked to a different vendor. Clear the cart before adding products from a new vendor."
+                    "Minimum order quantity for '{$product->name}' is {$minQty} {$unitSnapshot}."
                 );
             }
 
-            // Lock cart to this vendor
-            if (! $cart->vendor_id) {
-                $cart->update(['vendor_id' => $product->vendor_id]);
-            }
+            // ── Resolve sales channel from vendor first-party flag ─────────
+            // Direct: FuelCab-owned vendor (is_first_party = true)
+            // Marketplace: third-party approved vendor
+            $channel = ($product->vendor && $product->vendor->is_first_party)
+                ? SalesChannel::Direct
+                : SalesChannel::Marketplace;
 
-            // Add or increment item
+            // ── Add or increment item ─────────────────────────────────────
+            // NOTE: Cart is no longer single-vendor locked.
+            // Multi-vendor carts are valid; grouping happens at checkout time.
             $existing = CartItem::where('cart_id', $cart->id)
                 ->where('product_id', $dto->productId)
                 ->whereNull('deleted_at')
@@ -53,11 +57,15 @@ class AddItemToCartAction
                 $item = $existing->fresh();
             } else {
                 $item = CartItem::create([
-                    'cart_id'        => $cart->id,
-                    'product_id'     => $dto->productId,
-                    'quantity'       => $dto->quantity,
-                    'price_snapshot' => $product->price_per_unit,
-                    'unit_of_measure'=> $product->unit_of_measure,
+                    'cart_id'               => $cart->id,
+                    'product_id'            => $dto->productId,
+                    'quantity'              => $dto->quantity,
+                    'price_snapshot'        => (float) $product->price_per_unit,
+                    'unit_of_measure'       => $unitSnapshot,
+                    // ─── Channel context ──────────────────────────────────
+                    'sales_channel'         => $channel->value,
+                    'vendor_id'             => $product->vendor_id,
+                    'product_name_snapshot' => $product->name,
                 ]);
             }
 

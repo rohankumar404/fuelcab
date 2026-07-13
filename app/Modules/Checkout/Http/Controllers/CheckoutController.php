@@ -124,16 +124,23 @@ class CheckoutController extends Controller
     public function pay(CheckoutPaymentRequest $request): JsonResponse
     {
         try {
-            $order = $this->checkoutService->pay(
+            $result = $this->checkoutService->pay(
                 (string) $request->user()->id,
                 $request->validated('checkout_id'),
                 $request->validated('payment_method')
             );
 
+            $result->orders->each(fn ($order) => $order->load(['customer', 'vendor', 'items']));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Payment processed and order placed successfully.',
-                'data'    => new OrderResource($order->load(['customer', 'vendor', 'items'])),
+                'data'    => [
+                    'payment_id' => $result->payment->id,
+                    'orders'     => OrderResource::collection($result->orders),
+                    'id'         => $result->primaryOrder()->id,
+                    'status'     => $result->primaryOrder()->status->value,
+                ],
             ]);
         } catch (\DomainException $e) {
             return response()->json([

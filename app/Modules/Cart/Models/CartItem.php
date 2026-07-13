@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Cart\Models;
 
+use App\Enums\SalesChannel;
+use App\Enums\UnitOfMeasure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\HasUuid;
 use App\Modules\Fuel\Models\Product;
+use App\Modules\Vendor\Models\Vendor;
 
 class CartItem extends Model
 {
@@ -22,6 +25,10 @@ class CartItem extends Model
         'quantity',
         'price_snapshot',
         'unit_of_measure',
+        // ─── Channel context ───────────────────────────────────────────────
+        'sales_channel',
+        'vendor_id',
+        'product_name_snapshot',
         'created_by',
         'updated_by',
     ];
@@ -29,8 +36,9 @@ class CartItem extends Model
     protected function casts(): array
     {
         return [
-            'quantity'       => 'float',
-            'price_snapshot' => 'float',
+            'quantity'        => 'float',
+            'price_snapshot'  => 'float',
+            'sales_channel'   => SalesChannel::class,
         ];
     }
 
@@ -44,6 +52,11 @@ class CartItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class);
     }
 
     // ─── Business Logic ───────────────────────────────────────────────────
@@ -62,5 +75,21 @@ class CartItem extends Model
     public function isPriceStale(): bool
     {
         return $this->product && (float) $this->product->price_per_unit !== $this->price_snapshot;
+    }
+
+    /**
+     * Whether this item belongs to the FuelCab Direct channel.
+     */
+    public function isDirectChannel(): bool
+    {
+        return $this->sales_channel === SalesChannel::Direct;
+    }
+
+    /**
+     * Whether this item belongs to the Marketplace channel.
+     */
+    public function isMarketplaceChannel(): bool
+    {
+        return $this->sales_channel === SalesChannel::Marketplace;
     }
 }

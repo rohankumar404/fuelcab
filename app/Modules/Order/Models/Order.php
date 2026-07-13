@@ -7,6 +7,7 @@ namespace App\Modules\Order\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\SalesChannel;
 use App\Traits\HasUuid;
 use App\Traits\HasTenantScope;
 use App\Traits\Auditable;
@@ -25,14 +26,27 @@ class Order extends Model
     protected function casts(): array
     {
         return [
-            'status' => \App\Modules\Order\Enums\OrderStatus::class,
+            'status'                => \App\Modules\Order\Enums\OrderStatus::class,
+            'channel'               => SalesChannel::class,
             'scheduled_delivery_at' => 'datetime',
-            'delivered_at' => 'datetime',
-            'subtotal_amount' => 'float',
-            'delivery_fee' => 'float',
-            'tax_amount' => 'float',
-            'total_amount' => 'float',
+            'delivered_at'          => 'datetime',
+            'subtotal_amount'       => 'float',
+            'delivery_fee'          => 'float',
+            'tax_amount'            => 'float',
+            'total_amount'          => 'float',
+            'commission_amount'     => 'float',
+            'commission_rate'       => 'float',
         ];
+    }
+
+    public function isDirectChannel(): bool
+    {
+        return $this->channel === SalesChannel::Direct;
+    }
+
+    public function isMarketplaceChannel(): bool
+    {
+        return $this->channel === SalesChannel::Marketplace;
     }
 
     public function customer(): BelongsTo

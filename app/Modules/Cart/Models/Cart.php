@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Cart\Models;
 
+use App\Enums\SalesChannel;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -72,5 +74,50 @@ class Cart extends Model
     public function isEmpty(): bool
     {
         return $this->items->isEmpty();
+    }
+
+    /**
+     * Group cart items by (sales_channel + vendor_id) for multi-order checkout.
+     *
+     * Returns an array of arrays, each representing one fulfillment group:
+     * [
+     *   ['sales_channel' => 'direct',      'vendor_id' => 'uuid-A', 'items' => Collection],
+     *   ['sales_channel' => 'marketplace', 'vendor_id' => 'uuid-B', 'items' => Collection],
+     *   ['sales_channel' => 'marketplace', 'vendor_id' => 'uuid-C', 'items' => Collection],
+     * ]
+     *
+     * @return array<int, array{sales_channel: string, vendor_id: string|null, items: Collection}>
+     */
+    public function groupByFulfillment(): array
+    {
+        $groups = [];
+
+        foreach ($this->items as $item) {
+            $channel  = $item->sales_channel instanceof SalesChannel
+                ? $item->sales_channel->value
+                : ($item->sales_channel ?? SalesChannel::Direct->value);
+            $vendorId = $item->vendor_id;
+            $key      = $channel . '|' . ($vendorId ?? 'null');
+
+            if (! isset($groups[$key])) {
+                $groups[$key] = [
+                    'sales_channel' => $channel,
+                    'vendor_id'     => $vendorId,
+                    'items'         => new Collection(),
+                ];
+            }
+
+            $groups[$key]['items']->push($item);
+        }
+
+        return array_values($groups);
+    }
+
+    /**
+     * Whether this cart contains items from more than one fulfillment context.
+     */
+    public function hasMultipleVendors(): bool
+    {
+        return count($this->groupByFulfillment()) > 1;
     }
 }

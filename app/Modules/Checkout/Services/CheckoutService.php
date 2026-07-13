@@ -9,16 +9,16 @@ use App\Modules\Checkout\Actions\UpdateCheckoutAddressAction;
 use App\Modules\Checkout\Actions\UpdateCheckoutScheduleAction;
 use App\Modules\Checkout\Actions\CalculateCheckoutSummaryAction;
 use App\Modules\Checkout\Actions\ProcessCheckoutPaymentAction;
+use App\Modules\Checkout\DTOs\CheckoutResultDTO;
 use App\Modules\Checkout\Models\Checkout;
-use App\Modules\Order\Models\Order;
 
 class CheckoutService
 {
     public function __construct(
-        private readonly InitializeCheckoutAction   $initializeCheckout,
+        private readonly InitializeCheckoutAction        $initializeCheckout,
         private readonly UpdateCheckoutAddressAction     $updateAddress,
         private readonly UpdateCheckoutScheduleAction    $updateSchedule,
-        private readonly CalculateCheckoutSummaryAction $calculateSummary,
+        private readonly CalculateCheckoutSummaryAction  $calculateSummary,
         private readonly ProcessCheckoutPaymentAction    $processPayment,
     ) {}
 
@@ -42,7 +42,15 @@ class CheckoutService
         return $this->calculateSummary->execute($userId, $checkoutId);
     }
 
-    public function pay(string $userId, string $checkoutId, string $paymentMethod): Order
+    /**
+     * Process payment and create all fulfillment orders.
+     *
+     * Returns a CheckoutResultDTO containing:
+     *   - $result->orders   : Collection of all created Orders (one per fulfillment group)
+     *   - $result->payment  : The parent Payment record
+     *   - $result->primaryOrder() : First order (for backward-compatible callers)
+     */
+    public function pay(string $userId, string $checkoutId, string $paymentMethod): CheckoutResultDTO
     {
         return $this->processPayment->execute($userId, $checkoutId, $paymentMethod);
     }

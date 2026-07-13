@@ -19,6 +19,8 @@ class InitializeCheckoutAction
                 throw new \DomainException("Cannot initialize checkout with an empty cart.");
             }
 
+            $vendorId = $cart->vendor_id ?? $cart->items->first()?->vendor_id;
+
             // Find or create a draft checkout session for this cart
             $checkout = Checkout::updateOrCreate(
                 [
@@ -27,7 +29,7 @@ class InitializeCheckoutAction
                     'status'  => 'draft',
                 ],
                 [
-                    'vendor_id'       => $cart->vendor_id,
+                    'vendor_id'       => $vendorId,
                     'subtotal_amount' => $cart->getTotal(),
                     'total_amount'    => $cart->getTotal(),
                 ]

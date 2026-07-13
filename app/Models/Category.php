@@ -22,6 +22,17 @@ class Category extends Model
         'parent_id',
         'type',
         'is_coming_soon',
+        'image_path',
+        'display_order',
+        'is_active',
+        'seo_title',
+        'seo_description',
+    ];
+
+    protected $casts = [
+        'is_coming_soon' => 'boolean',
+        'is_active'      => 'boolean',
+        'display_order'  => 'integer',
     ];
 
     public function parent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -37,5 +48,10 @@ class Category extends Model
     public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(\App\Modules\Fuel\Models\Product::class);
+    }
+
+    public function marketplaceProducts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Modules\Fuel\Models\MarketplaceProduct::class);
     }
 }
