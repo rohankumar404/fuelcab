@@ -10,8 +10,11 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\HasUuid;
 use Laravel\Sanctum\HasApiTokens;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+use App\Enums\UserRole;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles, HasUuid;
@@ -75,5 +78,40 @@ class User extends Authenticatable
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(\App\Models\Company::class);
+    }
+
+    /**
+     * Authorize panel access dynamically based on roles and approval state.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        $panelId = $panel->getId();
+
+        if ($panelId === 'super-admin') {
+            return $this->hasRole(UserRole::SuperAdmin->value);
+        }
+
+        if ($panelId === 'operations') {
+            return $this->hasRole(UserRole::OperationsTeam->value);
+        }
+
+        if ($panelId === 'vendor') {
+            if (! $this->hasAnyRole([
+                UserRole::VendorAdmin->value,
+                UserRole::VendorStaff->value,
+            ])) {
+                return false;
+            }
+
+            if (! $this->vendor_id) {
+                return false;
+            }
+
+            // Load vendor relation to check approval status
+            $vendor = $this->vendor;
+            return $vendor && $vendor->status === \App\Modules\Vendor\Enums\VendorStatus::Approved;
+        }
+
+        return false;
     }
 }

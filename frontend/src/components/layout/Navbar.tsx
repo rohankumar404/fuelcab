@@ -71,6 +71,15 @@ export default function Navbar() {
         {/* ── Desktop Auth Buttons ── */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
           <Link
+            href="/vendor/register"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-10 px-4 rounded-xl border-[#33b248]/50 text-[#33b248] font-bold text-sm hover:border-[#155c32] hover:text-[#155c32] hover:bg-[#33b248]/5 transition-all duration-200"
+            )}
+          >
+            Become a Vendor
+          </Link>
+          <Link
             href="/login"
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
@@ -122,6 +131,16 @@ export default function Navbar() {
             ))}
           </nav>
           <div className="flex flex-col gap-2 px-4 py-4 border-t border-[#e7ece8]">
+            <Link
+              href="/vendor/register"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "w-full h-11 rounded-xl border-[#33b248] text-[#33b248] font-bold flex items-center justify-center"
+              )}
+            >
+              Become a Vendor
+            </Link>
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}

@@ -20,6 +20,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('vendor')->group(function () {
         Route::get('profile', [VendorController::class, 'profile']);
         Route::put('profile', [VendorController::class, 'updateProfile']);
+        Route::post('applications', [VendorController::class, 'submitApplication']);
 
         // Documents (scoped to own vendor only)
         Route::get('documents',               [VendorDocumentController::class, 'index']);

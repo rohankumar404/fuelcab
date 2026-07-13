@@ -50,6 +50,16 @@ class Vendor extends Model
         return $this->hasMany(VendorDocument::class);
     }
 
+    public function marketplaceProducts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Modules\Fuel\Models\MarketplaceProduct::class,
+            'vendor_marketplace_products',
+            'vendor_id',
+            'marketplace_product_id'
+        )->withTimestamps();
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
