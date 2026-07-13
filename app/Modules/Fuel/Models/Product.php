@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Traits\HasTenantScope;
 use App\Traits\HasUuid;
 use App\Traits\Auditable;
 use App\Models\Category;
@@ -15,7 +16,7 @@ use App\Modules\Vendor\Models\Vendor;
 
 class Product extends Model
 {
-    use HasUuid, Auditable, SoftDeletes;
+    use HasUuid, Auditable, SoftDeletes, HasTenantScope;
 
     protected $table = 'products';
 

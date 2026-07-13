@@ -49,6 +49,14 @@ class AppServiceProvider extends ServiceProvider
             \App\Modules\Fuel\Models\MarketplaceProduct::class,
             \App\Modules\Fuel\Policies\MarketplaceProductPolicy::class
         );
+        \Illuminate\Support\Facades\Gate::policy(
+            \App\Modules\Vendor\Models\Vendor::class,
+            \App\Modules\Vendor\Policies\VendorPolicy::class
+        );
+        \Illuminate\Support\Facades\Gate::policy(
+            \App\Modules\Vendor\Models\VendorDocument::class,
+            \App\Modules\Vendor\Policies\VendorDocumentPolicy::class
+        );
 
         // Register custom notifications database channel
         $this->app->make(\Illuminate\Notifications\ChannelManager::class)->extend('database', function ($app) {
