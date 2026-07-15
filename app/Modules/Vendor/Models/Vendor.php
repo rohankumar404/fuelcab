@@ -65,6 +65,11 @@ class Vendor extends Model
         return $this->hasMany(User::class);
     }
 
+    public function listings(): HasMany
+    {
+        return $this->hasMany(VendorListing::class);
+    }
+
     public function scopeApproved($query)
     {
         return $query->where('status', VendorStatus::Approved);
