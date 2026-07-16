@@ -8,12 +8,13 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "About Us", href: "#about" },
-  { label: "Products", href: "#products" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Industries", href: "#industries" },
-  { label: "Partner With Us", href: "#partner" },
-  { label: "FAQs", href: "#faqs" },
+  { label: "About Us", href: "/#about" },
+  { label: "Products", href: "/#products" },
+  { label: "Industries", href: "/#industries" },
+  { label: "Marketplace", href: "/marketplace" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Partner With Us", href: "/#partner" },
+  { label: "FAQs", href: "/#faqs" },
 ];
 
 export default function Navbar() {
