@@ -16,14 +16,14 @@ class UpdateCartItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => 'required|numeric|min:100',
+            'quantity' => 'required|numeric|gt:0',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'quantity.min' => 'Minimum order quantity is 100 litres.',
+            'quantity.gt' => 'Quantity must be greater than zero.',
         ];
     }
 }

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\Cart\Models;
 
 use App\Enums\SalesChannel;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HasUuid;
 use App\Models\User;
 use App\Modules\Vendor\Models\Vendor;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cart extends Model
 {
@@ -53,19 +53,19 @@ class Cart extends Model
     // ─── Business Logic ───────────────────────────────────────────────────
 
     /**
-     * Whether the cart is locked to a specific vendor.
-     */
-    public function isLockedToVendor(): bool
-    {
-        return $this->vendor_id !== null;
-    }
-
-    /**
      * Total price using snapshotted prices.
      */
     public function getTotal(): float
     {
-        return (float) $this->items->sum(fn ($item) => $item->quantity * $item->price_snapshot);
+        return (float) round($this->items->sum(fn ($item) => $item->quantity * $item->price_snapshot), 2);
+    }
+
+    /**
+     * Total item count.
+     */
+    public function getItemCount(): int
+    {
+        return $this->items->count();
     }
 
     /**
@@ -79,14 +79,7 @@ class Cart extends Model
     /**
      * Group cart items by (sales_channel + vendor_id) for multi-order checkout.
      *
-     * Returns an array of arrays, each representing one fulfillment group:
-     * [
-     *   ['sales_channel' => 'direct',      'vendor_id' => 'uuid-A', 'items' => Collection],
-     *   ['sales_channel' => 'marketplace', 'vendor_id' => 'uuid-B', 'items' => Collection],
-     *   ['sales_channel' => 'marketplace', 'vendor_id' => 'uuid-C', 'items' => Collection],
-     * ]
-     *
-     * @return array<int, array{sales_channel: string, vendor_id: string|null, items: Collection}>
+     * @return array<int, array{sales_channel: string, vendor_id: string|null, seller_name: string, is_first_party: bool, items: Collection, subtotal: float}>
      */
     public function groupByFulfillment(): array
     {
@@ -96,18 +89,26 @@ class Cart extends Model
             $channel  = $item->sales_channel instanceof SalesChannel
                 ? $item->sales_channel->value
                 : ($item->sales_channel ?? SalesChannel::Direct->value);
+
             $vendorId = $item->vendor_id;
-            $key      = $channel . '|' . ($vendorId ?? 'null');
+            $key      = $channel . '|' . ($vendorId ?? 'direct');
 
             if (! isset($groups[$key])) {
+                $sellerName   = $item->getSellerName();
+                $isFirstParty = $channel === 'direct' || ($item->vendor && $item->vendor->is_first_party);
+
                 $groups[$key] = [
-                    'sales_channel' => $channel,
-                    'vendor_id'     => $vendorId,
-                    'items'         => new Collection(),
+                    'sales_channel'  => $channel,
+                    'vendor_id'      => $vendorId,
+                    'seller_name'    => $sellerName,
+                    'is_first_party' => $isFirstParty,
+                    'items'          => new Collection(),
+                    'subtotal'       => 0.0,
                 ];
             }
 
             $groups[$key]['items']->push($item);
+            $groups[$key]['subtotal'] = round($groups[$key]['subtotal'] + $item->getLineTotal(), 2);
         }
 
         return array_values($groups);

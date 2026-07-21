@@ -34,11 +34,15 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { VendorListing } from "@/lib/marketplace-data";
 
+import { useCartStore } from "@/store/useCartStore";
+
 interface Props {
   listing: VendorListing;
 }
 
 export default function ListingDetailClient({ listing }: Props) {
+  const { addItem } = useCartStore();
+
   // Gallery active image state
   const [activeImgIndex, setActiveImgIndex] = useState(0);
 
@@ -46,6 +50,7 @@ export default function ListingDetailClient({ listing }: Props) {
   const [quantity, setQuantity] = useState(listing.min_order_quantity);
   const [addedToCart, setAddedToCart] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
+  const [cartError, setCartError] = useState<string | null>(null);
 
   // RFQ Drawer Modal state for REQUEST_QUOTE mode
   const [rfqModalOpen, setRfqModalOpen] = useState(false);
@@ -70,13 +75,20 @@ export default function ListingDetailClient({ listing }: Props) {
   const grandTotal = subtotal + taxAmount;
 
   // Handle Add to Cart in DIRECT_ORDER mode
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     setCartLoading(true);
-    setTimeout(() => {
-      setCartLoading(false);
+    setCartError(null);
+    const res = await addItem({
+      vendorListingId: listing.id,
+      quantity,
+    });
+    setCartLoading(false);
+    if (res.success) {
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 4000);
-    }, 800);
+    } else {
+      setCartError(res.message || "Failed to add item to cart.");
+    }
   };
 
   // Handle RFQ Form Submission in REQUEST_QUOTE mode
@@ -408,6 +420,12 @@ export default function ListingDetailClient({ listing }: Props) {
 
                   {/* Direct Order Actions */}
                   <div className="space-y-2.5">
+                    {cartError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium flex items-center justify-between">
+                        <span>{cartError}</span>
+                        <button onClick={() => setCartError(null)} className="text-red-500 hover:text-red-700 font-bold text-[10px]">DISMISS</button>
+                      </div>
+                    )}
                     {addedToCart ? (
                       <div className="p-3.5 bg-[#f4f8f5] border border-[#33b248] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#155c32]">
                         <CheckCircle2 className="w-4 h-4 text-[#33b248]" />

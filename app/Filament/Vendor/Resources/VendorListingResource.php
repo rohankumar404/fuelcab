@@ -23,9 +23,9 @@ class VendorListingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationGroup = 'My Listings';
+    protected static ?string $navigationGroup = 'Listings';
 
-    protected static ?string $navigationLabel = 'My Listings';
+    protected static ?string $navigationLabel = 'Listings';
 
     protected static ?int $navigationSort = 1;
 

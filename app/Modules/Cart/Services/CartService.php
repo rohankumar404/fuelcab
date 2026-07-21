@@ -28,20 +28,44 @@ class CartService
     ) {}
 
     /**
-     * Get or create cart for authenticated user.
+     * Resolve or create cart for user or guest context.
      */
-    public function getCart(User $user): Cart
+    public function resolveCart(?User $user, ?string $guestToken = null): Cart
     {
-        return $this->repository->findOrCreateForUser($user);
+        if ($user) {
+            return $this->repository->findOrCreateForUser($user);
+        }
+
+        if ($guestToken && trim($guestToken) !== '') {
+            return $this->repository->findOrCreateForGuest($guestToken);
+        }
+
+        throw new \DomainException('Authentication or guest token is required to access cart.');
     }
 
     /**
-     * Add a product to the user's cart.
+     * Get cart for user.
+     */
+    public function getCart(User $user): Cart
+    {
+        return $this->resolveCart($user);
+    }
+
+    /**
+     * Add item to cart for user or guest context.
+     */
+    public function addItemForContext(?User $user, ?string $guestToken, AddCartItemDTO $dto): CartItem
+    {
+        $cart = $this->resolveCart($user, $guestToken);
+        return $this->addItem->execute($cart, $dto);
+    }
+
+    /**
+     * Add a product to user cart.
      */
     public function addItem(User $user, AddCartItemDTO $dto): CartItem
     {
-        $cart = $this->repository->findOrCreateForUser($user);
-        return $this->addItem->execute($cart, $dto);
+        return $this->addItemForContext($user, null, $dto);
     }
 
     /**

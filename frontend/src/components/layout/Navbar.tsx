@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Droplet, Store } from "lucide-react";
+import { Menu, X, Droplet, Store, ShoppingCart } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCartStore } from "@/store/useCartStore";
 
 interface NavLink {
   label: string;
@@ -39,6 +40,13 @@ export default function Navbar() {
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   const isMarketplaceActive = pathname.startsWith("/marketplace");
+
+  const { cart, fetchCart } = useCartStore();
+  const itemCount = cart?.item_count || 0;
+
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
 
   return (
     <header
@@ -118,8 +126,20 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* ── Desktop Auth Buttons ── */}
+        {/* ── Desktop Auth & Cart Buttons ── */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          <Link
+            href="/cart"
+            className="relative p-2.5 rounded-xl text-gray-700 hover:text-[#155c32] hover:bg-[#f4f8f5] transition-colors"
+            aria-label="View Shopping Cart"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#155c32] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs animate-in zoom-in">
+                {itemCount}
+              </span>
+            )}
+          </Link>
           <Link
             href="/vendor/register"
             className={cn(

@@ -44,26 +44,24 @@ class VendorPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make('Dashboard')
                     ->icon('heroicon-o-home'),
+                NavigationGroup::make('Listings')
+                    ->icon('heroicon-o-tag'),
+                NavigationGroup::make('Inventory')
+                    ->icon('heroicon-o-archive-box'),
                 NavigationGroup::make('Orders')
                     ->icon('heroicon-o-clipboard-document-list'),
-                NavigationGroup::make('Drivers')
-                    ->icon('heroicon-o-user-group')
-                    ->collapsed(),
-                NavigationGroup::make('Fleet')
-                    ->icon('heroicon-o-truck')
-                    ->collapsed(),
-                NavigationGroup::make('Fuel & Inventory')
-                    ->icon('heroicon-o-beaker')
-                    ->collapsed(),
-                NavigationGroup::make('Staff')
-                    ->icon('heroicon-o-users')
-                    ->collapsed(),
-                NavigationGroup::make('Earnings')
-                    ->icon('heroicon-o-banknotes')
-                    ->collapsed(),
+                NavigationGroup::make('Quote Requests')
+                    ->icon('heroicon-o-chat-bubble-left-ellipsis'),
                 NavigationGroup::make('Documents')
-                    ->icon('heroicon-o-document-text')
-                    ->collapsed(),
+                    ->icon('heroicon-o-document-text'),
+                NavigationGroup::make('Settlements')
+                    ->icon('heroicon-o-banknotes'),
+                NavigationGroup::make('Analytics')
+                    ->icon('heroicon-o-chart-bar'),
+                NavigationGroup::make('Company Profile')
+                    ->icon('heroicon-o-building-office-2'),
+                NavigationGroup::make('Settings')
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->discoverResources(
                 in: app_path('Filament/Vendor/Resources'),
@@ -81,7 +79,7 @@ class VendorPanelProvider extends PanelProvider
                 for: 'App\\Filament\\Vendor\\Widgets'
             )
             ->widgets([
-                Widgets\AccountWidget::class,
+                \App\Filament\Vendor\Widgets\VendorStatsWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

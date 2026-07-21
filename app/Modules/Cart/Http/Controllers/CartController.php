@@ -21,37 +21,59 @@ class CartController extends Controller
         private readonly CartService $cartService,
     ) {}
 
+    private function getGuestToken(Request $request): ?string
+    {
+        return $request->header('X-Guest-Token')
+            ?? $request->input('guest_token')
+            ?? $request->cookie('guest_token');
+    }
+
     /**
      * GET /api/v1/cart
-     * View the authenticated user's cart with all items.
+     * View the authenticated or guest user's cart.
      */
-    public function index(Request $request): CartResource
+    public function index(Request $request): JsonResponse
     {
-        $cart = $this->cartService->getCart($request->user());
-        return new CartResource($cart->load(['items.product', 'vendor']));
+        try {
+            $user       = $request->user();
+            $guestToken = $this->getGuestToken($request);
+
+            $cart = $this->cartService->resolveCart($user, $guestToken);
+
+            return response()->json([
+                'success' => true,
+                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+            ]);
+        } catch (\DomainException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 401);
+        }
     }
 
     /**
      * POST /api/v1/cart/items
-     * Add a product to the cart.
+     * Add a Direct Product or Marketplace Listing to the cart.
      */
     public function addItem(AddCartItemRequest $request): JsonResponse
     {
         try {
-            $item = $this->cartService->addItem(
-                $request->user(),
+            $user       = $request->user();
+            $guestToken = $this->getGuestToken($request);
+
+            $item = $this->cartService->addItemForContext(
+                $user,
+                $guestToken,
                 AddCartItemDTO::fromArray($request->validated()),
             );
 
-            $cart = $this->cartService->getCart($request->user());
+            $cart = $this->cartService->resolveCart($user, $guestToken);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Item added to cart.',
-                'data'    => new CartResource($cart->load(['items.product', 'vendor'])),
+                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
             ], 201);
         } catch (\DomainException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 409);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
     }
 
@@ -62,6 +84,9 @@ class CartController extends Controller
     public function updateItem(UpdateCartItemRequest $request, string $itemId): JsonResponse
     {
         try {
+            $user       = $request->user();
+            $guestToken = $this->getGuestToken($request);
+
             $item = CartItem::findOrFail($itemId);
 
             $this->cartService->updateItem(
@@ -69,12 +94,12 @@ class CartController extends Controller
                 UpdateCartItemDTO::fromArray($request->validated()),
             );
 
-            $cart = $this->cartService->getCart($request->user());
+            $cart = $this->cartService->resolveCart($user, $guestToken);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Cart item updated.',
-                'data'    => new CartResource($cart->load(['items.product', 'vendor'])),
+                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
             ]);
         } catch (\DomainException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -87,15 +112,18 @@ class CartController extends Controller
      */
     public function removeItem(Request $request, string $itemId): JsonResponse
     {
+        $user       = $request->user();
+        $guestToken = $this->getGuestToken($request);
+
         $item = CartItem::findOrFail($itemId);
-        $cart = $this->cartService->getCart($request->user());
+        $cart = $this->cartService->resolveCart($user, $guestToken);
 
         $this->cartService->removeItem($cart, $item);
 
         return response()->json([
             'success' => true,
             'message' => 'Item removed from cart.',
-            'data'    => new CartResource($cart->fresh(['items.product', 'vendor'])),
+            'data'    => new CartResource($cart->fresh(['items.product', 'items.vendorListing', 'items.vendor'])),
         ]);
     }
 
@@ -105,7 +133,10 @@ class CartController extends Controller
      */
     public function clear(Request $request): JsonResponse
     {
-        $cart = $this->cartService->getCart($request->user());
+        $user       = $request->user();
+        $guestToken = $this->getGuestToken($request);
+
+        $cart = $this->cartService->resolveCart($user, $guestToken);
         $this->cartService->clear($cart);
 
         return response()->json([
@@ -116,7 +147,7 @@ class CartController extends Controller
 
     /**
      * POST /api/v1/cart/merge
-     * Merge a guest cart into the authenticated user's cart (mobile login).
+     * Merge a guest cart into the authenticated user's cart (called on login).
      */
     public function merge(Request $request): JsonResponse
     {
@@ -132,7 +163,7 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Guest cart merged successfully.',
-            'data'    => new CartResource($cart->load(['items.product', 'vendor'])),
+            'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
         ]);
     }
 }

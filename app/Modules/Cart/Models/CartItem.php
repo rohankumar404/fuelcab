@@ -6,12 +6,13 @@ namespace App\Modules\Cart\Models;
 
 use App\Enums\SalesChannel;
 use App\Enums\UnitOfMeasure;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HasUuid;
 use App\Modules\Fuel\Models\Product;
 use App\Modules\Vendor\Models\Vendor;
+use App\Modules\Vendor\Models\VendorListing;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CartItem extends Model
 {
@@ -22,13 +23,16 @@ class CartItem extends Model
     protected $fillable = [
         'cart_id',
         'product_id',
+        'vendor_listing_id',
         'quantity',
         'price_snapshot',
         'unit_of_measure',
-        // ─── Channel context ───────────────────────────────────────────────
+        // ─── Channel & seller context ─────────────────────────────────────
         'sales_channel',
         'vendor_id',
         'product_name_snapshot',
+        'product_sku_snapshot',
+        'unit_snapshot',
         'created_by',
         'updated_by',
     ];
@@ -36,9 +40,9 @@ class CartItem extends Model
     protected function casts(): array
     {
         return [
-            'quantity'        => 'float',
-            'price_snapshot'  => 'float',
-            'sales_channel'   => SalesChannel::class,
+            'quantity'       => 'float',
+            'price_snapshot' => 'float',
+            'sales_channel'  => SalesChannel::class,
         ];
     }
 
@@ -52,6 +56,11 @@ class CartItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function vendorListing(): BelongsTo
+    {
+        return $this->belongsTo(VendorListing::class, 'vendor_listing_id');
     }
 
     public function vendor(): BelongsTo
@@ -70,11 +79,31 @@ class CartItem extends Model
     }
 
     /**
-     * Whether the live product price differs from snapshot.
+     * Display name of the item seller.
+     */
+    public function getSellerName(): string
+    {
+        if ($this->isDirectChannel() || ! $this->vendor_id) {
+            return 'FuelCab Direct';
+        }
+
+        return $this->vendor?->brand_name ?? 'Verified Vendor';
+    }
+
+    /**
+     * Whether the live price differs from snapshot.
      */
     public function isPriceStale(): bool
     {
-        return $this->product && (float) $this->product->price_per_unit !== $this->price_snapshot;
+        if ($this->vendorListing) {
+            return (float) $this->vendorListing->base_price !== (float) $this->price_snapshot;
+        }
+
+        if ($this->product) {
+            return (float) $this->product->price_per_unit !== (float) $this->price_snapshot;
+        }
+
+        return false;
     }
 
     /**
@@ -82,7 +111,8 @@ class CartItem extends Model
      */
     public function isDirectChannel(): bool
     {
-        return $this->sales_channel === SalesChannel::Direct;
+        return $this->sales_channel === SalesChannel::Direct
+            || (is_string($this->sales_channel) && $this->sales_channel === 'direct');
     }
 
     /**
@@ -90,6 +120,7 @@ class CartItem extends Model
      */
     public function isMarketplaceChannel(): bool
     {
-        return $this->sales_channel === SalesChannel::Marketplace;
+        return $this->sales_channel === SalesChannel::Marketplace
+            || (is_string($this->sales_channel) && $this->sales_channel === 'marketplace');
     }
 }
