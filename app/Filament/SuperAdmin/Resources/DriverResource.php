@@ -16,8 +16,9 @@ class DriverResource extends Resource
 {
     protected static ?string $model = \App\Modules\Driver\Models\Driver::class;
     protected static ?string $navigationIcon = 'heroicon-o-truck';
-    protected static ?string $navigationGroup = 'Operations';
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'DIRECT COMMERCE';
+    protected static ?string $navigationLabel = 'Delivery Operations Drivers';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {

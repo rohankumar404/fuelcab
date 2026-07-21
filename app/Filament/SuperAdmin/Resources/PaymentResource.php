@@ -17,7 +17,8 @@ class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationGroup = 'Payments & Finance';
+    protected static ?string $navigationGroup = 'FINANCE';
+    protected static ?string $navigationLabel = 'Payments';
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -109,12 +110,10 @@ class PaymentResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // No DeleteAction — payments are financial records
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // No DeleteBulkAction — payments are financial records
             ]);
     }
 

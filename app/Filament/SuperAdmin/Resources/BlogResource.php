@@ -18,9 +18,11 @@ class BlogResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Content Management';
+    protected static ?string $navigationGroup = 'CONTENT';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationLabel = 'Blogs';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'title';
 

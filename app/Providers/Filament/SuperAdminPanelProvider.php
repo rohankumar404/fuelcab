@@ -43,29 +43,43 @@ class SuperAdminPanelProvider extends PanelProvider
             ->font('Inter', 'https://fonts.bunny.net/css?family=inter:100,200,300,400,500,600,700,800,900')
             ->darkMode(true)
             ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('17rem')
+
+            // ── Global Search ──────────────────────────────────────────────
+            ->globalSearch()
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchDebounce('500ms')
+
+            // ── Database notifications ─────────────────────────────────────
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
+
+            // ── Navigation Groups (exact order from spec) ──────────────────
             ->navigationGroups([
-                NavigationGroup::make('Platform')
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsed(),
-                NavigationGroup::make('Companies & Vendors')
-                    ->icon('heroicon-o-building-office')
-                    ->collapsed(),
-                NavigationGroup::make('Users & Access')
+                NavigationGroup::make('DIRECT COMMERCE')
+                    ->icon('heroicon-o-shopping-bag')
+                    ->collapsible(true),
+                NavigationGroup::make('MARKETPLACE')
+                    ->icon('heroicon-o-building-storefront')
+                    ->collapsible(true),
+                NavigationGroup::make('VENDORS')
+                    ->icon('heroicon-o-user-group')
+                    ->collapsible(true),
+                NavigationGroup::make('CUSTOMERS')
                     ->icon('heroicon-o-users')
-                    ->collapsed(),
-                NavigationGroup::make('Operations')
-                    ->icon('heroicon-o-truck')
-                    ->collapsed(),
-                NavigationGroup::make('Fuel & Products')
-                    ->icon('heroicon-o-beaker')
-                    ->collapsed(),
-                NavigationGroup::make('Payments & Finance')
+                    ->collapsible(true),
+                NavigationGroup::make('FINANCE')
                     ->icon('heroicon-o-banknotes')
-                    ->collapsed(),
-                NavigationGroup::make('Analytics')
-                    ->icon('heroicon-o-chart-bar')
-                    ->collapsed(),
+                    ->collapsible(true),
+                NavigationGroup::make('CONTENT')
+                    ->icon('heroicon-o-document-text')
+                    ->collapsible(true),
+                NavigationGroup::make('SYSTEM')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsible(true),
             ])
+
+            // ── Auto-discovery ─────────────────────────────────────────────
             ->discoverResources(
                 in: app_path('Filament/SuperAdmin/Resources'),
                 for: 'App\\Filament\\SuperAdmin\\Resources'

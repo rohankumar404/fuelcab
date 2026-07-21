@@ -15,8 +15,10 @@ class ProductResource extends Resource
 {
     protected static ?string $model = \App\Modules\Fuel\Models\Product::class;
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
-    protected static ?string $navigationGroup = 'Fuel & Products';
+    protected static ?string $navigationGroup = 'DIRECT COMMERCE';
+    protected static ?string $navigationLabel = 'Direct Products';
     protected static ?int $navigationSort = 1;
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
     {

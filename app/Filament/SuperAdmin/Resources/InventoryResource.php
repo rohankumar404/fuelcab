@@ -15,9 +15,10 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InventoryResource extends Resource
 {
-    protected static ?string $model = Inventory::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static ?string $navigationGroup = 'DIRECT COMMERCE';
+    protected static ?string $navigationLabel = 'Direct Inventory';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {

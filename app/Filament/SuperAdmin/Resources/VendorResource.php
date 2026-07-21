@@ -22,8 +22,9 @@ class VendorResource extends Resource
 {
     protected static ?string $model = Vendor::class;
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
-    protected static ?string $navigationGroup = 'Companies & Vendors';
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'VENDORS';
+    protected static ?string $navigationLabel = 'Vendor Applications & Accounts';
+    protected static ?int $navigationSort = 1;
     protected static ?string $recordTitleAttribute = 'brand_name';
 
     public static function form(Form $form): Form
@@ -257,9 +258,7 @@ class VendorResource extends Resource
                     ->visible(fn (Vendor $record) => $record->status === VendorStatus::Suspended),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // No DeleteBulkAction — vendors are historically referenced by orders
             ]);
     }
 

@@ -21,7 +21,7 @@ class VendorListingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
-    protected static ?string $navigationGroup = 'Marketplace';
+    protected static ?string $navigationGroup = 'MARKETPLACE';
 
     protected static ?string $navigationLabel = 'Vendor Listings';
 
@@ -200,9 +200,7 @@ class VendorListingResource extends Resource
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // No DeleteBulkAction — listings are referenced by orders and payments
             ]);
     }
 

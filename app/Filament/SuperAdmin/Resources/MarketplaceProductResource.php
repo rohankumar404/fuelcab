@@ -18,9 +18,9 @@ class MarketplaceProductResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationGroup = 'Fuel & Products';
+    protected static ?string $navigationGroup = 'MARKETPLACE';
 
-    protected static ?string $navigationLabel = 'Marketplace Product Master';
+    protected static ?string $navigationLabel = 'Product Master';
 
     protected static ?int $navigationSort = 2;
 

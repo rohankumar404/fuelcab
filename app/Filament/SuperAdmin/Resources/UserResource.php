@@ -16,7 +16,8 @@ class UserResource extends Resource
 {
     protected static ?string $model = \App\Models\User::class;
     protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Users & Access';
+    protected static ?string $navigationGroup = 'CUSTOMERS';
+    protected static ?string $navigationLabel = 'Users';
     protected static ?int $navigationSort = 1;
     protected static ?string $recordTitleAttribute = 'name';
 
