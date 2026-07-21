@@ -2,30 +2,43 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Droplet } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, X, Droplet, Store } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "About Us", href: "/#about" },
-  { label: "Products", href: "/#products" },
-  { label: "Industries", href: "/#industries" },
-  { label: "Marketplace", href: "/marketplace" },
-  { label: "How It Works", href: "/#how-it-works" },
-  { label: "Partner With Us", href: "/#partner" },
-  { label: "FAQs", href: "/#faqs" },
+interface NavLink {
+  label: string;
+  href: string;
+  isMarketplace?: boolean;
+}
+
+const NAV_LINKS: NavLink[] = [
+  { label: "Home",          href: "/"              },
+  { label: "About Us",      href: "/#about"        },
+  { label: "Products",      href: "/#products"     },
+  { label: "Industries",    href: "/#industries"   },
+  { label: "Marketplace",   href: "/marketplace", isMarketplace: true },
+  { label: "How It Works",  href: "/#how-it-works" },
+  { label: "Partner",       href: "/#partner"      },
+  { label: "FAQs",          href: "/#faqs"         },
 ];
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname                     = usePathname();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  const isMarketplaceActive = pathname.startsWith("/marketplace");
 
   return (
     <header
@@ -54,19 +67,55 @@ export default function Navbar() {
 
         {/* ── Desktop Navigation ── */}
         <nav
-          className="hidden lg:flex items-center gap-7"
+          className="hidden lg:flex items-center gap-1"
           aria-label="Main navigation"
         >
-          {NAV_LINKS.map(({ label, href }) => (
-            <Link
-              key={label}
-              href={href}
-              className="text-sm font-medium text-[#555555] hover:text-[#155c32] transition-colors duration-150 relative group"
-            >
-              {label}
-              <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] rounded-full bg-[#155c32] transition-all duration-200 group-hover:w-full" />
-            </Link>
-          ))}
+          {NAV_LINKS.map(({ label, href, isMarketplace }) => {
+            const isActive = isMarketplace
+              ? isMarketplaceActive
+              : pathname === href;
+
+            if (isMarketplace) {
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  aria-current={isMarketplaceActive ? "page" : undefined}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all duration-150 ml-1",
+                    isMarketplaceActive
+                      ? "bg-[#155c32] text-white shadow-md shadow-[#155c32]/20"
+                      : "bg-[#155c32]/8 text-[#155c32] hover:bg-[#155c32]/15 border border-[#155c32]/15"
+                  )}
+                >
+                  <Store className="w-3.5 h-3.5" aria-hidden="true" />
+                  {label}
+                </Link>
+              );
+            }
+
+            return (
+              <Link
+                key={label}
+                href={href}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium transition-colors duration-150 relative group rounded-lg",
+                  isActive
+                    ? "text-[#155c32] font-semibold"
+                    : "text-[#555555] hover:text-[#155c32]"
+                )}
+              >
+                {label}
+                <span
+                  className={cn(
+                    "absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-[#155c32] transition-all duration-200",
+                    isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  )}
+                />
+              </Link>
+            );
+          })}
         </nav>
 
         {/* ── Desktop Auth Buttons ── */}
@@ -106,6 +155,7 @@ export default function Navbar() {
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
+          aria-controls="mobile-nav"
         >
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -114,23 +164,55 @@ export default function Navbar() {
       {/* ── Mobile drawer ── */}
       {mobileOpen && (
         <div
+          id="mobile-nav"
           className="lg:hidden absolute top-[80px] left-0 right-0 bg-white border-b border-[#e7ece8] shadow-xl z-40"
           role="dialog"
           aria-modal="true"
-          aria-label="Mobile menu"
+          aria-label="Mobile navigation menu"
         >
           <nav className="flex flex-col px-4 py-4 gap-0.5" aria-label="Mobile navigation">
-            {NAV_LINKS.map(({ label, href }) => (
-              <Link
-                key={label}
-                href={href}
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium text-[#1a1a1a] hover:text-[#155c32] hover:bg-[#f4f8f5] px-4 py-3 rounded-xl transition-colors duration-150"
-              >
-                {label}
-              </Link>
-            ))}
+            {NAV_LINKS.map(({ label, href, isMarketplace }) => {
+              const isActive = isMarketplace ? isMarketplaceActive : pathname === href;
+
+              if (isMarketplace) {
+                return (
+                  <Link
+                    key={label}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={isMarketplaceActive ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-2 text-sm font-bold px-4 py-3 rounded-xl transition-colors duration-150",
+                      isMarketplaceActive
+                        ? "bg-[#155c32] text-white"
+                        : "bg-[#155c32]/8 text-[#155c32] hover:bg-[#155c32]/15"
+                    )}
+                  >
+                    <Store className="w-4 h-4" aria-hidden="true" />
+                    {label}
+                  </Link>
+                );
+              }
+
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "text-sm font-medium px-4 py-3 rounded-xl transition-colors duration-150",
+                    isActive
+                      ? "text-[#155c32] font-semibold bg-[#f4f8f5]"
+                      : "text-[#1a1a1a] hover:text-[#155c32] hover:bg-[#f4f8f5]"
+                  )}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
+
           <div className="flex flex-col gap-2 px-4 py-4 border-t border-[#e7ece8]">
             <Link
               href="/vendor/register"
