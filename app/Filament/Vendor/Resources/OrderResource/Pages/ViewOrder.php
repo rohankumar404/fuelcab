@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Vendor\Resources\OrderResource\Pages;
 
 use App\Filament\Vendor\Resources\OrderResource;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListOrders extends ListRecords
+class ViewOrder extends ViewRecord
 {
     protected static string $resource = OrderResource::class;
 

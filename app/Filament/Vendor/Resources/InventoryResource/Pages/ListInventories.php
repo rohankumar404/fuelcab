@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Vendor\Resources\InventoryResource\Pages;
 
 use App\Filament\Vendor\Resources\InventoryResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListInventories extends ListRecords
@@ -12,8 +13,6 @@ class ListInventories extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\CreateAction::make(),
-        ];
+        return [];
     }
 }

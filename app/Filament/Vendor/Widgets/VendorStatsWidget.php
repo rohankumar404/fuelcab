@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Vendor\Widgets;
 
+use App\Enums\ListingStatus;
+use App\Models\Settlement;
 use App\Modules\Order\Models\Order;
-use App\Modules\Driver\Models\Driver;
-use App\Modules\Fuel\Models\Inventory;
-use App\Enums\DriverStatus;
+use App\Modules\Order\Enums\OrderStatus;
+use App\Modules\Vendor\Models\VendorListing;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -17,40 +18,78 @@ class VendorStatsWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        $user   = auth()->user();
-        $vendorId = $user?->vendor_id;
+        $vendorId = auth()->user()?->vendor_id;
 
-        $todayOrders    = Order::where('vendor_id', $vendorId)->whereDate('created_at', today())->count();
-        $todayRevenue   = Order::where('vendor_id', $vendorId)->where('status', 'completed')->whereDate('updated_at', today())->sum('total_amount');
-        $activeDrivers  = Driver::where('vendor_id', $vendorId)->where('status', DriverStatus::Available->value)->count();
-        $pendingOrders  = Order::where('vendor_id', $vendorId)->where('status', 'pending')->count();
-        $lowStockCount  = Inventory::where('vendor_id', $vendorId)->whereColumn('current_stock', '<=', 'reorder_level')->count();
+        if (! $vendorId) {
+            return [];
+        }
+
+        // Orders scoped to this vendor
+        $totalOrders   = Order::where('vendor_id', $vendorId)->count();
+        $pendingOrders = Order::where('vendor_id', $vendorId)
+            ->where('status', OrderStatus::Pending->value)
+            ->count();
+
+        // Listings
+        $activeListings  = VendorListing::where('vendor_id', $vendorId)
+            ->where('approval_status', ListingStatus::Approved->value)
+            ->where('is_active', true)
+            ->count();
+        $pendingListings = VendorListing::where('vendor_id', $vendorId)
+            ->where('approval_status', ListingStatus::PendingApproval->value)
+            ->count();
+
+        // Low stock: listings where available_quantity < 100
+        $lowStockListings = VendorListing::where('vendor_id', $vendorId)
+            ->where('available_quantity', '<', 100)
+            ->whereIn('approval_status', [ListingStatus::Approved->value, ListingStatus::Draft->value])
+            ->count();
+
+        // Revenue: sum of delivered orders
+        $revenue = Order::where('vendor_id', $vendorId)
+            ->where('status', OrderStatus::Delivered->value)
+            ->sum('total_amount');
+
+        // Pending settlement
+        $pendingSettlement = Settlement::where('vendor_id', $vendorId)
+            ->where('status', 'pending')
+            ->sum('net_payable');
 
         return [
-            Stat::make('Today\'s Orders', $todayOrders)
-                ->description('Placed today')
+            Stat::make('Total Orders', number_format($totalOrders))
+                ->description('All time orders')
                 ->descriptionIcon('heroicon-m-clipboard-document-list')
                 ->color('primary'),
 
-            Stat::make('Today\'s Revenue', '₹' . number_format($todayRevenue, 0))
-                ->description('From completed orders')
+            Stat::make('Pending Orders', $pendingOrders)
+                ->description('Awaiting acceptance')
+                ->descriptionIcon('heroicon-m-clock')
+                ->color($pendingOrders > 0 ? 'warning' : 'gray'),
+
+            Stat::make('Active Listings', $activeListings)
+                ->description('Approved & live on marketplace')
+                ->descriptionIcon('heroicon-m-tag')
+                ->color('success'),
+
+            Stat::make('Pending Listings', $pendingListings)
+                ->description('Awaiting admin approval')
+                ->descriptionIcon('heroicon-m-hourglass')
+                ->color($pendingListings > 0 ? 'info' : 'gray'),
+
+            Stat::make('Revenue', '₹' . number_format((float) $revenue, 0))
+                ->description('From delivered orders')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
 
-            Stat::make('Active Drivers', $activeDrivers)
-                ->description('Available now')
-                ->descriptionIcon('heroicon-m-truck')
-                ->color('info'),
+            Stat::make('Pending Settlement', '₹' . number_format((float) $pendingSettlement, 0))
+                ->description('Awaiting payout')
+                ->descriptionIcon('heroicon-m-queue-list')
+                ->color($pendingSettlement > 0 ? 'warning' : 'gray'),
 
-            Stat::make('Pending Orders', $pendingOrders)
-                ->description('Awaiting confirmation')
-                ->descriptionIcon('heroicon-m-clock')
-                ->color('warning'),
-
-            Stat::make('Low Stock Alerts', $lowStockCount)
-                ->description('Products below reorder level')
+            Stat::make('Low Stock Listings', $lowStockListings)
+                ->description('Listings with stock < 100 units')
                 ->descriptionIcon('heroicon-m-exclamation-triangle')
-                ->color($lowStockCount > 0 ? 'danger' : 'gray'),
+                ->color($lowStockListings > 0 ? 'danger' : 'gray'),
         ];
     }
 }

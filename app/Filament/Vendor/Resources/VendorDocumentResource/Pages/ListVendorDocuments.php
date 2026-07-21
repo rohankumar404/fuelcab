@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Vendor\Resources\VendorDocumentResource\Pages;
 
 use App\Filament\Vendor\Resources\VendorDocumentResource;
@@ -13,7 +15,8 @@ class ListVendorDocuments extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Upload Document'),
         ];
     }
 }

@@ -17,15 +17,17 @@ class Settlement extends Model
         'vendor_id',
         'gross_amount',
         'commission_amount',
+        'adjustments',
         'net_payable',
         'status', // pending, processed, failed
         'payout_reference',
     ];
 
     protected $casts = [
-        'gross_amount' => 'decimal:2',
+        'gross_amount'      => 'decimal:2',
         'commission_amount' => 'decimal:2',
-        'net_payable' => 'decimal:2',
+        'adjustments'       => 'decimal:2',
+        'net_payable'       => 'decimal:2',
     ];
 
     public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
