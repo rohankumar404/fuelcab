@@ -99,9 +99,9 @@ class RoleResource extends Resource
                     ->searchable()
                     ->copyable(),
 
-                Tables\Columns\BadgeColumn::make('role_type')
+                Tables\Columns\TextColumn::make('role_type')
                     ->label('Role')
-                    ->colors([
+                    ->badge()->color([
                         'danger'  => UserRole::SuperAdmin->value,
                         'info'    => UserRole::OperationsTeam->value,
                         'success' => UserRole::VendorAdmin->value,
@@ -111,8 +111,8 @@ class RoleResource extends Resource
                     ])
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

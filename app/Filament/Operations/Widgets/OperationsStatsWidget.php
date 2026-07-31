@@ -19,7 +19,7 @@ class OperationsStatsWidget extends BaseWidget
     {
         $pendingOrders     = Order::where('status', 'pending')->count();
         $unassignedOrders  = Order::where('status', 'confirmed')->whereNull('driver_id')->count();
-        $onlineDrivers     = Driver::where('status', DriverStatus::Available->value)->count();
+        $onlineDrivers     = Driver::where('status', DriverStatus::Active->value)->count();
         $pendingVendors    = Vendor::where('status', 'pending')->count();
         $pendingDrivers    = Driver::where('is_approved', false)->count();
         $todayCompleted    = Order::where('status', 'completed')->whereDate('updated_at', today())->count();

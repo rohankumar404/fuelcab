@@ -28,7 +28,15 @@ const NAV_LINKS: NavLink[] = [
 export default function Navbar() {
   const [scrolled, setScrolled]     = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted]       = useState(false);
   const pathname                     = usePathname();
+
+  const { cart, fetchCart } = useCartStore();
+
+  useEffect(() => {
+    setMounted(true);
+    fetchCart();
+  }, [fetchCart]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 12);
@@ -40,24 +48,18 @@ export default function Navbar() {
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   const isMarketplaceActive = pathname.startsWith("/marketplace");
-
-  const { cart, fetchCart } = useCartStore();
-  const itemCount = cart?.item_count || 0;
-
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+  const itemCount = mounted ? (cart?.item_count || 0) : 0;
 
   return (
     <header
       className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "bg-white/90 backdrop-blur-md shadow-sm shadow-[#155c32]/8 border-b border-[#e7ece8]/80"
+          ? "bg-white/95 backdrop-blur-md shadow-sm shadow-[#155c32]/8 border-b border-[#e7ece8]/80"
           : "bg-white border-b border-[#e7ece8]"
       )}
     >
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 xl:px-12 h-[80px] flex items-center justify-between gap-6">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 xl:px-12 h-[76px] flex items-center justify-between gap-4">
 
         {/* ── Logo ── */}
         <Link
@@ -126,7 +128,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* ── Desktop Auth & Cart Buttons ── */}
+        {/* ── Desktop Action Buttons ── */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
           <Link
             href="/cart"
@@ -169,23 +171,39 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* ── Mobile hamburger ── */}
-        <button
-          className="lg:hidden p-2 rounded-xl text-[#555555] hover:text-[#155c32] hover:bg-[#f4f8f5] transition-colors duration-150"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileOpen}
-          aria-controls="mobile-nav"
-        >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* ── Mobile Header Actions (Cart + Menu Toggle) ── */}
+        <div className="flex items-center gap-2 md:hidden">
+          <Link
+            href="/cart"
+            className="relative p-2 rounded-xl text-gray-700 hover:text-[#155c32] hover:bg-[#f4f8f5] transition-colors"
+            aria-label="View Cart"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#155c32] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                {itemCount}
+              </span>
+            )}
+          </Link>
+
+          <button
+            className="p-2 rounded-xl text-[#555555] hover:text-[#155c32] hover:bg-[#f4f8f5] transition-colors duration-150"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+
       </div>
 
       {/* ── Mobile drawer ── */}
       {mobileOpen && (
         <div
           id="mobile-nav"
-          className="lg:hidden absolute top-[80px] left-0 right-0 bg-white border-b border-[#e7ece8] shadow-xl z-40"
+          className="lg:hidden absolute top-[76px] left-0 right-0 bg-white border-b border-[#e7ece8] shadow-xl z-40"
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation menu"
@@ -239,7 +257,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "w-full h-11 rounded-xl border-[#33b248] text-[#33b248] font-bold flex items-center justify-center"
+                "w-full h-11 rounded-xl border-[#33b248] text-[#33b248] font-bold flex items-center justify-center text-sm"
               )}
             >
               Become a Vendor
@@ -249,7 +267,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "w-full h-11 rounded-xl border-[#e7ece8] text-[#1a1a1a] font-semibold flex items-center justify-center"
+                "w-full h-11 rounded-xl border-[#e7ece8] text-[#1a1a1a] font-semibold flex items-center justify-center text-sm"
               )}
             >
               Login
@@ -259,7 +277,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className={cn(
                 buttonVariants({ variant: "default" }),
-                "w-full h-11 rounded-xl bg-[#155c32] text-white font-semibold hover:bg-[#0d3a1f] flex items-center justify-center"
+                "w-full h-11 rounded-xl bg-[#155c32] text-white font-semibold hover:bg-[#0d3a1f] flex items-center justify-center text-sm"
               )}
             >
               Register

@@ -74,8 +74,8 @@ class MarketplaceOrderResource extends Resource
                 Tables\Columns\TextColumn::make('vendor.brand_name')
                     ->label('Vendor')
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'gray'    => 'pending',
                         'warning' => 'accepted',
                         'info'    => 'assigned',

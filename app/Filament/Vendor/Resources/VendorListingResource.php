@@ -130,6 +130,18 @@ class VendorListingResource extends Resource
                                 ->columnSpanFull(),
                         ]),
 
+                    Forms\Components\Section::make('Product Cover Image')->schema([
+                        Forms\Components\FileUpload::make('product_image')
+                            ->label('Product Cover Image')
+                            ->image()
+                            ->disk('public')
+                            ->directory('listings')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(5120)
+                            ->imagePreviewHeight('250')
+                            ->nullable(),
+                    ]),
+
                     Forms\Components\Section::make('Product Images')->schema([
                         Forms\Components\Repeater::make('product_images')
                             ->label('Image URLs')
@@ -223,10 +235,10 @@ class VendorListingResource extends Resource
                     ->label('Stock')
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('approval_status')
+                Tables\Columns\TextColumn::make('approval_status')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof ListingStatus ? $state->label() : $state)
-                    ->colors([
+                    ->badge()->color([
                         'secondary' => 'DRAFT',
                         'warning'   => 'PENDING_APPROVAL',
                         'success'   => 'APPROVED',

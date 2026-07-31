@@ -137,9 +137,9 @@ class QuoteRequestResource extends Resource
                     ->label('Requested Qty')
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
+                    ->badge()->color([
                         'warning' => 'pending',
                         'success' => 'responded',
                         'gray'    => 'closed',

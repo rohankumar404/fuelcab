@@ -86,8 +86,8 @@ class CmsPageResource extends Resource
                 Tables\Columns\TextColumn::make('slug')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'warning' => 'draft',
                         'success' => 'published',
                     ])

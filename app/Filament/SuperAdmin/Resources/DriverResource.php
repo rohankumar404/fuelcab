@@ -45,8 +45,8 @@ class DriverResource extends Resource
                 Tables\Columns\TextColumn::make('user.email')->label('Email')->toggleable(),
                 Tables\Columns\TextColumn::make('vendor.business_name')->label('Vendor'),
                 Tables\Columns\TextColumn::make('license_number')->toggleable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['gray' => 'offline', 'success' => 'available', 'info' => 'on_trip', 'danger' => 'suspended']),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color(['gray' => 'offline', 'success' => 'available', 'info' => 'on_trip', 'danger' => 'suspended']),
                 Tables\Columns\IconColumn::make('is_approved')->boolean()->label('Approved'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
             ])

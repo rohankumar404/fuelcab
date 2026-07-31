@@ -43,8 +43,8 @@ class CompanyResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('tax_number')->label('Tax No.')->searchable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
                 Tables\Columns\TextColumn::make('vendors_count')->label('Vendors')
                     ->counts('vendors')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),

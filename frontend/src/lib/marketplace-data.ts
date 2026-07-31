@@ -43,6 +43,7 @@ export interface VendorListing {
   short_description: string;
   full_description: string;
   product_images: string[];
+  product_image?: string;
   base_price: number;
   unit: string;
   available_quantity: number;

@@ -88,8 +88,8 @@ class QuoteRequestResource extends Resource
                     ->date()
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'warning' => 'pending',
                         'success' => 'responded',
                         'gray'    => 'closed',

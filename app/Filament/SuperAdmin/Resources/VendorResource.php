@@ -165,17 +165,17 @@ class VendorResource extends Resource
                 Tables\Columns\TextColumn::make('state')
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'warning' => VendorStatus::Pending->value,
                         'info'    => VendorStatus::UnderReview->value,
                         'success' => VendorStatus::Approved->value,
                         'danger'  => VendorStatus::Rejected->value,
                         'gray'    => VendorStatus::Suspended->value,
                     ]),
-                Tables\Columns\BadgeColumn::make('verification_status')
+                Tables\Columns\TextColumn::make('verification_status')
                     ->label('Verification')
-                    ->colors([
+                    ->badge()->color([
                         'warning' => DocumentStatus::Pending->value,
                         'success' => DocumentStatus::Verified->value,
                         'danger'  => DocumentStatus::Rejected->value,

@@ -76,8 +76,8 @@ class FaqResource extends Resource
                     ->searchable()
                     ->limit(60),
 
-                Tables\Columns\BadgeColumn::make('category')
-                    ->colors([
+                Tables\Columns\TextColumn::make('category')
+                    ->badge()->color([
                         'gray'    => 'general',
                         'info'    => 'ordering',
                         'success' => 'payment',

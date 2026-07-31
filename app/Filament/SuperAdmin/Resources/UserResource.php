@@ -50,10 +50,10 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
                 Tables\Columns\TextColumn::make('phone')->toggleable(),
-                Tables\Columns\BadgeColumn::make('role_type')
+                Tables\Columns\TextColumn::make('role_type')
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
                 Tables\Columns\IconColumn::make('email_verified_at')->boolean()->label('Verified'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
             ])

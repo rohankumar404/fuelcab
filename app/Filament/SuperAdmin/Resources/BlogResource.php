@@ -93,8 +93,8 @@ class BlogResource extends Resource
                 Tables\Columns\TextColumn::make('author.name')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'warning' => 'draft',
                         'success' => 'published',
                         'danger' => 'archived',

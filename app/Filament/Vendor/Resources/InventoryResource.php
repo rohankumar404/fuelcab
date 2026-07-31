@@ -97,10 +97,10 @@ class InventoryResource extends Resource
                 Tables\Columns\TextColumn::make('unit')
                     ->label('Unit'),
 
-                Tables\Columns\BadgeColumn::make('approval_status')
+                Tables\Columns\TextColumn::make('approval_status')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof ListingStatus ? $state->label() : $state)
-                    ->colors([
+                    ->badge()->color([
                         'secondary' => 'DRAFT',
                         'warning'   => 'PENDING_APPROVAL',
                         'success'   => 'APPROVED',

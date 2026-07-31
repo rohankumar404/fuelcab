@@ -23,8 +23,8 @@ class LatestOrdersWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('order_number')->searchable(),
                 Tables\Columns\TextColumn::make('customer.name')->label('Customer'),
                 Tables\Columns\TextColumn::make('vendor.business_name')->label('Vendor'),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'gray'    => 'pending',
                         'warning' => 'confirmed',
                         'info'    => 'en_route',

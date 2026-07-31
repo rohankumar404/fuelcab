@@ -30,6 +30,7 @@ class VendorListing extends Model
         'short_description',
         'full_description',
         'product_images',
+        'product_image',
         'min_order_quantity',
         'max_order_quantity',
         'unit',

@@ -25,8 +25,8 @@ class RecentVendorOrdersWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('order_number')->searchable(),
                 Tables\Columns\TextColumn::make('customer.name')->label('Customer'),
                 Tables\Columns\TextColumn::make('driver.user.name')->label('Driver')->placeholder('—'),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'gray'    => 'pending',
                         'warning' => 'confirmed',
                         'info'    => 'en_route',

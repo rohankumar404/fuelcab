@@ -24,6 +24,7 @@ interface FuelProduct {
   icon: React.ComponentType<{ className?: string }>;
   colorClass: string;
   badgeText?: string;
+  image?: string;
 }
 
 const FUEL_PRODUCTS: FuelProduct[] = [
@@ -36,6 +37,7 @@ const FUEL_PRODUCTS: FuelProduct[] = [
     icon: Droplet,
     colorClass: "from-[#ffb400] to-[#ff7b00]",
     badgeText: "Most Popular",
+    image: "https://images.unsplash.com/photo-1542295669297-4d1ca1e8c659?auto=format&fit=crop&q=80&w=900",
   },
   {
     id: "cng",
@@ -128,7 +130,7 @@ export default function FuelCategories() {
 
         {/* Carousel / Grid Container */}
         <div 
-          className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 scrollbar-hide md:overflow-visible"
+          className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 md:grid md:grid-cols-2 lg:flex lg:flex-row lg:justify-between lg:items-stretch lg:w-full scrollbar-hide md:overflow-visible"
           role="region"
           aria-label="Fuel categories list"
         >
@@ -143,11 +145,11 @@ export default function FuelCategories() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08, duration: 0.5 }}
-                className="snap-center shrink-0 w-[290px] md:w-auto"
+                className="snap-center shrink-0 w-[290px] md:w-auto lg:flex-1 lg:w-0"
               >
                 <div
                   className={cn(
-                    "relative flex flex-col justify-between h-[420px] rounded-[22px] p-6 transition-all duration-300 group border text-left",
+                    "relative flex flex-col justify-between h-[420px] rounded-[22px] p-6 transition-all duration-300 group border text-left overflow-hidden",
                     isActive
                       ? "bg-[#0d3a1f] text-white border-[#155c32] shadow-xl shadow-[#155c32]/10"
                       : "bg-[#ffffff] text-[#1a1a1a] border-[#e7ece8] hover:border-[#33b248] hover:shadow-lg"
@@ -156,11 +158,20 @@ export default function FuelCategories() {
                     boxShadow: isActive ? "0 15px 40px -10px rgba(21, 92, 50, 0.3)" : undefined,
                   }}
                 >
-                  {/* Glowing background highlights on hover */}
-                  {!isActive && (
-                    <div className="absolute inset-0 rounded-[22px] bg-gradient-to-br from-[#33b248]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  {/* Full-cover background image for active (Diesel) card */}
+                  {isActive && product.image && (
+                    <>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="absolute inset-0 w-full h-full object-cover opacity-30"
+                        aria-hidden="true"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-[#0d3a1f]/60 via-[#0d3a1f]/40 to-[#0d3a1f]/90 pointer-events-none" />
+                    </>
                   )}
-
+                  {/* Card content — sits above background image overlay */}
+                  <div className="relative z-10 flex flex-col justify-between h-full">
                   {/* Header Row */}
                   <div>
                     <div className="flex justify-between items-start mb-6">
@@ -240,6 +251,11 @@ export default function FuelCategories() {
                       )}
                     </a>
                   </div>
+                  {/* Hover glow for inactive cards (inside z-10 wrapper) */}
+                  {!isActive && (
+                    <div className="absolute inset-0 rounded-[22px] bg-gradient-to-br from-[#33b248]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  )}
+                  </div>{/* end z-10 wrapper */}
                 </div>
               </motion.div>
             );

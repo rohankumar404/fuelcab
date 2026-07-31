@@ -19,6 +19,9 @@ class VendorListingResource extends JsonResource
             'short_description'        => $this->short_description,
             'full_description'         => $this->full_description,
             'product_images'           => $this->product_images ?? [],
+            'product_image'            => $this->product_image
+                ? (filter_var($this->product_image, FILTER_VALIDATE_URL) ? $this->product_image : \Illuminate\Support\Facades\Storage::disk('public')->url($this->product_image))
+                : null,
             'min_order_quantity'       => (float) $this->min_order_quantity,
             'max_order_quantity'       => $this->max_order_quantity ? (float) $this->max_order_quantity : null,
             'unit'                     => $this->unit instanceof \BackedEnum ? $this->unit->value : $this->unit,

@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Notification\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * Standard Laravel-compatible Notification model.
+ *
+ * Maps to the `notifications` table with the polymorphic schema
+ * required by Filament DatabaseNotifications widget and Laravel's Notifiable trait.
+ */
 class Notification extends Model
 {
     use HasUuids;
@@ -16,20 +21,21 @@ class Notification extends Model
     protected $table = 'notifications';
 
     protected $fillable = [
-        'user_id',
         'type',
-        'title',
-        'body',
+        'notifiable_type',
+        'notifiable_id',
+        'data',
         'read_at',
-        'status',
     ];
 
     protected $casts = [
+        'data'    => 'array',
         'read_at' => 'datetime',
     ];
 
-    public function user(): BelongsTo
+    /** Polymorphic owner (User, Driver, Vendor, etc.) */
+    public function notifiable(): MorphTo
     {
-        return $this->belongsTo(User::class);
+        return $this->morphTo();
     }
 }

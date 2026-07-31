@@ -85,10 +85,10 @@ class VehicleResource extends Resource
                 Tables\Columns\TextColumn::make('capacity_liters')
                     ->label('Capacity (L)')
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('fuel_type')
-                    ->colors(['info' => 'diesel', 'success' => 'cng', 'warning' => 'lpg']),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['success' => 'active', 'warning' => 'maintenance', 'danger' => 'retired']),
+                Tables\Columns\TextColumn::make('fuel_type')
+                    ->badge()->color(['info' => 'diesel', 'success' => 'cng', 'warning' => 'lpg']),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color(['success' => 'active', 'warning' => 'maintenance', 'danger' => 'retired']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')

@@ -327,14 +327,33 @@ export default async function ProductMasterPage({ params }: Props) {
                         {item.short_description}
                       </p>
 
-                      {/* Specs Highlights */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-[#f4f8f5] border border-[#e7ece8] mb-5 text-xs">
-                        {Object.entries(item.quality_specifications).slice(0, 3).map(([k, v]) => (
-                          <div key={k} className="space-y-0.5">
-                            <span className="text-[10px] text-[#555555] block truncate">{k}:</span>
-                            <strong className="text-[#1a1a1a] font-semibold block truncate">{v}</strong>
-                          </div>
-                        ))}
+                      {/* 50/50: Specs (left) | Product Image (right) */}
+                      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                        {/* Left 50%: Quality Specs in grey box */}
+                        <div className="flex-1 p-3 rounded-xl bg-[#f4f8f5] border border-[#e7ece8] grid grid-cols-1 gap-2 text-xs self-stretch">
+                          {Object.entries(item.quality_specifications).slice(0, 3).map(([k, v]) => (
+                            <div key={k} className="space-y-0.5">
+                              <span className="text-[10px] text-[#555555] block truncate">{k}:</span>
+                              <strong className="text-[#1a1a1a] font-semibold block truncate">{v}</strong>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Right 50%: Product Image */}
+                        <div className="flex-1 rounded-xl overflow-hidden bg-[#f4f8f5] border border-[#e7ece8] min-h-[100px] sm:min-h-0">
+                          {(item.product_image || product.product_image) ? (
+                            <img
+                              src={item.product_image || product.product_image}
+                              alt={item.listing_title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-[#555555]/60 font-medium p-3 text-center">
+                              No Image Available
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {/* Logistics & CTA Row */}

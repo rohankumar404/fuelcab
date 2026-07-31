@@ -92,15 +92,15 @@ class OrderResource extends Resource
                     ->label('Vendor')
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\BadgeColumn::make('channel')
+                Tables\Columns\TextColumn::make('channel')
                     ->label('Channel')
-                    ->colors([
+                    ->badge()->color([
                         'info'    => 'direct',
                         'success' => 'marketplace',
                     ])
                     ->formatStateUsing(fn ($state) => ucfirst((string) ($state instanceof \App\Enums\SalesChannel ? $state->value : $state))),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'gray'    => 'pending',
                         'warning' => 'accepted',
                         'info'    => 'assigned',

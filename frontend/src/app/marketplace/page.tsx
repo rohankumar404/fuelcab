@@ -68,6 +68,7 @@ interface Listing {
   marketplace_product: string;
   short_description: string;
   full_description: string;
+  product_image?: string;
   base_price: number;
   unit: string;
   available_quantity: number;
@@ -181,6 +182,7 @@ const MOCK_LISTINGS: Listing[] = [
       "Sulphur (S)": "Max 0.2%",
     },
     certificate_documents: ["Lab_Test_Report_RDF_2026.pdf", "ISO_9001_Quality_Cert.pdf"],
+    product_image: "https://images.unsplash.com/photo-1579847255504-450f14067c74?auto=format&fit=crop&q=80&w=800",
     vendor: { id: "v-101", brand_name: "Gujarat Eco-Energy Solutions", city: "Surat", state: "Gujarat", is_verified: true, rating: 4.9 },
     is_featured: true,
     approval_status: "APPROVED",
@@ -214,6 +216,7 @@ const MOCK_LISTINGS: Listing[] = [
       "Diameter": "90 mm",
     },
     certificate_documents: ["SGS_Calorific_Analysis_Briquette.pdf"],
+    product_image: "https://images.unsplash.com/photo-1540324155974-7265d7cb6d1b?auto=format&fit=crop&q=80&w=800",
     vendor: { id: "v-102", brand_name: "Vidarbha Bio-Coal Energy", city: "Nagpur", state: "Maharashtra", is_verified: true, rating: 4.8 },
     is_featured: true,
     approval_status: "APPROVED",
@@ -248,6 +251,7 @@ const MOCK_LISTINGS: Listing[] = [
       "Sulfur Content": "Below 10 ppm",
     },
     certificate_documents: ["IS15607_Certificate_Apex.pdf", "MSDS_BioDiesel_B100.pdf"],
+    product_image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
     vendor: { id: "v-103", brand_name: "Apex Biofuels Logistics", city: "Navi Mumbai", state: "Maharashtra", is_verified: true, rating: 5.0 },
     is_featured: true,
     approval_status: "APPROVED",
@@ -281,6 +285,7 @@ const MOCK_LISTINGS: Listing[] = [
       "Hydrogen Sulfide": "Nil",
     },
     certificate_documents: ["PESO_Tanker_Safety_Approval.pdf"],
+    product_image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800",
     vendor: { id: "v-104", brand_name: "NCR Clean Gas Infra", city: "Gurugram", state: "Haryana", is_verified: true, rating: 4.7 },
     is_featured: false,
     approval_status: "APPROVED",
@@ -314,6 +319,7 @@ const MOCK_LISTINGS: Listing[] = [
       "Ash Content": "Max 0.08%",
     },
     certificate_documents: ["Vadodara_Lab_Analysis_FO.pdf"],
+    product_image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800",
     vendor: { id: "v-105", brand_name: "Western India Eco-Fuels", city: "Vadodara", state: "Gujarat", is_verified: true, rating: 4.9 },
     is_featured: false,
     approval_status: "APPROVED",
@@ -346,6 +352,7 @@ const MOCK_LISTINGS: Listing[] = [
       "Bulk Density": "105 kg/m³",
     },
     certificate_documents: ["Punjab_Agro_Quality_Cert.pdf"],
+    product_image: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=800",
     vendor: { id: "v-106", brand_name: "Punjab Agro Products Ltd", city: "Ludhiana", state: "Punjab", is_verified: true, rating: 4.6 },
     is_featured: false,
     approval_status: "APPROVED",
@@ -1099,7 +1106,7 @@ function MarketplaceContent() {
                         </h3>
 
                         {/* Master Product & Vendor Info */}
-                        <div className="space-y-1 mb-4 text-xs">
+                        <div className="space-y-1 mb-3 text-xs">
                           <p className="text-[#555555] font-medium flex items-center gap-1.5">
                             <Package className="w-3.5 h-3.5 text-[#33b248]" />
                             Master: <strong className="text-[#1a1a1a]">{item.marketplace_product}</strong>
@@ -1113,14 +1120,33 @@ function MarketplaceContent() {
                           </p>
                         </div>
 
-                        {/* Quick Quality Specs Snippet */}
-                        <div className="p-3 rounded-xl bg-[#f4f8f5] border border-[#e7ece8] mb-4 grid grid-cols-2 gap-2 text-[11px]">
-                          {Object.entries(item.quality_specifications).slice(0, 2).map(([key, val]) => (
-                            <div key={key} className="space-y-0.5">
-                              <span className="text-[#555555] font-medium block truncate">{key}:</span>
-                              <strong className="text-[#1a1a1a] font-bold block truncate">{val}</strong>
-                            </div>
-                          ))}
+                        {/* 50/50: Specs (left) | Product Image (right) */}
+                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                          {/* Left 50%: Quality Specs in grey box */}
+                          <div className="flex-1 p-3 rounded-xl bg-[#f4f8f5] border border-[#e7ece8] grid grid-cols-1 gap-2 text-[11px] self-stretch">
+                            {Object.entries(item.quality_specifications).slice(0, 2).map(([key, val]) => (
+                              <div key={key} className="space-y-0.5">
+                                <span className="text-[#555555] font-medium block truncate">{key}:</span>
+                                <strong className="text-[#1a1a1a] font-bold block truncate">{val}</strong>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Right 50%: Product Image */}
+                          <div className="flex-1 rounded-xl overflow-hidden bg-[#f4f8f5] border border-[#e7ece8] min-h-[90px] sm:min-h-0">
+                            {item.product_image ? (
+                              <img
+                                src={item.product_image}
+                                alt={item.listing_title}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[10px] text-[#555555]/60 font-medium p-2 text-center">
+                                No Image Available
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {/* Logistics Details */}

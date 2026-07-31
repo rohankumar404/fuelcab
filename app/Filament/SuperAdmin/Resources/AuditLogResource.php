@@ -79,8 +79,8 @@ class AuditLogResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('action')
-                    ->colors([
+                Tables\Columns\TextColumn::make('action')
+                    ->badge()->color([
                         'success' => fn ($state) => in_array($state, ['created', 'approved', 'verified']),
                         'warning' => fn ($state) => in_array($state, ['updated', 'suspended']),
                         'danger'  => fn ($state) => in_array($state, ['deleted', 'rejected']),

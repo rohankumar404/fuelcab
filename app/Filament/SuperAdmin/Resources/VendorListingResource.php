@@ -52,6 +52,15 @@ class VendorListingResource extends Resource
                             ->disabled(),
                     ]),
 
+                    Forms\Components\Section::make('Product Cover Image')->schema([
+                        Forms\Components\FileUpload::make('product_image')
+                            ->label('Product Cover Image')
+                            ->image()
+                            ->disk('public')
+                            ->directory('listings')
+                            ->disabled(),
+                    ]),
+
                 ])->columnSpan(2),
 
                 Forms\Components\Group::make()->schema([
@@ -113,10 +122,10 @@ class VendorListingResource extends Resource
                     ->money('INR')
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('approval_status')
+                Tables\Columns\TextColumn::make('approval_status')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof ListingStatus ? $state->label() : $state)
-                    ->colors([
+                    ->badge()->color([
                         'secondary' => 'DRAFT',
                         'warning'   => 'PENDING_APPROVAL',
                         'success'   => 'APPROVED',

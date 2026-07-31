@@ -73,6 +73,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   fetchCart: async () => {
     set({ loading: true, error: null });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s safety timeout
+
     try {
       const guestToken = get().getGuestToken();
       const authToken = typeof window !== "undefined" ? localStorage.getItem("fuelcab_auth_token") : null;
@@ -89,21 +92,30 @@ export const useCartStore = create<CartStore>((set, get) => ({
         url = `${API_BASE}/cart`;
       }
 
-      const res = await fetch(url, { headers });
-      const json = await res.json();
+      const res = await fetch(url, { headers, signal: controller.signal });
+      clearTimeout(timeoutId);
 
-      if (json.success && json.data) {
-        set({ cart: json.data, loading: false });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          set({ cart: json.data, loading: false });
+        } else {
+          set({ loading: false });
+        }
       } else {
         set({ loading: false });
       }
     } catch (err: any) {
-      set({ error: err.message || "Failed to load cart", loading: false });
+      clearTimeout(timeoutId);
+      set({ loading: false, error: err.name === "AbortError" ? null : (err.message || "Cart request timeout") });
     }
   },
 
   addItem: async ({ productId, vendorListingId, quantity }) => {
     set({ loading: true, error: null });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
       const guestToken = get().getGuestToken();
       const authToken = typeof window !== "undefined" ? localStorage.getItem("fuelcab_auth_token") : null;
@@ -128,7 +140,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
         method: "POST",
         headers,
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const json = await res.json();
 
@@ -140,13 +154,17 @@ export const useCartStore = create<CartStore>((set, get) => ({
         return { success: false, message: json.message || "Failed to add item to cart" };
       }
     } catch (err: any) {
+      clearTimeout(timeoutId);
       set({ loading: false, error: err.message });
-      return { success: false, message: err.message || "Network error adding item" };
+      return { success: false, message: err.name === "AbortError" ? "Network timeout" : (err.message || "Network error adding item") };
     }
   },
 
   updateQuantity: async (itemId: string, quantity: number) => {
     set({ loading: true, error: null });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
       const guestToken = get().getGuestToken();
       const authToken = typeof window !== "undefined" ? localStorage.getItem("fuelcab_auth_token") : null;
@@ -167,7 +185,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
         method: "PATCH",
         headers,
         body: JSON.stringify({ quantity }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const json = await res.json();
 
@@ -179,6 +199,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         return { success: false, message: json.message || "Failed to update quantity" };
       }
     } catch (err: any) {
+      clearTimeout(timeoutId);
       set({ loading: false, error: err.message });
       return { success: false, message: err.message };
     }
@@ -186,6 +207,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   removeItem: async (itemId: string) => {
     set({ loading: true, error: null });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
       const guestToken = get().getGuestToken();
       const authToken = typeof window !== "undefined" ? localStorage.getItem("fuelcab_auth_token") : null;
@@ -205,7 +229,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
       const res = await fetch(url, {
         method: "DELETE",
         headers,
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const json = await res.json();
 
@@ -217,6 +243,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         return { success: false, message: json.message };
       }
     } catch (err: any) {
+      clearTimeout(timeoutId);
       set({ loading: false, error: err.message });
       return { success: false, message: err.message };
     }
@@ -224,6 +251,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   clearCart: async () => {
     set({ loading: true, error: null });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
       const guestToken = get().getGuestToken();
       const authToken = typeof window !== "undefined" ? localStorage.getItem("fuelcab_auth_token") : null;
@@ -243,13 +273,16 @@ export const useCartStore = create<CartStore>((set, get) => ({
       await fetch(url, {
         method: "DELETE",
         headers,
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       set({
         cart: null,
         loading: false,
       });
     } catch (err: any) {
+      clearTimeout(timeoutId);
       set({ loading: false, error: err.message });
     }
   },
@@ -258,6 +291,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
     const guestToken = localStorage.getItem("fuelcab_guest_token");
     const authToken = localStorage.getItem("fuelcab_auth_token");
     if (!guestToken || !authToken) return;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
       const res = await fetch(`${API_BASE}/cart/merge`, {
@@ -268,13 +304,16 @@ export const useCartStore = create<CartStore>((set, get) => ({
           "Authorization": `Bearer ${authToken}`,
         },
         body: JSON.stringify({ guest_token: guestToken }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const json = await res.json();
       if (json.success && json.data) {
         set({ cart: json.data });
       }
     } catch (err) {
+      clearTimeout(timeoutId);
       console.error("Cart merge error", err);
     }
   },

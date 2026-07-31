@@ -98,16 +98,16 @@ class OperationsUserResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->toggleable(),
 
-                Tables\Columns\BadgeColumn::make('role_type')
+                Tables\Columns\TextColumn::make('role_type')
                     ->label('Role')
-                    ->colors([
+                    ->badge()->color([
                         'danger'  => UserRole::SuperAdmin->value,
                         'info'    => UserRole::OperationsTeam->value,
                     ])
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
 
                 Tables\Columns\IconColumn::make('email_verified_at')
                     ->boolean()

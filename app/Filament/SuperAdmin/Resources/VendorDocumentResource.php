@@ -73,8 +73,8 @@ class VendorDocumentResource extends Resource
                     ->searchable()
                     ->badge()
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'warning' => DocumentStatus::Pending->value,
                         'success' => DocumentStatus::Verified->value,
                         'danger'  => DocumentStatus::Rejected->value,

@@ -120,10 +120,10 @@ class VendorDocumentResource extends Resource
                     ->openUrlInNewTab()
                     ->color('primary'),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof DocumentStatus ? $state->label() : $state)
-                    ->colors([
+                    ->badge()->color([
                         'warning' => fn ($state) => $state instanceof DocumentStatus
                             ? $state === DocumentStatus::Pending
                             : $state === 'pending',

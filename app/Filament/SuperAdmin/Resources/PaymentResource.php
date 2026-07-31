@@ -82,8 +82,8 @@ class PaymentResource extends Resource
                 Tables\Columns\TextColumn::make('payment_gateway')
                     ->label('Gateway')
                     ->badge(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()->color([
                         'warning' => 'pending',
                         'success' => 'success',
                         'danger' => 'failed',

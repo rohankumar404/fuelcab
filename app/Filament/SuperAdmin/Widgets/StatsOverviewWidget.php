@@ -22,7 +22,7 @@ class StatsOverviewWidget extends BaseWidget
         $weekOrders    = Order::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
         $monthRevenue  = Payment::where('status', 'success')->whereMonth('created_at', now()->month)->sum('amount');
         $activeVendors = Vendor::where('status', 'approved')->count();
-        $onlineDrivers = \App\Modules\Driver\Models\Driver::where('status', DriverStatus::Available->value)->count();
+        $onlineDrivers = \App\Modules\Driver\Models\Driver::where('status', DriverStatus::Active->value)->count();
         $totalCustomers = User::where('role_type', 'customer')->count();
 
         return [

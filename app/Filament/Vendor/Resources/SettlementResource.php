@@ -65,9 +65,9 @@ class SettlementResource extends Resource
                     ->weight(\Filament\Support\Enums\FontWeight::Bold)
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
+                    ->badge()->color([
                         'warning' => 'pending',
                         'success' => 'processed',
                         'danger'  => 'failed',

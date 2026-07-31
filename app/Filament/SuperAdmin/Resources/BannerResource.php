@@ -108,8 +108,8 @@ class BannerResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('placement')
-                    ->colors([
+                Tables\Columns\TextColumn::make('placement')
+                    ->badge()->color([
                         'primary' => 'homepage_hero',
                         'success' => 'marketplace_hero',
                         'info'    => 'sidebar',
