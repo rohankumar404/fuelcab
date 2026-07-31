@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WalletTransactionResource extends Resource
 {
+    protected static ?string $model = WalletTransaction::class;
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
     protected static ?string $navigationGroup = 'FINANCE';
     protected static ?string $navigationLabel = 'Settlements & Transactions';
