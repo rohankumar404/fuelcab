@@ -94,20 +94,22 @@ class OrderResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('channel')
                     ->label('Channel')
-                    ->badge()->color([
-                        'info'    => 'direct',
-                        'success' => 'marketplace',
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'direct' => 'info',
+            'marketplace' => 'success',
+            default => 'gray',
+        })
                     ->formatStateUsing(fn ($state) => ucfirst((string) ($state instanceof \App\Enums\SalesChannel ? $state->value : $state))),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color([
-                        'gray'    => 'pending',
-                        'warning' => 'accepted',
-                        'info'    => 'assigned',
-                        'primary' => 'out_for_delivery',
-                        'success' => 'delivered',
-                        'danger'  => 'cancelled',
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'pending' => 'gray',
+            'accepted' => 'warning',
+            'assigned' => 'info',
+            'out_for_delivery' => 'primary',
+            'delivered' => 'success',
+            'cancelled' => 'danger',
+            default => 'gray',
+        })
                     ->formatStateUsing(fn ($state) => ucwords(str_replace('_', ' ', (string) ($state instanceof \App\Modules\Order\Enums\OrderStatus ? $state->value : $state)))),
                 Tables\Columns\TextColumn::make('total_amount')->money('INR')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),

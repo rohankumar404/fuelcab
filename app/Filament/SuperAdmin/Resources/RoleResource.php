@@ -101,18 +101,24 @@ class RoleResource extends Resource
 
                 Tables\Columns\TextColumn::make('role_type')
                     ->label('Role')
-                    ->badge()->color([
-                        'danger'  => UserRole::SuperAdmin->value,
-                        'info'    => UserRole::OperationsTeam->value,
-                        'success' => UserRole::VendorAdmin->value,
-                        'warning' => UserRole::VendorStaff->value,
-                        'gray'    => UserRole::Driver->value,
-                        'primary' => UserRole::Customer->value,
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            UserRole::SuperAdmin->value => 'danger',
+            UserRole::OperationsTeam->value => 'info',
+            UserRole::VendorAdmin->value => 'success',
+            UserRole::VendorStaff->value => 'warning',
+            UserRole::Driver->value => 'gray',
+            UserRole::Customer->value => 'primary',
+            default => 'gray',
+        })
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
 
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'active' => 'success',
+            'inactive' => 'warning',
+            'suspended' => 'danger',
+            default => 'gray',
+        }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

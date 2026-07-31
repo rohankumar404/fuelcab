@@ -83,12 +83,13 @@ class PaymentResource extends Resource
                     ->label('Gateway')
                     ->badge(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color([
-                        'warning' => 'pending',
-                        'success' => 'success',
-                        'danger' => 'failed',
-                        'gray' => 'refunded',
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'pending' => 'warning',
+            'success' => 'success',
+            'failed' => 'danger',
+            'refunded' => 'gray',
+            default => 'gray',
+        })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('paid_at')
                     ->dateTime()

@@ -86,9 +86,19 @@ class VehicleResource extends Resource
                     ->label('Capacity (L)')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('fuel_type')
-                    ->badge()->color(['info' => 'diesel', 'success' => 'cng', 'warning' => 'lpg']),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'diesel' => 'info',
+            'cng' => 'success',
+            'lpg' => 'warning',
+            default => 'gray',
+        }),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color(['success' => 'active', 'warning' => 'maintenance', 'danger' => 'retired']),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'active' => 'success',
+            'maintenance' => 'warning',
+            'retired' => 'danger',
+            default => 'gray',
+        }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')

@@ -109,13 +109,14 @@ class BannerResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('placement')
-                    ->badge()->color([
-                        'primary' => 'homepage_hero',
-                        'success' => 'marketplace_hero',
-                        'info'    => 'sidebar',
-                        'warning' => 'category_banner',
-                        'gray'    => 'email_header',
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'homepage_hero' => 'primary',
+            'marketplace_hero' => 'success',
+            'sidebar' => 'info',
+            'category_banner' => 'warning',
+            'email_header' => 'gray',
+            default => 'gray',
+        })
                     ->formatStateUsing(fn ($state) => ucwords(str_replace('_', ' ', $state))),
 
                 Tables\Columns\IconColumn::make('is_active')

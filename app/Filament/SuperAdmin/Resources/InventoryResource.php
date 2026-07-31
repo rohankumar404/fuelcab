@@ -4,7 +4,7 @@ namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\InventoryResource\Pages;
 use App\Filament\SuperAdmin\Resources\InventoryResource\RelationManagers;
-use App\Models\Inventory;
+use App\Modules\Fuel\Models\FuelInventory as Inventory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

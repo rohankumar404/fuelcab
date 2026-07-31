@@ -53,7 +53,12 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('role_type')
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'active' => 'success',
+            'inactive' => 'warning',
+            'suspended' => 'danger',
+            default => 'gray',
+        }),
                 Tables\Columns\IconColumn::make('email_verified_at')->boolean()->label('Verified'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
             ])

@@ -87,10 +87,11 @@ class CmsPageResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color([
-                        'warning' => 'draft',
-                        'success' => 'published',
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'draft' => 'warning',
+            'published' => 'success',
+            default => 'gray',
+        })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('template')
                     ->sortable(),

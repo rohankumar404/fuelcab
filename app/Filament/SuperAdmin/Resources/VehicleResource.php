@@ -4,7 +4,7 @@ namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\VehicleResource\Pages;
 use App\Filament\SuperAdmin\Resources\VehicleResource\RelationManagers;
-use App\Models\Vehicle;
+use App\Modules\Vehicle\Models\Vehicle;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

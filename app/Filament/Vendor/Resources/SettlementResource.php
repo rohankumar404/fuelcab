@@ -67,11 +67,12 @@ class SettlementResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->badge()->color([
-                        'warning' => 'pending',
-                        'success' => 'processed',
-                        'danger'  => 'failed',
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'pending' => 'warning',
+            'processed' => 'success',
+            'failed' => 'danger',
+            default => 'gray',
+        })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state)),
 
                 Tables\Columns\TextColumn::make('payout_reference')

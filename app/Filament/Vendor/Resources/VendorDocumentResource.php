@@ -123,17 +123,12 @@ class VendorDocumentResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof DocumentStatus ? $state->label() : $state)
-                    ->badge()->color([
-                        'warning' => fn ($state) => $state instanceof DocumentStatus
-                            ? $state === DocumentStatus::Pending
-                            : $state === 'pending',
-                        'success' => fn ($state) => $state instanceof DocumentStatus
-                            ? $state === DocumentStatus::Verified
-                            : $state === 'verified',
-                        'danger'  => fn ($state) => $state instanceof DocumentStatus
-                            ? $state === DocumentStatus::Rejected
-                            : $state === 'rejected',
-                    ]),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+                        'pending', DocumentStatus::Pending->value => 'warning',
+                        'verified', DocumentStatus::Verified->value => 'success',
+                        'rejected', DocumentStatus::Rejected->value => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('expires_at')
                     ->label('Expires')

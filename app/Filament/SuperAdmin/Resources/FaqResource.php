@@ -77,14 +77,15 @@ class FaqResource extends Resource
                     ->limit(60),
 
                 Tables\Columns\TextColumn::make('category')
-                    ->badge()->color([
-                        'gray'    => 'general',
-                        'info'    => 'ordering',
-                        'success' => 'payment',
-                        'warning' => 'delivery',
-                        'primary' => 'marketplace',
-                        'danger'  => 'vendor',
-                    ]),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'general' => 'gray',
+            'ordering' => 'info',
+            'payment' => 'success',
+            'delivery' => 'warning',
+            'marketplace' => 'primary',
+            'vendor' => 'danger',
+            default => 'gray',
+        }),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()

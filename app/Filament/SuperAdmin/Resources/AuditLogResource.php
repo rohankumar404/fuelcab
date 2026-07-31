@@ -80,12 +80,13 @@ class AuditLogResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('action')
-                    ->badge()->color([
-                        'success' => fn ($state) => in_array($state, ['created', 'approved', 'verified']),
-                        'warning' => fn ($state) => in_array($state, ['updated', 'suspended']),
-                        'danger'  => fn ($state) => in_array($state, ['deleted', 'rejected']),
-                        'info'    => fn ($state) => in_array($state, ['login', 'logout']),
-                    ]),
+                    ->badge()->color(fn ($state) => match (true) {
+                        in_array($state, ['created']) => 'success',
+                        in_array($state, ['updated', 'suspended']) => 'warning',
+                        in_array($state, ['deleted', 'rejected']) => 'danger',
+                        in_array($state, ['login', 'logout']) => 'info',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('model_type')
                     ->label('Model')

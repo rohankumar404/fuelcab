@@ -4,7 +4,7 @@ namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\WalletTransactionResource\Pages;
 use App\Filament\SuperAdmin\Resources\WalletTransactionResource\RelationManagers;
-use App\Models\WalletTransaction;
+use App\Modules\Wallet\Models\WalletTransaction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

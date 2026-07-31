@@ -74,11 +74,12 @@ class VendorDocumentResource extends Resource
                     ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color([
-                        'warning' => DocumentStatus::Pending->value,
-                        'success' => DocumentStatus::Verified->value,
-                        'danger'  => DocumentStatus::Rejected->value,
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            DocumentStatus::Pending->value => 'warning',
+            DocumentStatus::Verified->value => 'success',
+            DocumentStatus::Rejected->value => 'danger',
+            default => 'gray',
+        })
                     ->formatStateUsing(fn ($state) => $state instanceof DocumentStatus ? $state->label() : $state),
                 Tables\Columns\TextColumn::make('verified_at')
                     ->label('Verified At')

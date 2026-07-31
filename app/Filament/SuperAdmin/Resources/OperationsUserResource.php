@@ -100,14 +100,20 @@ class OperationsUserResource extends Resource
 
                 Tables\Columns\TextColumn::make('role_type')
                     ->label('Role')
-                    ->badge()->color([
-                        'danger'  => UserRole::SuperAdmin->value,
-                        'info'    => UserRole::OperationsTeam->value,
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            UserRole::SuperAdmin->value => 'danger',
+            UserRole::OperationsTeam->value => 'info',
+            default => 'gray',
+        })
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
 
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'active' => 'success',
+            'inactive' => 'warning',
+            'suspended' => 'danger',
+            default => 'gray',
+        }),
 
                 Tables\Columns\IconColumn::make('email_verified_at')
                     ->boolean()

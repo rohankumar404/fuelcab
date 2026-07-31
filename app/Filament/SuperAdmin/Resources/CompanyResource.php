@@ -44,7 +44,12 @@ class CompanyResource extends Resource
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('tax_number')->label('Tax No.')->searchable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color(['success' => 'active', 'warning' => 'inactive', 'danger' => 'suspended']),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'active' => 'success',
+            'inactive' => 'warning',
+            'suspended' => 'danger',
+            default => 'gray',
+        }),
                 Tables\Columns\TextColumn::make('vendors_count')->label('Vendors')
                     ->counts('vendors')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),

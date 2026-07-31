@@ -46,7 +46,13 @@ class DriverResource extends Resource
                 Tables\Columns\TextColumn::make('vendor.business_name')->label('Vendor'),
                 Tables\Columns\TextColumn::make('license_number')->toggleable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color(['gray' => 'offline', 'success' => 'available', 'info' => 'on_trip', 'danger' => 'suspended']),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'offline' => 'gray',
+            'available' => 'success',
+            'on_trip' => 'info',
+            'suspended' => 'danger',
+            default => 'gray',
+        }),
                 Tables\Columns\IconColumn::make('is_approved')->boolean()->label('Approved'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
             ])

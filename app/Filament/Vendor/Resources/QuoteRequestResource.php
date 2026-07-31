@@ -139,11 +139,12 @@ class QuoteRequestResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->badge()->color([
-                        'warning' => 'pending',
-                        'success' => 'responded',
-                        'gray'    => 'closed',
-                    ]),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'pending' => 'warning',
+            'responded' => 'success',
+            'closed' => 'gray',
+            default => 'gray',
+        }),
 
                 Tables\Columns\TextColumn::make('quoted_price')
                     ->label('Quoted Price (₹)')

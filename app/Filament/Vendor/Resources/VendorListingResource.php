@@ -238,13 +238,14 @@ class VendorListingResource extends Resource
                 Tables\Columns\TextColumn::make('approval_status')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof ListingStatus ? $state->label() : $state)
-                    ->badge()->color([
-                        'secondary' => 'DRAFT',
-                        'warning'   => 'PENDING_APPROVAL',
-                        'success'   => 'APPROVED',
-                        'danger'    => 'REJECTED',
-                        'warning'   => 'SUSPENDED',
-                    ]),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'DRAFT' => 'secondary',
+            'PENDING_APPROVAL' => 'warning',
+            'APPROVED' => 'success',
+            'REJECTED' => 'danger',
+            'SUSPENDED' => 'warning',
+            default => 'gray',
+        }),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()

@@ -89,11 +89,12 @@ class QuoteRequestResource extends Resource
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color([
-                        'warning' => 'pending',
-                        'success' => 'responded',
-                        'gray'    => 'closed',
-                    ]),
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'pending' => 'warning',
+            'responded' => 'success',
+            'closed' => 'gray',
+            default => 'gray',
+        }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Received')
                     ->dateTime()

@@ -94,11 +94,12 @@ class BlogResource extends Resource
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge()->color([
-                        'warning' => 'draft',
-                        'success' => 'published',
-                        'danger' => 'archived',
-                    ])
+                    ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
+            'draft' => 'warning',
+            'published' => 'success',
+            'archived' => 'danger',
+            default => 'gray',
+        })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime()
