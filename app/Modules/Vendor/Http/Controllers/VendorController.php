@@ -13,6 +13,8 @@ use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Enums\DocumentStatus;
 use App\Modules\Vendor\Http\Resources\VendorResource;
 use App\Modules\Vendor\Http\Requests\UpdateVendorProfileRequest;
+use App\Modules\Vendor\Events\VendorApproved;
+use App\Modules\Vendor\Events\VendorRejected;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -249,7 +251,7 @@ class VendorController extends Controller
             }
 
             // Notify vendor via event
-            event(new \App\Modules\Vendor\Events\VendorApproved());
+            event(new VendorApproved($vendor));
 
             return response()->json([
                 'success' => true,
@@ -274,6 +276,9 @@ class VendorController extends Controller
             'status'         => VendorStatus::Rejected,
             'internal_notes' => $request->reason,
         ]);
+
+        // Fire rejection event for email notification
+        event(new VendorRejected($vendor, $request->reason));
 
         return response()->json([
             'success' => true,

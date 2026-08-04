@@ -28,6 +28,8 @@ use App\Modules\Order\Listeners\RefundPaymentIfApplicable;
 use App\Modules\Order\Listeners\ReleaseDriver;
 use App\Modules\Order\Listeners\NotifyCustomerOfOrderAcceptance;
 use App\Modules\Order\Listeners\LogOrderStatusChange;
+use App\Modules\Order\Listeners\SendOrderCancellationNotification;
+use App\Modules\Order\Listeners\SendDeliveryCompletedNotification;
 
 // Payment Events
 use App\Modules\Payment\Events\PaymentVerified;
@@ -49,10 +51,12 @@ use App\Modules\Driver\Listeners\SendDriverApprovalNotification;
 
 // Vendor Events
 use App\Modules\Vendor\Events\VendorApproved;
+use App\Modules\Vendor\Events\VendorRejected;
 use App\Modules\Vendor\Events\VendorSuspended;
 
 // Vendor Listeners
 use App\Modules\Vendor\Listeners\SendVendorApprovalNotification;
+use App\Modules\Vendor\Listeners\SendVendorRejectionNotification;
 
 // Auth Events
 use App\Modules\Auth\Events\UserRegistered;
@@ -114,10 +118,12 @@ class EventServiceProvider extends ServiceProvider
             UpdateDriverEarnings::class,
             TriggerPaymentSettlement::class,
             GenerateInvoice::class,
+            SendDeliveryCompletedNotification::class,
             LogOrderStatusChange::class,
         ],
         OrderCancelled::class => [
             RefundPaymentIfApplicable::class,
+            SendOrderCancellationNotification::class,
             ReleaseDriver::class,
             LogOrderStatusChange::class,
         ],
@@ -142,6 +148,9 @@ class EventServiceProvider extends ServiceProvider
         // ─── Vendor ──────────────────────────────────────────────────────
         VendorApproved::class => [
             SendVendorApprovalNotification::class,
+        ],
+        VendorRejected::class => [
+            SendVendorRejectionNotification::class,
         ],
         VendorSuspended::class => [],
 

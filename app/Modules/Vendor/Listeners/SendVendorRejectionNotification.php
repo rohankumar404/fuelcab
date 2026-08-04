@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace App\Modules\Vendor\Listeners;
 
-use App\Modules\Vendor\Events\VendorApproved;
+use App\Modules\Vendor\Events\VendorRejected;
 use App\Modules\Notification\Jobs\SendEmailJob;
-use App\Modules\Notification\Mail\VendorApprovedMail;
+use App\Modules\Notification\Mail\VendorRejectedMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class SendVendorApprovalNotification implements ShouldQueue
+class SendVendorRejectionNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
     public string $queue = 'default';
 
-    public function handle(VendorApproved $event): void
+    public function handle(VendorRejected $event): void
     {
         try {
             $vendor = $event->vendor;
 
             SendEmailJob::dispatch(
                 $vendor->email,
-                new VendorApprovedMail($vendor->contact_person, $vendor->brand_name, $vendor->vendor_code)
+                new VendorRejectedMail($vendor->contact_person, $vendor->brand_name, $event->reason)
             );
         } catch (\Throwable $e) {
-            Log::error('[SendVendorApprovalNotification] Failed to queue vendor approval email', [
+            Log::error('[SendVendorRejectionNotification] Failed to queue vendor rejection email', [
                 'vendor_id' => $event->vendor->id ?? null,
                 'error'     => $e->getMessage(),
             ]);

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Order\Listeners;
 
 use App\Modules\Order\Events\OrderCompleted;
+use App\Modules\Notification\Jobs\SendEmailJob;
+use App\Modules\Notification\Mail\InvoiceMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -17,12 +19,47 @@ class GenerateInvoice implements ShouldQueue
 
     public function handle(OrderCompleted $event): void
     {
-        $order = $event->order;
+        $order = $event->order->load(['customer', 'items.product', 'deliveryAddress']);
 
-        // TODO: Generate PDF invoice and attach to the order.
-        // InvoiceService::generateForOrder($order);
         Log::info('OrderModule: Invoice generation queued for order', [
             'order_id' => $order->id,
         ]);
+
+        // Send invoice email to customer if email is available
+        if ($order->customer?->email) {
+            $item        = $order->items->first();
+            $productName = $item?->product?->name ?? 'Fuel Product';
+            $quantity    = (float) ($item?->quantity ?? 0);
+            $unitPrice   = (float) ($item?->price_per_unit ?? 0);
+            $subtotal    = (float) $order->subtotal_amount;
+            $tax         = (float) $order->tax_amount;
+            $delivery    = (float) $order->delivery_fee;
+            $total       = (float) $order->total_amount;
+            $method      = $order->payment_method ?? 'online';
+
+            try {
+                SendEmailJob::dispatch(
+                    $order->customer->email,
+                    new InvoiceMail(
+                        customerName:  $order->customer->name,
+                        orderNumber:   $order->id,
+                        productName:   $productName,
+                        quantity:      $quantity,
+                        unitPrice:     $unitPrice,
+                        subtotal:      $subtotal,
+                        tax:           $tax,
+                        deliveryFee:   $delivery,
+                        total:         $total,
+                        paymentMethod: $method,
+                        orderId:       $order->id
+                    )
+                );
+            } catch (\Throwable $e) {
+                Log::error('GenerateInvoice: Failed to queue invoice email', [
+                    'order_id' => $order->id,
+                    'error'    => $e->getMessage(),
+                ]);
+            }
+        }
     }
 }

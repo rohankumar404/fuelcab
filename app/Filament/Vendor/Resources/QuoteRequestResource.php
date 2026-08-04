@@ -6,6 +6,8 @@ namespace App\Filament\Vendor\Resources;
 
 use App\Filament\Vendor\Resources\QuoteRequestResource\Pages;
 use App\Models\BulkInquiry;
+use App\Modules\Notification\Jobs\SendEmailJob;
+use App\Modules\Notification\Mail\QuoteMail;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -224,6 +226,29 @@ class QuoteRequestResource extends Resource
                         }
 
                         $record->update(array_merge($data, ['status' => 'responded']));
+
+                        // Notify customer via email if they have an email address
+                        $customer = $record->user;
+                        if ($customer?->email) {
+                            try {
+                                SendEmailJob::dispatch(
+                                    $customer->email,
+                                    new QuoteMail(
+                                        type:         'response',
+                                        productName:  $record->product?->name ?? 'Bulk Fuel',
+                                        quantity:     (float) $record->quantity,
+                                        price:        (float) $data['quoted_price'],
+                                        unit:         $data['quoted_unit'],
+                                        minQty:       (float) $data['quoted_min_quantity'],
+                                        validity:     $data['validity_date'] ?? null,
+                                        dispatch:     $data['dispatch_time'] ?? null,
+                                        terms:        $data['terms'] ?? null,
+                                    )
+                                );
+                            } catch (\Throwable) {
+                                // Silent fail — don't block vendor submit
+                            }
+                        }
 
                         Notification::make()
                             ->title('Quotation submitted successfully.')

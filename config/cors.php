@@ -16,7 +16,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => app()->environment('production')
+    'allowed_origins' => env('APP_ENV') === 'production'
         ? [
             'https://fuelcab.com',
             'https://www.fuelcab.com',

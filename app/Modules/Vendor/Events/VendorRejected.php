@@ -8,12 +8,13 @@ use App\Modules\Vendor\Models\Vendor;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class VendorApproved
+class VendorRejected
 {
     use Dispatchable;
     use SerializesModels;
 
     public function __construct(
-        public readonly Vendor $vendor
+        public readonly Vendor $vendor,
+        public readonly string $reason
     ) {}
 }

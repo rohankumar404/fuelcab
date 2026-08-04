@@ -57,4 +57,15 @@ return [
         'sandbox_code'    => env('OTP_SANDBOX_CODE', '123456'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Email Settings & Lead Routing
+    |--------------------------------------------------------------------------
+    */
+
+    'email' => [
+        'enabled'     => (bool) env('EMAIL_ENABLED', true),
+        'admin_email' => env('ADMIN_LEAD_EMAIL', 'admin@fuelcab.com'),
+    ],
+
 ];

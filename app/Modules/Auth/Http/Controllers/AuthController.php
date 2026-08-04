@@ -8,6 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Enums\UserRole;
 use App\Modules\Auth\Events\OtpRequested;
+use App\Modules\Auth\Events\UserRegistered;
+use App\Modules\Notification\Jobs\SendEmailJob;
+use App\Modules\Notification\Mail\PasswordResetMail;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,6 +58,9 @@ class AuthController extends Controller
         ]);
 
         $user->assignRole(UserRole::Customer->value);
+
+        // Fire welcome email event
+        event(new UserRegistered($user));
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -271,5 +277,93 @@ class AuthController extends Controller
             'token_type'   => 'Bearer',
             'is_new_user'  => $isNewUser,
         ], 'OTP verified successfully');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Password Reset (Email OTP Flow)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/v1/auth/forgot-password
+     * Sends a 6-digit OTP to the user's email address.
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user    = User::where('email', $validated['email'])->firstOrFail();
+        $otp     = (string) random_int(100000, 999999);
+        $expiry  = (int) config('fuelcab.notifications.otp.expiry_minutes', 10);
+        $cacheKey = 'pwd_reset_' . md5($validated['email']);
+
+        Cache::put($cacheKey, $otp, now()->addMinutes($expiry));
+
+        SendEmailJob::dispatch($user->email, new PasswordResetMail($user->name, $otp, $expiry));
+
+        return $this->success(null, 'A password reset code has been sent to your email address.');
+    }
+
+    /**
+     * POST /api/v1/auth/verify-reset-otp
+     * Validates the reset OTP and returns a temporary signed reset token.
+     */
+    public function verifyResetOtp(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp'   => 'required|string|digits:6',
+        ]);
+
+        $cacheKey = 'pwd_reset_' . md5($validated['email']);
+        $cached   = Cache::get($cacheKey);
+
+        if (! $cached || $cached !== $validated['otp']) {
+            return $this->error('Invalid or expired OTP.', null, 422);
+        }
+
+        // Exchange OTP for a short-lived reset token
+        $resetToken = Str::random(64);
+        Cache::put('pwd_reset_token_' . $resetToken, $validated['email'], now()->addMinutes(15));
+        Cache::forget($cacheKey);
+
+        return $this->success(['reset_token' => $resetToken], 'OTP verified. Use the reset token to set a new password.');
+    }
+
+    /**
+     * POST /api/v1/auth/reset-password
+     * Resets the password using the signed reset token from verifyResetOtp.
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'reset_token'          => 'required|string',
+            'password'             => 'required|string|min:8|confirmed',
+            'password_confirmation' => 'required|string',
+        ]);
+
+        $tokenKey = 'pwd_reset_token_' . $validated['reset_token'];
+        $email    = Cache::get($tokenKey);
+
+        if (! $email) {
+            return $this->error('Reset token is invalid or has expired.', null, 422);
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            return $this->error('User not found.', null, 404);
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+        Cache::forget($tokenKey);
+
+        // Revoke all previous tokens for security
+        $user->tokens()->delete();
+
+        Log::info('[AuthController] Password reset successful', ['user_id' => $user->id]);
+
+        return $this->success(null, 'Password has been reset successfully. Please log in with your new credentials.');
     }
 }

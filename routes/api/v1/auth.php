@@ -18,9 +18,14 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::get('google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])->name('google.callback');
 
     // Traditional & OTP Auth Routes
-    Route::post('register',    [AuthController::class, 'register']);
-    Route::post('login',       [AuthController::class, 'login']);
-    Route::post('send-otp',    [AuthController::class, 'sendOtp']);
-    Route::post('resend-otp',  [AuthController::class, 'resendOtp']);
-    Route::post('verify-otp',  [AuthController::class, 'verifyOtp']);
+    Route::post('register',          [AuthController::class, 'register']);
+    Route::post('login',             [AuthController::class, 'login']);
+    Route::post('send-otp',          [AuthController::class, 'sendOtp']);
+    Route::post('resend-otp',        [AuthController::class, 'resendOtp']);
+    Route::post('verify-otp',        [AuthController::class, 'verifyOtp']);
+
+    // Password Reset (Email OTP flow)
+    Route::post('forgot-password',   [AuthController::class, 'forgotPassword']);
+    Route::post('verify-reset-otp',  [AuthController::class, 'verifyResetOtp']);
+    Route::post('reset-password',    [AuthController::class, 'resetPassword']);
 });
