@@ -10,10 +10,28 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "fuelcab.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.fuelcab.com",
+        pathname: "/**",
+      },
     ],
   },
   async redirects() {
     return [
+      // ── www → non-www canonical redirect ──────────────────────────────
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.fuelcab.com" }],
+        destination: "https://fuelcab.com/:path*",
+        permanent: true,
+      },
+      // ── Admin / Vendor / Operations panel (served by Laravel) ─────────
       {
         source: "/admin",
         destination: `${backendHost}/admin`,
