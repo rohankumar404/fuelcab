@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import { Droplet } from "lucide-react";
 
 interface AuthLayoutProps {
@@ -238,14 +239,10 @@ interface OtpInputProps {
 
 export function OtpInput({ value, onChange, error, touched }: OtpInputProps) {
   const digits = value.split("").concat(Array(6).fill("")).slice(0, 6);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const key = e.key;
-    if (key === "Backspace") {
-      onChange(value.slice(0, -1));
-    } else if (/^\d$/.test(key) && value.length < 6) {
-      onChange(value + key);
-    }
+  const handleContainerClick = () => {
+    inputRef.current?.focus();
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
@@ -256,7 +253,10 @@ export function OtpInput({ value, onChange, error, touched }: OtpInputProps) {
 
   return (
     <div>
-      <div className="flex gap-2 justify-center">
+      <div 
+        className="flex gap-2 justify-center cursor-pointer"
+        onClick={handleContainerClick}
+      >
         {digits.map((d, i) => (
           <div
             key={i}
@@ -274,12 +274,13 @@ export function OtpInput({ value, onChange, error, touched }: OtpInputProps) {
       </div>
       {/* Hidden real input for keyboard */}
       <input
-        type="number"
+        ref={inputRef}
+        type="text"
         inputMode="numeric"
-        pattern="\d*"
+        pattern="[0-9]*"
+        maxLength={6}
         value={value}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
-        onKeyDown={handleKey}
         onPaste={handlePaste}
         className="sr-only"
         aria-label="OTP input"

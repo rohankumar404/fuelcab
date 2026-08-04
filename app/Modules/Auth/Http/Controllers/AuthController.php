@@ -7,18 +7,30 @@ namespace App\Modules\Auth\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Enums\UserRole;
-use App\Modules\Auth\Http\Resources\AuthTokenResource;
+use App\Modules\Auth\Events\OtpRequested;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     use ApiResponse;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Constants
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private const OTP_CACHE_PREFIX   = 'otp_';
+    private const RESEND_CACHE_PREFIX = 'otp_resend_';
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Registration / Login
+    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * POST /api/v1/auth/register
@@ -66,7 +78,7 @@ class AuthController extends Controller
 
         $query = User::query();
 
-        if (!empty($validated['email'])) {
+        if (! empty($validated['email'])) {
             $query->where('email', $validated['email']);
         } else {
             $query->where('phone', $validated['phone']);
@@ -87,6 +99,67 @@ class AuthController extends Controller
         ], 'Successfully authenticated');
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  OTP Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Generate and cache an OTP for the given phone number.
+     * In sandbox mode the static sandbox_code is used and Authkey is NOT called.
+     * In production mode a random code is generated and OtpRequested is fired
+     * which queues the Authkey delivery job.
+     */
+    private function generateAndSendOtp(string $phone): string
+    {
+        $sandbox = app()->environment('testing')
+            || (bool) config('fuelcab.notifications.otp.sandbox', false);
+
+        $code = $sandbox
+            ? (string) config('fuelcab.notifications.otp.sandbox_code', '123456')
+            : (string) random_int(100000, 999999);
+
+        $ttlSeconds = (int) config('fuelcab.notifications.otp.expiry_minutes', 10) * 60;
+
+        Cache::put(self::OTP_CACHE_PREFIX . $phone, $code, $ttlSeconds);
+
+        Log::info('[OTP] Generated', [
+            'phone'   => $phone,
+            'sandbox' => $sandbox,
+        ]);
+
+        // In production: fire event → queued listener → queued job → Authkey HTTP call
+        if (! $sandbox) {
+            event(new OtpRequested($phone, $code));
+        }
+
+        return $code;
+    }
+
+    /**
+     * Check and increment the resend attempt counter for the given phone.
+     * Returns true if the request is allowed, false if rate limited.
+     */
+    private function checkResendRateLimit(string $phone): bool
+    {
+        $key    = self::RESEND_CACHE_PREFIX . $phone;
+        $max    = (int) config('fuelcab.notifications.otp.max_resend', 3);
+        $window = (int) config('fuelcab.notifications.otp.resend_window', 10) * 60;
+
+        $attempts = (int) Cache::get($key, 0);
+
+        if ($attempts >= $max) {
+            return false;
+        }
+
+        Cache::put($key, $attempts + 1, $window);
+
+        return true;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  OTP Endpoints
+    // ─────────────────────────────────────────────────────────────────────────
+
     /**
      * POST /api/v1/auth/send-otp
      */
@@ -97,22 +170,48 @@ class AuthController extends Controller
         ]);
 
         $phone = $validated['phone'];
+        $code  = $this->generateAndSendOtp($phone);
 
-        // Under testing or local, use a static code, otherwise random
-        $code = app()->environment('testing', 'local') ? '123456' : (string) rand(100000, 999999);
-
-        // Store code in cache for 5 minutes
-        Cache::put("otp_{$phone}", $code, 300);
-
-        Log::info("OTP for {$phone} is: {$code}");
-
-        // In a real application, call Authkey.io request URL:
-        // Http::get("https://api.authkey.io/request?authkey=...&mobile={$phone}&sid=...&otp={$code}");
+        $sandbox = app()->environment('testing')
+            || (bool) config('fuelcab.notifications.otp.sandbox', false);
 
         return $this->success([
             'phone' => $phone,
-            'otp'   => app()->environment('testing', 'local') ? $code : null, // expose only for tests/local
+            // Expose OTP only in sandbox / test environments — never in production
+            'otp'   => $sandbox ? $code : null,
         ], 'OTP sent successfully');
+    }
+
+    /**
+     * POST /api/v1/auth/resend-otp
+     *
+     * Rate-limited: max {OTP_MAX_RESEND} requests per {OTP_RESEND_WINDOW_MINUTES} minutes.
+     */
+    public function resendOtp(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone' => 'required|string',
+        ]);
+
+        $phone = $validated['phone'];
+
+        if (! $this->checkResendRateLimit($phone)) {
+            $window = config('fuelcab.notifications.otp.resend_window', 10);
+            return $this->error(
+                'Too many requests',
+                "You have exceeded the OTP resend limit. Please try again in {$window} minutes.",
+                429
+            );
+        }
+
+        $code    = $this->generateAndSendOtp($phone);
+        $sandbox = app()->environment('testing')
+            || (bool) config('fuelcab.notifications.otp.sandbox', false);
+
+        return $this->success([
+            'phone' => $phone,
+            'otp'   => $sandbox ? $code : null,
+        ], 'OTP resent successfully');
     }
 
     /**
@@ -128,22 +227,24 @@ class AuthController extends Controller
         $phone = $validated['phone'];
         $otp   = $validated['otp'];
 
-        $cachedCode = Cache::get("otp_{$phone}");
+        $cachedCode = Cache::get(self::OTP_CACHE_PREFIX . $phone);
 
         if (! $cachedCode || $cachedCode !== $otp) {
             return $this->error('Verification failed', 'Invalid or expired OTP code.', 422);
         }
 
-        // Clear OTP once verified
-        Cache::forget("otp_{$phone}");
+        // Clear OTP once successfully verified (single-use)
+        Cache::forget(self::OTP_CACHE_PREFIX . $phone);
 
-        $user = User::where('phone', $phone)->first();
+        // Clear resend counter on successful verification
+        Cache::forget(self::RESEND_CACHE_PREFIX . $phone);
+
+        $user      = User::where('phone', $phone)->first();
         $isNewUser = false;
 
         if (! $user) {
-            // Register as new Customer
             $isNewUser = true;
-            $user = User::create([
+            $user      = User::create([
                 'name'              => 'Customer ' . substr($phone, -4),
                 'email'             => 'user_' . Str::random(10) . '@fuelcab.com',
                 'phone'             => $phone,
@@ -155,6 +256,12 @@ class AuthController extends Controller
 
             $user->assignRole(UserRole::Customer->value);
         }
+
+        Log::info('[OTP] Verified', [
+            'phone'      => $phone,
+            'is_new'     => $isNewUser,
+            'user_id'    => $user->id,
+        ]);
 
         $token = $user->createToken('otp-auth-token')->plainTextToken;
 

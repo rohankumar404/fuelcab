@@ -29,13 +29,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | SMS Provider
+    | SMS Provider — Authkey.io
     |--------------------------------------------------------------------------
+    | No secret key required. Only authkey + sid are needed.
+    | Docs: https://authkey.io/docs
     */
 
-    'sms' => [
-        'provider' => env('SMS_PROVIDER', 'twilio'), // twilio | msg91 | fast2sms
-        'from'     => env('SMS_FROM'),
+    'authkey' => [
+        'key'          => env('AUTHKEY_KEY', ''),
+        'sid'          => env('AUTHKEY_SID', ''),
+        'country_code' => env('AUTHKEY_COUNTRY_CODE', '91'),
+        'base_url'     => 'https://api.authkey.io/request',
     ],
 
     /*
@@ -45,10 +49,12 @@ return [
     */
 
     'otp' => [
-        'expiry_minutes' => (int) env('OTP_EXPIRY_MINUTES', 10),
-        'length'         => (int) env('OTP_LENGTH', 6),
-        'sandbox'        => (bool) env('OTP_SANDBOX', false), // use static OTP in dev
-        'sandbox_code'   => env('OTP_SANDBOX_CODE', '123456'),
+        'expiry_minutes'  => (int) env('OTP_EXPIRY_MINUTES', 10),
+        'length'          => (int) env('OTP_LENGTH', 6),
+        'max_resend'      => (int) env('OTP_MAX_RESEND', 3),
+        'resend_window'   => (int) env('OTP_RESEND_WINDOW_MINUTES', 10),
+        'sandbox'         => (bool) env('OTP_SANDBOX', false),
+        'sandbox_code'    => env('OTP_SANDBOX_CODE', '123456'),
     ],
 
 ];

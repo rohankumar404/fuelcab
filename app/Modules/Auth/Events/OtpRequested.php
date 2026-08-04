@@ -12,8 +12,8 @@ class OtpRequested
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        public readonly string $phone,
+        public readonly string $code,
+    ) {}
 }
