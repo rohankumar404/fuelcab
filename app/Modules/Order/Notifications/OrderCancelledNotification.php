@@ -21,7 +21,20 @@ class OrderCancelledNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'fcm'];
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => "Order Cancelled ❌ — #{$this->order->id}",
+            'body'  => "Your order #{$this->order->id} has been cancelled." . ($this->reason ? " Reason: {$this->reason}" : ''),
+            'data'  => [
+                'type'     => 'order_cancelled',
+                'order_id' => $this->order->id,
+                'reason'   => $this->reason,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

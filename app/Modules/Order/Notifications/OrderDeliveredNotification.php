@@ -20,7 +20,19 @@ class OrderDeliveredNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'fcm'];
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => "Delivery Complete 🎉 — #{$this->order->id}",
+            'body'  => "Your fuel order #{$this->order->id} has been delivered successfully. Thank you for choosing FuelCab!",
+            'data'  => [
+                'type'     => 'order_delivered',
+                'order_id' => $this->order->id,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

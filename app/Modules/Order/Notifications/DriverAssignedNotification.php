@@ -20,7 +20,21 @@ class DriverAssignedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'fcm'];
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        $driver = $this->order->driver;
+        return [
+            'title' => "Driver Assigned 🚚 — #{$this->order->id}",
+            'body'  => "A driver " . ($driver?->name ?? 'partner') . " has been assigned to your order #{$this->order->id}.",
+            'data'  => [
+                'type'      => 'driver_assigned',
+                'order_id'  => $this->order->id,
+                'driver_id' => $this->order->driver_id,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

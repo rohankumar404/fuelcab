@@ -28,6 +28,12 @@ class SendVendorApprovalNotification implements ShouldQueue
                     new VendorApprovedMail($vendor->contact_person, $vendor->brand_name, $vendor->vendor_code)
                 );
             }
+
+            // Notify all vendor users (database + FCM)
+            $vendor->loadMissing('users');
+            foreach ($vendor->users as $user) {
+                $user->notify(new \App\Modules\Vendor\Notifications\VendorApprovedNotification($vendor));
+            }
         } catch (\Throwable $e) {
             Log::error('[SendVendorApprovalNotification] Failed to queue vendor approval email', [
                 'vendor_id' => $event->vendor->id ?? null,

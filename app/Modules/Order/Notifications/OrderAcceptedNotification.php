@@ -20,7 +20,19 @@ class OrderAcceptedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'fcm'];
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => "Order Accepted ✅ — #{$this->order->id}",
+            'body'  => "Great news! Your order #{$this->order->id} has been accepted. A driver will be assigned shortly.",
+            'data'  => [
+                'type'     => 'order_accepted',
+                'order_id' => $this->order->id,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

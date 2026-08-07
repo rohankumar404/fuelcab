@@ -28,6 +28,12 @@ class SendVendorRejectionNotification implements ShouldQueue
                     new VendorRejectedMail($vendor->contact_person, $vendor->brand_name, $event->reason)
                 );
             }
+
+            // Notify all vendor users (database + FCM)
+            $vendor->loadMissing('users');
+            foreach ($vendor->users as $user) {
+                $user->notify(new \App\Modules\Vendor\Notifications\VendorRejectedNotification($vendor, $event->reason));
+            }
         } catch (\Throwable $e) {
             Log::error('[SendVendorRejectionNotification] Failed to queue vendor rejection email', [
                 'vendor_id' => $event->vendor->id ?? null,

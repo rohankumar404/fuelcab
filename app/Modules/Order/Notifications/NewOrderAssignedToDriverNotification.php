@@ -20,7 +20,19 @@ class NewOrderAssignedToDriverNotification extends Notification implements Shoul
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'fcm'];
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => "New Delivery Assignment 📦 — #{$this->order->id}",
+            'body'  => "You have been assigned a new delivery order #{$this->order->id}. Proceed to the vendor for pickup.",
+            'data'  => [
+                'type'     => 'driver_new_order',
+                'order_id' => $this->order->id,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

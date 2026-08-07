@@ -20,7 +20,19 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'fcm'];
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => "Order Confirmed — #{$this->order->id}",
+            'body'  => "Your order #{$this->order->id} has been placed successfully.",
+            'data'  => [
+                'type'     => 'order_placed',
+                'order_id' => $this->order->id,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

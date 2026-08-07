@@ -20,7 +20,19 @@ class OrderOutForDeliveryNotification extends Notification implements ShouldQueu
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'fcm'];
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => "Out for Delivery 🚚 — #{$this->order->id}",
+            'body'  => "Your fuel order #{$this->order->id} is out for delivery! Track your driver in real-time.",
+            'data'  => [
+                'type'     => 'order_out_for_delivery',
+                'order_id' => $this->order->id,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

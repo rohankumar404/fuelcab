@@ -144,6 +144,9 @@ class ProcessCheckoutPaymentAction
                 'status'                 => 'completed',
             ]);
 
+            // Dispatch PaymentVerified event
+            event(new \App\Modules\Payment\Events\PaymentVerified($payment));
+
             // ── 7. Clear cart and mark checkout complete ──────────────────
             $checkout->cart->items()->delete();
             $checkout->cart->update(['vendor_id' => null]);

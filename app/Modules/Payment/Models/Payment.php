@@ -20,4 +20,9 @@ class Payment extends Model
     {
         return [];
     }
+
+    public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Order\Models\Order::class, 'order_id');
+    }
 }
