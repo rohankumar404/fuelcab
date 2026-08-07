@@ -25,6 +25,17 @@ class GenerateInvoice implements ShouldQueue
             'order_id' => $order->id,
         ]);
 
+        // Generate the high-fidelity tax invoice PDF file
+        try {
+            $pdfPath = (new \App\Modules\Order\Helpers\InvoicePdfGenerator())->generate($order);
+        } catch (\Throwable $e) {
+            Log::error('GenerateInvoice: Failed to generate PDF invoice file', [
+                'order_id' => $order->id,
+                'error'    => $e->getMessage(),
+            ]);
+            $pdfPath = null;
+        }
+
         // Send invoice email to customer if email is available
         if ($order->customer?->email) {
             $item        = $order->items->first();
@@ -51,7 +62,8 @@ class GenerateInvoice implements ShouldQueue
                         deliveryFee:   $delivery,
                         total:         $total,
                         paymentMethod: $method,
-                        orderId:       $order->id
+                        orderId:       $order->id,
+                        pdfPath:       $pdfPath
                     )
                 );
             } catch (\Throwable $e) {

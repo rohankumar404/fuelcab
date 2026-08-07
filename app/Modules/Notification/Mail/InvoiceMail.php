@@ -26,6 +26,7 @@ class InvoiceMail extends Mailable
     public ?float $total;
     public ?string $paymentMethod;
     public ?string $orderId;
+    public ?string $pdfPath;
 
     public function __construct(
         ?string $customerName = 'Customer',
@@ -38,7 +39,8 @@ class InvoiceMail extends Mailable
         ?float $deliveryFee = 0.0,
         ?float $total = 0.0,
         ?string $paymentMethod = 'Online',
-        ?string $orderId = 'N/A'
+        ?string $orderId = 'N/A',
+        ?string $pdfPath = null
     ) {
         $this->customerName  = $customerName ?? 'Customer';
         $this->orderNumber   = $orderNumber ?? 'N/A';
@@ -51,6 +53,7 @@ class InvoiceMail extends Mailable
         $this->total         = (float) ($total ?? 0.0);
         $this->paymentMethod = $paymentMethod ?? 'Online';
         $this->orderId       = $orderId ?? 'N/A';
+        $this->pdfPath       = $pdfPath;
     }
 
     public function envelope(): Envelope
@@ -65,5 +68,23 @@ class InvoiceMail extends Mailable
         return new Content(
             view: 'emails.invoice',
         );
+    }
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        if ($this->pdfPath && file_exists($this->pdfPath)) {
+            return [
+                \Illuminate\Mail\Mailables\Attachment::fromPath($this->pdfPath)
+                    ->as('invoice-' . $this->orderId . '.pdf')
+                    ->withMime('application/pdf'),
+            ];
+        }
+
+        return [];
     }
 }
