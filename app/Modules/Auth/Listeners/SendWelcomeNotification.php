@@ -24,7 +24,9 @@ class SendWelcomeNotification implements ShouldQueue
             $user = $event->user;
             $role = $user->role_type === UserRole::VendorAdmin ? 'vendor' : 'customer';
 
-            SendEmailJob::dispatch($user->email, new WelcomeMail($user->name, $role));
+            if ($user->email) {
+                SendEmailJob::dispatch($user->email, new WelcomeMail($user->name, $role));
+            }
         } catch (\Throwable $e) {
             Log::error('[SendWelcomeNotification] Failed to queue welcome email', [
                 'user_id' => $event->user->id ?? null,

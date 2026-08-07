@@ -15,11 +15,19 @@ class VendorApprovedMail extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public ?string $contactPerson;
+    public ?string $companyName;
+    public ?string $vendorCode;
+
     public function __construct(
-        public string $contactPerson,
-        public string $companyName,
-        public string $vendorCode
-    ) {}
+        ?string $contactPerson = 'Vendor',
+        ?string $companyName = 'Company',
+        ?string $vendorCode = 'N/A'
+    ) {
+        $this->contactPerson = $contactPerson ?? 'Vendor';
+        $this->companyName   = $companyName ?? 'Company';
+        $this->vendorCode    = $vendorCode ?? 'N/A';
+    }
 
     public function envelope(): Envelope
     {

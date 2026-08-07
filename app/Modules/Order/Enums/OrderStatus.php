@@ -36,4 +36,19 @@ enum OrderStatus: string
     {
         return in_array($target, $this->allowedTransitions(), true);
     }
+
+    /**
+     * Get a human-readable label for the status.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Pending => 'Pending',
+            self::Accepted => 'Accepted',
+            self::Assigned => 'Assigned',
+            self::OutForDelivery => 'Out for Delivery',
+            self::Delivered => 'Delivered',
+            self::Cancelled => 'Cancelled',
+        };
+    }
 }

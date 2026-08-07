@@ -22,10 +22,12 @@ class SendVendorRejectionNotification implements ShouldQueue
         try {
             $vendor = $event->vendor;
 
-            SendEmailJob::dispatch(
-                $vendor->email,
-                new VendorRejectedMail($vendor->contact_person, $vendor->brand_name, $event->reason)
-            );
+            if ($vendor->email) {
+                SendEmailJob::dispatch(
+                    $vendor->email,
+                    new VendorRejectedMail($vendor->contact_person, $vendor->brand_name, $event->reason)
+                );
+            }
         } catch (\Throwable $e) {
             Log::error('[SendVendorRejectionNotification] Failed to queue vendor rejection email', [
                 'vendor_id' => $event->vendor->id ?? null,

@@ -15,18 +15,40 @@ class QuoteMail extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public ?string $type;
+    public ?string $productName;
+    public ?float $quantity;
+    public ?string $deliveryDate;
+    public ?float $price;
+    public ?string $unit;
+    public ?float $minQty;
+    public ?string $validity;
+    public ?string $dispatch;
+    public ?string $terms;
+
     public function __construct(
-        public string $type, // 'request' or 'response'
-        public string $productName,
-        public float $quantity,
-        public ?string $deliveryDate = null,
-        public ?float $price = null,
-        public ?string $unit = null,
-        public ?float $minQty = null,
-        public ?string $validity = null,
-        public ?string $dispatch = null,
-        public ?string $terms = null
-    ) {}
+        ?string $type = 'request',
+        ?string $productName = 'Bulk Fuel',
+        ?float $quantity = 0.0,
+        ?string $deliveryDate = null,
+        ?float $price = null,
+        ?string $unit = null,
+        ?float $minQty = null,
+        ?string $validity = null,
+        ?string $dispatch = null,
+        ?string $terms = null
+    ) {
+        $this->type         = $type ?? 'request';
+        $this->productName  = $productName ?? 'Bulk Fuel';
+        $this->quantity     = (float) ($quantity ?? 0.0);
+        $this->deliveryDate = $deliveryDate;
+        $this->price        = $price !== null ? (float) $price : null;
+        $this->unit         = $unit;
+        $this->minQty       = $minQty !== null ? (float) $minQty : null;
+        $this->validity     = $validity;
+        $this->dispatch     = $dispatch;
+        $this->terms        = $terms;
+    }
 
     public function envelope(): Envelope
     {

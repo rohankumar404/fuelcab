@@ -22,10 +22,12 @@ class SendVendorApprovalNotification implements ShouldQueue
         try {
             $vendor = $event->vendor;
 
-            SendEmailJob::dispatch(
-                $vendor->email,
-                new VendorApprovedMail($vendor->contact_person, $vendor->brand_name, $vendor->vendor_code)
-            );
+            if ($vendor->email) {
+                SendEmailJob::dispatch(
+                    $vendor->email,
+                    new VendorApprovedMail($vendor->contact_person, $vendor->brand_name, $vendor->vendor_code)
+                );
+            }
         } catch (\Throwable $e) {
             Log::error('[SendVendorApprovalNotification] Failed to queue vendor approval email', [
                 'vendor_id' => $event->vendor->id ?? null,

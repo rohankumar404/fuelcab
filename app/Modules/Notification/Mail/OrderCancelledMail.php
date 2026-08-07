@@ -15,12 +15,22 @@ class OrderCancelledMail extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public ?string $customerName;
+    public ?string $orderNumber;
+    public ?string $productName;
+    public ?float $quantity;
+
     public function __construct(
-        public string $customerName,
-        public string $orderNumber,
-        public string $productName,
-        public float $quantity
-    ) {}
+        ?string $customerName = 'Customer',
+        ?string $orderNumber = 'N/A',
+        ?string $productName = 'Fuel Product',
+        ?float $quantity = 0.0
+    ) {
+        $this->customerName = $customerName ?? 'Customer';
+        $this->orderNumber  = $orderNumber ?? 'N/A';
+        $this->productName  = $productName ?? 'Fuel Product';
+        $this->quantity     = (float) ($quantity ?? 0.0);
+    }
 
     public function envelope(): Envelope
     {

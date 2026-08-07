@@ -15,11 +15,19 @@ class VendorRejectedMail extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public ?string $contactPerson;
+    public ?string $companyName;
+    public ?string $reason;
+
     public function __construct(
-        public string $contactPerson,
-        public string $companyName,
-        public string $reason
-    ) {}
+        ?string $contactPerson = 'Vendor',
+        ?string $companyName = 'Company',
+        ?string $reason = 'Application details could not be verified'
+    ) {
+        $this->contactPerson = $contactPerson ?? 'Vendor';
+        $this->companyName   = $companyName ?? 'Company';
+        $this->reason        = $reason ?? 'Application details could not be verified';
+    }
 
     public function envelope(): Envelope
     {

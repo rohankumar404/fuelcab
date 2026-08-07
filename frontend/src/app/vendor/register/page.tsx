@@ -46,6 +46,32 @@ function VendorLogo() {
 
 const STEPS_LABELS = ["Business", "Location", "Verify", "Secure"];
 
+// Dark input helper
+const DarkInput = ({ id, type = "text", placeholder, value, onChange, onBlur, icon: Icon, error, touched, maxLength }: {
+  id: string; type?: string; placeholder: string; value: string;
+  onChange: (v: string) => void; onBlur?: () => void;
+  icon?: React.FC<{ className?: string }>; error?: boolean; touched?: boolean; maxLength?: number;
+}) => (
+  <div className={`flex items-center rounded-xl border overflow-hidden transition focus-within:ring-2 bg-white/8 ${
+    touched && error ? "border-red-400 focus-within:ring-red-400/20" : "border-white/15 focus-within:border-[#33b248] focus-within:ring-[#33b248]/20"
+  }`}>
+    {Icon && <span className="pl-3.5 text-gray-400 flex-shrink-0"><Icon className="w-4 h-4" /></span>}
+    <input id={id} type={type} placeholder={placeholder} value={value}
+      maxLength={maxLength}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlur}
+      className="flex-1 h-11 px-3 bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none"
+    />
+  </div>
+);
+
+const ErrMsg = ({ msg, visible }: { msg: string; visible: boolean }) =>
+  visible ? <p className="mt-1.5 text-xs text-red-400">{msg}</p> : null;
+
+const DarkLabel = ({ children }: { children: React.ReactNode }) => (
+  <label className="block text-sm font-semibold text-white mb-1.5">{children}</label>
+);
+
 export default function VendorRegisterPage() {
   const [step, setStep] = useState<VStep>("business");
 
@@ -172,31 +198,6 @@ export default function VendorRegisterPage() {
     setLoading(false);
   };
 
-  // Dark input helper
-  const DarkInput = ({ id, type = "text", placeholder, value, onChange, onBlur, icon: Icon, error, touched, maxLength }: {
-    id: string; type?: string; placeholder: string; value: string;
-    onChange: (v: string) => void; onBlur?: () => void;
-    icon?: React.FC<{ className?: string }>; error?: boolean; touched?: boolean; maxLength?: number;
-  }) => (
-    <div className={`flex items-center rounded-xl border overflow-hidden transition focus-within:ring-2 bg-white/8 ${
-      touched && error ? "border-red-400 focus-within:ring-red-400/20" : "border-white/15 focus-within:border-[#33b248] focus-within:ring-[#33b248]/20"
-    }`}>
-      {Icon && <span className="pl-3.5 text-gray-400 flex-shrink-0"><Icon className="w-4 h-4" /></span>}
-      <input id={id} type={type} placeholder={placeholder} value={value}
-        maxLength={maxLength}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        className="flex-1 h-11 px-3 bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none"
-      />
-    </div>
-  );
-
-  const ErrMsg = ({ msg, visible }: { msg: string; visible: boolean }) =>
-    visible ? <p className="mt-1.5 text-xs text-red-400">{msg}</p> : null;
-
-  const DarkLabel = ({ children }: { children: React.ReactNode }) => (
-    <label className="block text-sm font-semibold text-white mb-1.5">{children}</label>
-  );
 
   if (step === "done") {
     return (
