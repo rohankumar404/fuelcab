@@ -40,6 +40,8 @@ interface Props {
   listing: VendorListing;
 }
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002").replace(/\/$/, "");
+
 export default function ListingDetailClient({ listing }: Props) {
   const { addItem } = useCartStore();
 
@@ -56,6 +58,7 @@ export default function ListingDetailClient({ listing }: Props) {
   const [rfqModalOpen, setRfqModalOpen] = useState(false);
   const [rfqSuccess, setRfqSuccess] = useState(false);
   const [rfqLoading, setRfqLoading] = useState(false);
+  const [rfqError, setRfqError] = useState<string | null>(null);
 
   // RFQ Form inputs
   const [rfqForm, setRfqForm] = useState({
@@ -91,18 +94,66 @@ export default function ListingDetailClient({ listing }: Props) {
     }
   };
 
-  // Handle RFQ Form Submission in REQUEST_QUOTE mode
-  const handleRfqSubmit = (e: React.FormEvent) => {
+  // Handle RFQ Form Submission — calls real Laravel API
+  const handleRfqSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRfqLoading(true);
-    setTimeout(() => {
-      setRfqLoading(false);
+    setRfqError(null);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/marketplace/rfq`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          name:          rfqForm.name,
+          company:       rfqForm.company,
+          email:         rfqForm.email,
+          phone:         rfqForm.phone,
+          quantity:      rfqForm.required_qty,
+          message:       rfqForm.notes || undefined,
+          product_name:  listing.fuel_type || listing.title || "Bulk Fuel",
+          listing_slug:  listing.marketplace_product_slug || listing.slug || undefined,
+          vendor_name:   listing.vendor?.brand_name || undefined,
+          delivery_date: undefined,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        // Laravel validation errors come back as { errors: { field: [msg] } }
+        const firstError =
+          json?.errors
+            ? Object.values(json.errors as Record<string, string[]>)
+                .flat()
+                .join(" ")
+            : json?.message || "Failed to submit quote. Please try again.";
+        setRfqError(firstError);
+        return;
+      }
+
       setRfqSuccess(true);
+      // Auto-close after 3.5 s
       setTimeout(() => {
         setRfqSuccess(false);
         setRfqModalOpen(false);
+        // Reset form
+        setRfqForm({
+          name: "",
+          company: "",
+          phone: "",
+          email: "",
+          required_qty: listing.min_order_quantity,
+          target_price: listing.base_price,
+          delivery_pincode: "",
+          notes: "",
+        });
       }, 3500);
-    }, 1200);
+    } catch {
+      setRfqError("Network error. Please check your connection and try again.");
+    } finally {
+      setRfqLoading(false);
+    }
   };
 
   return (
@@ -636,6 +687,14 @@ export default function ListingDetailClient({ listing }: Props) {
                       className="w-full p-3 bg-[#f4f8f5] rounded-xl border border-[#e7ece8] text-xs focus:border-[#33b248] focus:outline-none"
                     />
                   </div>
+
+                  {/* API / validation error */}
+                  {rfqError && (
+                    <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700">
+                      <X className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
+                      <span>{rfqError}</span>
+                    </div>
+                  )}
 
                   <button
                     type="submit"
