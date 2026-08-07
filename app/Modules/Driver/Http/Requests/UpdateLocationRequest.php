@@ -10,7 +10,15 @@ class UpdateLocationRequest extends ApiRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role_type === 'driver';
+        if (! auth()->check()) {
+            return false;
+        }
+
+        $role = auth()->user()->role_type;
+
+        return $role === \App\Enums\UserRole::Driver || 
+               ($role instanceof \BackedEnum && $role->value === 'driver') || 
+               $role === 'driver';
     }
 
     public function rules(): array
