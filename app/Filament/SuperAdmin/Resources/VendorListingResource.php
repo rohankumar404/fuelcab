@@ -210,7 +210,47 @@ class VendorListingResource extends Resource
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                // No DeleteBulkAction — listings are referenced by orders and payments
+                Tables\Actions\BulkAction::make('bulkApprove')
+                    ->label('Bulk Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                        $service = app(VendorListingService::class);
+                        $user = auth()->user();
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->approval_status === ListingStatus::PendingApproval) {
+                                $service->approve($record, $user);
+                                $count++;
+                            }
+                        }
+                        if ($count > 0) {
+                            Notification::make()->title("{$count} listings approved.")->success()->send();
+                        } else {
+                            Notification::make()->title('No listings were pending approval.')->warning()->send();
+                        }
+                    }),
+                Tables\Actions\BulkAction::make('bulkSuspend')
+                    ->label('Bulk Suspend')
+                    ->icon('heroicon-o-pause-circle')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                        $service = app(VendorListingService::class);
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->approval_status === ListingStatus::Approved) {
+                                $service->suspend($record);
+                                $count++;
+                            }
+                        }
+                        if ($count > 0) {
+                            Notification::make()->title("{$count} listings suspended.")->warning()->send();
+                        } else {
+                            Notification::make()->title('No active approved listings selected.')->warning()->send();
+                        }
+                    })
             ]);
     }
 

@@ -110,7 +110,24 @@ class MarketplaceOrderResource extends Resource
                 // No delete — marketplace orders are financial records
             ])
             ->bulkActions([
-                // No bulk delete
+                Tables\Actions\BulkAction::make('updateStatus')
+                    ->label('Update Status')
+                    ->icon('heroicon-o-check-circle')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Select::make('status')
+                            ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
+                            ->required(),
+                    ])
+                    ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+                        foreach ($records as $record) {
+                            $record->update(['status' => $data['status']]);
+                        }
+                        \Filament\Notifications\Notification::make()
+                            ->title('Orders status updated successfully.')
+                            ->success()
+                            ->send();
+                    })
             ]);
     }
 
