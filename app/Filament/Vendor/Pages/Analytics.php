@@ -41,10 +41,17 @@ class Analytics extends Page
             ->toArray();
 
         // Monthly revenue (last 6 months)
+        $driver = config('database.default');
+        $monthExpr = match ($driver) {
+            'pgsql'  => "TO_CHAR(created_at, 'YYYY-MM')",
+            'mysql'  => "DATE_FORMAT(created_at, '%Y-%m')",
+            default  => "strftime('%Y-%m', created_at)", // sqlite (tests)
+        };
+
         $monthlyRevenue = Order::where('vendor_id', $vendorId)
             ->where('status', OrderStatus::Delivered->value)
             ->where('created_at', '>=', now()->subMonths(6))
-            ->selectRaw("strftime('%Y-%m', created_at) as month, SUM(total_amount) as revenue")
+            ->selectRaw("{$monthExpr} as month, SUM(total_amount) as revenue")
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('revenue', 'month')
