@@ -12,8 +12,7 @@ class DriverApproved
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        public readonly \App\Modules\Driver\Models\Driver $driver
+    ) {}
 }

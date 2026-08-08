@@ -19,6 +19,26 @@ class Driver extends Model
 
     protected function casts(): array
     {
-        return [];
+        return [
+            'is_approved'    => 'boolean',
+            'license_expiry' => 'date',
+        ];
+    }
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function vehicles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Vehicle::class, 'driver_vehicle')
+            ->withPivot('is_active', 'assigned_at', 'unassigned_at')
+            ->withTimestamps();
+    }
+
+    public function activeVehicle(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->vehicles()->wherePivot('is_active', true);
     }
 }

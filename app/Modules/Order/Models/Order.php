@@ -30,6 +30,7 @@ class Order extends Model
             'channel'               => SalesChannel::class,
             'scheduled_delivery_at' => 'datetime',
             'delivered_at'          => 'datetime',
+            'otp_verified_at'       => 'datetime',
             'subtotal_amount'       => 'float',
             'delivery_fee'          => 'float',
             'tax_amount'            => 'float',
