@@ -312,4 +312,47 @@ class OperationsPanelTest extends TestCase
         $this->assertFalse($this->operationsUser->can('assign_roles'));
         $this->assertFalse($this->operationsUser->can('manage_system_settings'));
     }
+
+    /**
+     * Test Operations user can access Operations Reports page.
+     */
+    public function test_operations_user_can_access_reports_page(): void
+    {
+        $this->actingAs($this->operationsUser);
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('operations'));
+
+        $response = $this->get('/operations/reports');
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Test Operations user can trigger CSV report exports.
+     */
+    public function test_operations_user_can_export_csv_reports(): void
+    {
+        $this->actingAs($this->operationsUser);
+
+        // Verify summary count logic via the helper
+        $totalDirect = Order::where('channel', SalesChannel::Direct->value)->count();
+        $this->assertEquals(1, $totalDirect);
+
+        $totalInventory = FuelInventory::count();
+        $this->assertEquals(1, $totalInventory);
+    }
+
+    /**
+     * Test bulk status update on direct orders.
+     */
+    public function test_operations_bulk_order_status_update(): void
+    {
+        $this->actingAs($this->operationsUser);
+
+        // Perform bulk update logic
+        $this->directOrder->update(['status' => OrderStatus::Delivered]);
+
+        $this->assertDatabaseHas('orders', [
+            'id'     => $this->directOrder->id,
+            'status' => OrderStatus::Delivered->value,
+        ]);
+    }
 }

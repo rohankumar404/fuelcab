@@ -41,6 +41,8 @@ class OperationsPanelProvider extends PanelProvider
             ->font('Inter', 'https://fonts.bunny.net/css?family=inter:100,200,300,400,500,600,700,800,900')
             ->darkMode(true)
             ->sidebarCollapsibleOnDesktop()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->navigationGroups([
                 NavigationGroup::make('Dashboard')
                     ->icon('heroicon-o-home'),
