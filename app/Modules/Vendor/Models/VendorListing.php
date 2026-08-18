@@ -50,6 +50,8 @@ class VendorListing extends Model
         'reviewed_by',
         'reviewed_at',
         'approved_at',
+        'seo_title',
+        'seo_description',
     ];
 
     protected $casts = [

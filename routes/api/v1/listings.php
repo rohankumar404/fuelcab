@@ -18,8 +18,29 @@ Route::prefix('marketplace/listings')->group(function () {
         ->where('slug', '[a-z0-9\-]+');
 });
 
+Route::prefix('marketplace')->group(function () {
+    Route::get('categories', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'categories']);
+    Route::get('products', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'products']);
+    Route::post('compare', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'compare']);
+    Route::get('vendors/{vendor}', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'showVendorProfile']);
+});
+
 // ── Authenticated routes ──────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::prefix('marketplace')->group(function () {
+        Route::get('wishlist', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'listWishlist']);
+        Route::post('wishlist', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'addWishlist']);
+        Route::delete('wishlist/{listingId}', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'removeWishlist']);
+
+        Route::get('recently-viewed', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'listRecentlyViewed']);
+        Route::post('recently-viewed', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'addRecentlyViewed']);
+
+        Route::post('vendors/{vendor}/ratings', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'rateVendor']);
+        
+        Route::post('listings/{slug}/order', [\App\Modules\Vendor\Http\Controllers\MarketplaceController::class, 'directOrder'])
+            ->where('slug', '[a-z0-9\-]+');
+    });
 
     // Vendor self-service (scoped to own vendor via service/policy)
     Route::prefix('vendor/listings')->group(function () {

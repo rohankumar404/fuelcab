@@ -134,6 +134,18 @@ class VendorListingService
 
     /**
      * Public marketplace — only APPROVED + is_active listings.
+     *
+     * Supported filters:
+     *   - search               (listing_title ilike)
+     *   - marketplace_product_id
+     *   - category_id          (join through marketplace_product)
+     *   - vendor_id
+     *   - dispatch_location    (ilike)
+     *   - featured             (boolean flag)
+     *   - unit                 (litres|kilograms|metric_tonnes|units)
+     *   - price_min            (base_price >=)
+     *   - price_max            (base_price <=)
+     *   - sort_by              (price_asc|price_desc|newest|featured)
      */
     public function getPublicListings(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
@@ -142,6 +154,12 @@ class VendorListingService
 
         if (! empty($filters['marketplace_product_id'])) {
             $query->where('marketplace_product_id', $filters['marketplace_product_id']);
+        }
+
+        if (! empty($filters['category_id'])) {
+            $query->whereHas('marketplaceProduct', function ($q) use ($filters) {
+                $q->where('category_id', $filters['category_id']);
+            });
         }
 
         if (! empty($filters['vendor_id'])) {
@@ -156,11 +174,35 @@ class VendorListingService
             $query->where('is_featured', true);
         }
 
-        if (! empty($filters['search'])) {
-            $query->where('listing_title', 'ilike', '%' . $filters['search'] . '%');
+        if (! empty($filters['unit'])) {
+            $query->where('unit', $filters['unit']);
         }
 
-        return $query->latest()->paginate($perPage);
+        if (! empty($filters['search'])) {
+            $term = $filters['search'];
+            $query->where(function ($q) use ($term) {
+                $q->where('listing_title', 'ilike', '%' . $term . '%')
+                  ->orWhere('short_description', 'ilike', '%' . $term . '%');
+            });
+        }
+
+        if (isset($filters['price_min']) && is_numeric($filters['price_min'])) {
+            $query->where('base_price', '>=', (float) $filters['price_min']);
+        }
+
+        if (isset($filters['price_max']) && is_numeric($filters['price_max'])) {
+            $query->where('base_price', '<=', (float) $filters['price_max']);
+        }
+
+        $sortBy = $filters['sort_by'] ?? 'newest';
+        match ($sortBy) {
+            'price_asc'  => $query->orderBy('base_price', 'asc'),
+            'price_desc' => $query->orderBy('base_price', 'desc'),
+            'featured'   => $query->orderByDesc('is_featured')->orderByDesc('created_at'),
+            default      => $query->latest(), // newest
+        };
+
+        return $query->paginate($perPage);
     }
 
     /**

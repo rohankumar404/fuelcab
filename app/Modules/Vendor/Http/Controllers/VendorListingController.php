@@ -27,7 +27,18 @@ class VendorListingController extends Controller
     public function publicIndex(Request $request): VendorListingCollection
     {
         $listings = $this->service->getPublicListings(
-            filters: $request->only(['marketplace_product_id', 'vendor_id', 'dispatch_location', 'featured', 'search']),
+            filters: $request->only([
+                'marketplace_product_id',
+                'category_id',
+                'vendor_id',
+                'dispatch_location',
+                'featured',
+                'search',
+                'unit',
+                'price_min',
+                'price_max',
+                'sort_by',
+            ]),
             perPage: (int) $request->get('per_page', 20),
         );
 

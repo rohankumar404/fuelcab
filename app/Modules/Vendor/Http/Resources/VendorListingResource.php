@@ -64,6 +64,8 @@ class VendorListingResource extends JsonResource
                 'city'       => $this->vendor->city,
                 'state'      => $this->vendor->state,
             ]),
+            'seo_title'                => $this->seo_title ?? $this->listing_title,
+            'seo_description'          => $this->seo_description ?? $this->short_description,
             'created_at'               => $this->created_at,
             'updated_at'               => $this->updated_at,
         ];
