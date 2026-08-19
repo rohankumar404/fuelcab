@@ -166,4 +166,50 @@ class CartController extends Controller
             'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
         ]);
     }
+
+    /**
+     * POST /api/v1/cart/coupon
+     */
+    public function applyCoupon(Request $request): JsonResponse
+    {
+        $request->validate([
+            'code' => 'required|string|max:50',
+        ]);
+
+        try {
+            $user       = $request->user();
+            $guestToken = $this->getGuestToken($request);
+
+            $cart = $this->cartService->applyCoupon($user, $guestToken, $request->input('code'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Coupon applied successfully.',
+                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+            ]);
+        } catch (\DomainException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * DELETE /api/v1/cart/coupon
+     */
+    public function removeCoupon(Request $request): JsonResponse
+    {
+        try {
+            $user       = $request->user();
+            $guestToken = $this->getGuestToken($request);
+
+            $cart = $this->cartService->removeCoupon($user, $guestToken);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Coupon removed.',
+                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+            ]);
+        } catch (\DomainException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
 }

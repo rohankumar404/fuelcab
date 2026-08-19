@@ -79,6 +79,28 @@ class CartItem extends Model
     }
 
     /**
+     * Calculate line taxes dynamically based on tax rate / type.
+     */
+    public function getLineTax(): float
+    {
+        $quantity = (float) $this->quantity;
+        $price    = (float) $this->price_snapshot;
+        $subtotal = $quantity * $price;
+
+        if ($this->vendorListing) {
+            $taxRate = (float) $this->vendorListing->tax_rate;
+            if ($this->vendorListing->tax_inclusive) {
+                return round($subtotal - ($subtotal / (1 + ($taxRate / 100))), 2);
+            } else {
+                return round($subtotal * ($taxRate / 100), 2);
+            }
+        }
+
+        // Direct product fallback: assume 18% tax exclusive
+        return round($subtotal * 0.18, 2);
+    }
+
+    /**
      * Display name of the item seller.
      */
     public function getSellerName(): string

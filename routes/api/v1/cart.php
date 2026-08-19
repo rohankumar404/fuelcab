@@ -27,6 +27,8 @@ Route::middleware('auth:sanctum')->prefix('cart')->group(function (): void {
     Route::delete('items/{itemId}', [CartController::class, 'removeItem']);
     Route::delete('/',              [CartController::class, 'clear']);
     Route::post('merge',            [CartController::class, 'merge']);
+    Route::post('coupon',           [CartController::class, 'applyCoupon']);
+    Route::delete('coupon',         [CartController::class, 'removeCoupon']);
 });
 
 // Public guest-accessible cart routes (no auth required — use X-Guest-Token header)
@@ -36,4 +38,6 @@ Route::prefix('cart')->group(function (): void {
     Route::patch('/guest/items/{itemId}',   [CartController::class, 'updateItem']);
     Route::delete('/guest/items/{itemId}',  [CartController::class, 'removeItem']);
     Route::delete('/guest',                 [CartController::class, 'clear']);
+    Route::post('/guest/coupon',            [CartController::class, 'applyCoupon']);
+    Route::delete('/guest/coupon',          [CartController::class, 'removeCoupon']);
 });

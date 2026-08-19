@@ -24,6 +24,7 @@ class Cart extends Model
         'user_id',
         'vendor_id',
         'guest_token',
+        'applied_coupon_code',
         'created_by',
         'updated_by',
     ];
@@ -52,12 +53,69 @@ class Cart extends Model
 
     // ─── Business Logic ───────────────────────────────────────────────────
 
+    public function getCoupon(): ?\App\Models\Coupon
+    {
+        if (! $this->applied_coupon_code) {
+            return null;
+        }
+        return \App\Models\Coupon::where('code', $this->applied_coupon_code)->where('is_active', true)->first();
+    }
+
+    public function getSubtotal(): float
+    {
+        return (float) round($this->items->sum(fn ($item) => $item->getLineTotal()), 2);
+    }
+
+    public function getCouponDiscount(): float
+    {
+        $coupon = $this->getCoupon();
+        if (! $coupon) {
+            return 0.0;
+        }
+        $subtotal = $this->getSubtotal();
+        if (! $coupon->isValidForAmount($subtotal)) {
+            return 0.0;
+        }
+        return (float) $coupon->calculateDiscount($subtotal);
+    }
+
+    public function getTaxAmount(): float
+    {
+        return (float) round($this->items->sum(fn ($item) => $item->getLineTax()), 2);
+    }
+
+    public function getDeliveryCharges(): float
+    {
+        if ($this->isEmpty()) {
+            return 0.0;
+        }
+        $groups = $this->groupByFulfillment();
+        $charges = 0.0;
+        foreach ($groups as $group) {
+            if ($group['sales_channel'] === 'direct') {
+                $charges += 150.0;
+            } else {
+                $charges += 250.0;
+            }
+        }
+        return (float) $charges;
+    }
+
+    public function getGrandTotal(): float
+    {
+        $subtotal = $this->getSubtotal();
+        $tax      = $this->getTaxAmount();
+        $delivery = $this->getDeliveryCharges();
+        $discount = $this->getCouponDiscount();
+        return (float) max(0.0, round($subtotal + $tax + $delivery - $discount, 2));
+    }
+
     /**
-     * Total price using snapshotted prices.
+     * Total price using snapshotted prices (subtotal before discounts/taxes).
      */
     public function getTotal(): float
     {
-        return (float) round($this->items->sum(fn ($item) => $item->quantity * $item->price_snapshot), 2);
+        return $this->getSubtotal();
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Enums\UnitOfMeasure;
 use App\Enums\UserRole;
 use App\Models\Category;
 use App\Models\User;
+use App\Models\Coupon;
 use App\Modules\Cart\Models\Cart;
 use App\Modules\Cart\Models\CartItem;
 use App\Modules\Cart\Actions\AddItemToCartAction;
@@ -363,7 +364,7 @@ class CartModuleTest extends TestCase
         $response->assertStatus(201)
                  ->assertJson(['success' => true])
                  ->assertJsonPath('data.item_count', 1)
-                 ->assertJsonPath('data.total', 45000);
+                 ->assertJsonPath('data.total', 53250);
     }
 
     /** @test */
@@ -660,5 +661,108 @@ class CartModuleTest extends TestCase
 
         $response->assertOk()
                  ->assertJson(['success' => true]);
+    }
+
+    /** @test */
+    public function test_can_apply_and_remove_valid_coupon(): void
+    {
+        Sanctum::actingAs($this->customer);
+
+        // Create coupon
+        $coupon = Coupon::create([
+            'code'            => 'DISCOUNT20',
+            'discount_type'   => 'percentage',
+            'discount_value'  => 20.00,
+            'min_cart_amount' => 5000.00,
+            'is_active'       => true,
+        ]);
+
+        // Add item to cart
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $this->diesel->id,
+            'quantity'   => 100, // 100 * 90 = 9000 subtotal
+        ])->assertStatus(201);
+
+        // Apply coupon
+        $response = $this->postJson('/api/v1/cart/coupon', [
+            'code' => 'DISCOUNT20',
+        ]);
+        $response->assertOk()
+                 ->assertJsonPath('data.applied_coupon_code', 'DISCOUNT20')
+                 ->assertJsonPath('data.coupon_discount', 1800); // 20% of 9000
+
+        // Remove coupon
+        $this->deleteJson('/api/v1/cart/coupon')
+             ->assertOk()
+             ->assertJsonPath('data.applied_coupon_code', null)
+             ->assertJsonPath('data.coupon_discount', 0);
+    }
+
+    /** @test */
+    public function test_applying_coupon_with_insufficient_amount_fails(): void
+    {
+        Sanctum::actingAs($this->customer);
+
+        Coupon::create([
+            'code'            => 'HIGHVALUE',
+            'discount_type'   => 'fixed',
+            'discount_value'  => 1000.00,
+            'min_cart_amount' => 50000.00,
+            'is_active'       => true,
+        ]);
+
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $this->diesel->id,
+            'quantity'   => 100, // 9000 subtotal
+        ])->assertStatus(201);
+
+        $response = $this->postJson('/api/v1/cart/coupon', [
+            'code' => 'HIGHVALUE',
+        ]);
+        $response->assertStatus(422)
+                 ->assertJsonFragment(['message' => 'Minimum order value of ₹50000 required to apply this coupon.']);
+    }
+
+    /** @test */
+    public function test_cart_resource_returns_complete_order_summary(): void
+    {
+        Sanctum::actingAs($this->customer);
+
+        // Create coupon
+        Coupon::create([
+            'code'            => 'FLAT500',
+            'discount_type'   => 'fixed',
+            'discount_value'  => 500.00,
+            'min_cart_amount' => 1000.00,
+            'is_active'       => true,
+        ]);
+
+        // Add 100L Diesel (100 * 90 = 9000 subtotal, 1620 tax direct)
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $this->diesel->id,
+            'quantity'   => 100,
+        ])->assertStatus(201);
+
+        // Apply coupon
+        $this->postJson('/api/v1/cart/coupon', [
+            'code' => 'FLAT500',
+        ])->assertOk();
+
+        $response = $this->getJson('/api/v1/cart');
+        $response->assertOk()
+                 ->assertJsonStructure([
+                     'data' => [
+                         'subtotal',
+                         'coupon_discount',
+                         'delivery_charges',
+                         'tax_amount',
+                         'grand_total',
+                     ]
+                 ])
+                 ->assertJsonPath('data.subtotal', 9000)
+                 ->assertJsonPath('data.coupon_discount', 500)
+                 ->assertJsonPath('data.delivery_charges', 150) // Direct product delivery fee
+                 ->assertJsonPath('data.tax_amount', 1620) // 18% of 9000 = 1620
+                 ->assertJsonPath('data.grand_total', 10270); // 9000 + 150 + 1620 - 500 = 10270
     }
 }

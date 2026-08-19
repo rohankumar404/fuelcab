@@ -99,4 +99,37 @@ class CartService
     {
         return $this->mergeGuest->execute($guestToken, $user);
     }
+
+    /**
+     * Apply a coupon code to the resolved cart.
+     */
+    public function applyCoupon(?User $user, ?string $guestToken, string $code): Cart
+    {
+        $cart   = $this->resolveCart($user, $guestToken);
+        $coupon = \App\Models\Coupon::where('code', $code)->where('is_active', true)->first();
+
+        if (! $coupon) {
+            throw new \DomainException("Coupon code '{$code}' is invalid or expired.");
+        }
+
+        $subtotal = $cart->getSubtotal();
+        if (! $coupon->isValidForAmount($subtotal)) {
+            throw new \DomainException("Minimum order value of ₹{$coupon->min_cart_amount} required to apply this coupon.");
+        }
+
+        $cart->update(['applied_coupon_code' => $code]);
+
+        return $cart->fresh();
+    }
+
+    /**
+     * Remove the coupon from the resolved cart.
+     */
+    public function removeCoupon(?User $user, ?string $guestToken): Cart
+    {
+        $cart = $this->resolveCart($user, $guestToken);
+        $cart->update(['applied_coupon_code' => null]);
+
+        return $cart->fresh();
+    }
 }
