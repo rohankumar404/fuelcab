@@ -111,7 +111,7 @@ export default function ListingDetailClient({ listing }: Props) {
           phone:         rfqForm.phone,
           quantity:      rfqForm.required_qty,
           message:       rfqForm.notes || undefined,
-          product_name:  listing.fuel_type || listing.title || "Bulk Fuel",
+          product_name:  listing.marketplace_product_name || listing.listing_title || "Bulk Fuel",
           listing_slug:  listing.marketplace_product_slug || listing.slug || undefined,
           vendor_name:   listing.vendor?.brand_name || undefined,
           delivery_date: undefined,

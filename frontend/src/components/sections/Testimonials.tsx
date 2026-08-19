@@ -84,12 +84,32 @@ const STATS: Stat[] = [
 
 function CountUp({ target, suffix, label }: Stat) {
   const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasStarted) {
+          setHasStarted(true);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasStarted]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
     let start = 0;
-    const duration = 2000; // ms
-    const increment = Math.ceil(target / (duration / 16)); // ~60fps
-    
+    const duration = 2000;
+    const increment = Math.ceil(target / (duration / 16));
+
     const timer = setInterval(() => {
       start += increment;
       if (start >= target) {
@@ -101,10 +121,10 @@ function CountUp({ target, suffix, label }: Stat) {
     }, 16);
 
     return () => clearInterval(timer);
-  }, [target]);
+  }, [hasStarted, target]);
 
   return (
-    <div className="flex flex-col items-center">
+    <div ref={ref} className="flex flex-col items-center">
       <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
         {count}
         {suffix}
@@ -142,7 +162,7 @@ export default function Testimonials() {
             <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#f4f8f5] to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#f4f8f5] to-transparent z-10 pointer-events-none" />
             
-            <div className="flex gap-16 animate-[infinite-scroll_25s_linear_infinite] whitespace-nowrap min-w-full">
+            <div className="flex gap-16 animate-infinite-scroll whitespace-nowrap min-w-full">
               {[...LOGOS, ...LOGOS].map((logo, idx) => (
                 <span
                   key={idx}
@@ -267,13 +287,6 @@ export default function Testimonials() {
 
       </div>
       
-      {/* Inject custom infinite scroll CSS keyframe directly */}
-      <style jsx global>{`
-        @keyframes infinite-scroll {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-      `}</style>
     </section>
   );
 }

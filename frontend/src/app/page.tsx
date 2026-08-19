@@ -7,6 +7,7 @@ import HowItWorks from "@/components/sections/HowItWorks";
 import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
 import Testimonials from "@/components/sections/Testimonials";
 import FAQ from "@/components/sections/FAQ";
+import CTASection from "@/components/sections/CTASection";
 import Footer from "@/components/layout/Footer";
 
 export default function HomePage() {
@@ -40,6 +41,9 @@ export default function HomePage() {
 
         {/* FAQ Accordion Section */}
         <FAQ />
+
+        {/* Pre-Footer CTA Section */}
+        <CTASection />
       </main>
 
       {/* Footer Section */}
