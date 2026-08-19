@@ -449,4 +449,192 @@ class OrderManagementTest extends TestCase
         $response = $this->getJson("/api/v1/orders/{$this->order->id}");
         $response->assertStatus(404);
     }
+
+    public function test_customer_can_cancel_pending_order_and_gets_refund(): void
+    {
+        Notification::fake();
+
+        Sanctum::actingAs($this->customer);
+
+        // Set order number
+        $this->order->update(['order_number' => 'ORD-12345']);
+
+        $response = $this->postJson("/api/v1/orders/{$this->order->id}/cancel", [
+            'reason' => 'Change of mind',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.status', 'cancelled');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->id,
+            'status' => 'cancelled',
+            'cancel_reason' => 'Change of mind',
+        ]);
+
+        // Assert refund processed
+        $this->assertDatabaseHas('wallets', [
+            'user_id' => $this->customer->id,
+            'balance' => $this->order->total_amount,
+        ]);
+
+        $this->assertDatabaseHas('wallet_transactions', [
+            'type' => 'credit',
+            'amount' => $this->order->total_amount,
+            'reference_id' => $this->order->id,
+            'reference_type' => 'refund',
+        ]);
+
+        Notification::assertSentTo(
+            $this->customer,
+            OrderCancelledNotification::class
+        );
+    }
+
+    public function test_customer_cannot_cancel_non_pending_order(): void
+    {
+        Sanctum::actingAs($this->customer);
+
+        $this->order->update(['status' => OrderStatus::Accepted]);
+
+        $response = $this->postJson("/api/v1/orders/{$this->order->id}/cancel", [
+            'reason' => 'Late cancellation request',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_customer_can_reorder_past_order(): void
+    {
+        Sanctum::actingAs($this->customer);
+
+        // Create a Category first to avoid foreign key violation
+        $category = \App\Models\Category::create([
+            'id'   => \Illuminate\Support\Str::uuid()->toString(),
+            'name' => 'Liquid Fuels',
+            'slug' => 'liquid-fuels',
+        ]);
+
+        // Pre-create order item so reorder has products to duplicate
+        $product = \App\Modules\Fuel\Models\Product::create([
+            'id' => \Illuminate\Support\Str::uuid()->toString(),
+            'category_id' => $category->id,
+            'vendor_id' => $this->vendor->id,
+            'name' => 'Premium Diesel HSD',
+            'slug' => 'premium-diesel-hsd',
+            'sku' => 'DSL-HSD-001',
+            'price_per_unit' => 88.50,
+            'unit_of_measure' => \App\Enums\UnitOfMeasure::Litres,
+            'is_active' => true,
+            'ordering_enabled' => true,
+            'min_order_quantity' => 100.0,
+        ]);
+
+        \App\Modules\Order\Models\OrderItem::create([
+            'order_id' => $this->order->id,
+            'product_id' => $product->id,
+            'quantity' => 100,
+            'price_per_unit' => 88.50,
+            'total_price' => 8850.00,
+            'sales_channel' => \App\Enums\SalesChannel::Direct,
+            'vendor_id' => $this->vendor->id,
+            'product_name_snapshot' => 'Premium Diesel HSD',
+            'product_sku_snapshot' => 'DSL-HSD-001',
+            'unit_snapshot' => 'Litres',
+        ]);
+
+        $response = $this->postJson("/api/v1/orders/{$this->order->id}/reorder");
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.status', 'pending');
+
+        $this->assertDatabaseHas('orders', [
+            'customer_id' => $this->customer->id,
+            'vendor_id' => $this->vendor->id,
+            'status' => 'pending',
+            'subtotal_amount' => $this->order->subtotal_amount,
+            'total_amount' => $this->order->total_amount,
+        ]);
+
+        $newOrder = Order::orderBy('created_at', 'desc')->first();
+        $this->assertNotEquals($this->order->id, $newOrder->id);
+
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $newOrder->id,
+            'product_id' => $product->id,
+            'quantity' => 100,
+        ]);
+    }
+
+    public function test_customer_can_download_invoice(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        Sanctum::actingAs($this->customer);
+
+        // Populate order_number
+        $this->order->update(['order_number' => 'ORD-12345']);
+
+        $response = $this->get("/api/v1/orders/{$this->order->id}/invoice");
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Disposition', 'attachment; filename=invoice_ORD-12345.txt');
+    }
+
+    public function test_driver_can_confirm_delivery_with_correct_otp(): void
+    {
+        Notification::fake();
+
+        $this->order->update([
+            'status' => OrderStatus::OutForDelivery,
+            'driver_id' => $this->driver->id,
+            'delivery_otp' => '987654',
+        ]);
+
+        Sanctum::actingAs($this->driver);
+
+        $response = $this->postJson("/api/v1/orders/{$this->order->id}/confirm-delivery", [
+            'otp' => '987654',
+            'delivery_proof_photo' => 'proof_photo.png',
+            'delivery_proof_signature' => 'data:image/png;base64,...',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.status', 'delivered');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->id,
+            'status' => 'delivered',
+            'delivery_proof_photo' => 'proof_photo.png',
+        ]);
+
+        $this->assertDatabaseHas('order_status_logs', [
+            'order_id' => $this->order->id,
+            'from_status' => 'out_for_delivery',
+            'to_status' => 'delivered',
+        ]);
+
+        Notification::assertSentTo(
+            $this->customer,
+            OrderDeliveredNotification::class
+        );
+    }
+
+    public function test_driver_cannot_confirm_delivery_with_incorrect_otp(): void
+    {
+        $this->order->update([
+            'status' => OrderStatus::OutForDelivery,
+            'driver_id' => $this->driver->id,
+            'delivery_otp' => '987654',
+        ]);
+
+        Sanctum::actingAs($this->driver);
+
+        $response = $this->postJson("/api/v1/orders/{$this->order->id}/confirm-delivery", [
+            'otp' => '111111',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false);
+    }
 }

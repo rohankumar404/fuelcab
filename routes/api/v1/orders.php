@@ -14,26 +14,33 @@ use App\Modules\Order\Http\Controllers\CustomerOrderController;
 */
 
 Route::middleware('auth:sanctum')->prefix('orders')->group(function (): void {
-    // Customer Portal fixed-segment routes — MUST come before {id} wildcards
+    // ── Customer Portal — static routes BEFORE {id} wildcards ──────────────
     Route::post('emergency',            [CustomerOrderController::class, 'createEmergencyOrder']);
     Route::get('subscriptions',         [CustomerOrderController::class, 'listSubscriptions']);
     Route::post('subscriptions',        [CustomerOrderController::class, 'createSubscription']);
     Route::patch('subscriptions/{id}',  [CustomerOrderController::class, 'updateSubscription']);
     Route::delete('subscriptions/{id}', [CustomerOrderController::class, 'cancelSubscription']);
 
-    // CRUD Endpoints
-    Route::get('/',          [OrderController::class, 'index']);
-    Route::get('{id}',       [OrderController::class, 'show']);
+    // ── List & Show ─────────────────────────────────────────────────────────
+    Route::get('/',    [OrderController::class, 'index']);
+    Route::get('{id}', [OrderController::class, 'show']);
 
-    // Status Transitions
+    // ── Status Transitions (vendor/driver-facing) ───────────────────────────
     Route::patch('{id}/accept',        [OrderController::class, 'accept']);
     Route::patch('{id}/assign-driver', [OrderController::class, 'assignDriver']);
     Route::patch('{id}/status',        [OrderController::class, 'updateStatus']);
 
-    // Tracking
+    // ── Customer Actions ─────────────────────────────────────────────────────
+    Route::post('{id}/cancel',  [CustomerOrderController::class, 'cancel']);
+    Route::post('{id}/reorder', [CustomerOrderController::class, 'reorder']);
+
+    // ── GPS Tracking ─────────────────────────────────────────────────────────
     Route::post('{id}/tracking', [OrderTrackingController::class, 'store']);
     Route::get('{id}/tracking',  [OrderTrackingController::class, 'track']);
 
-    // Invoice download
-    Route::get('{id}/invoice',   [CustomerOrderController::class, 'downloadInvoice']);
+    // ── Delivery Confirmation (OTP proof-of-delivery) ────────────────────────
+    Route::post('{id}/confirm-delivery', [OrderController::class, 'confirmDelivery']);
+
+    // ── Invoice ──────────────────────────────────────────────────────────────
+    Route::get('{id}/invoice', [CustomerOrderController::class, 'downloadInvoice']);
 });

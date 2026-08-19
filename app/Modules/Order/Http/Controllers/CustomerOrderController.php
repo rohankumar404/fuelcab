@@ -11,6 +11,8 @@ use App\Modules\Order\Models\Order;
 use App\Modules\Order\Models\OrderItem;
 use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Helpers\InvoicePdfGenerator;
+use App\Modules\Order\Http\Resources\OrderResource;
+use App\Modules\Order\Services\OrderService;
 use App\Modules\Vendor\Models\VendorListing;
 use App\Enums\SalesChannel;
 use App\Traits\ApiResponse;
@@ -23,6 +25,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class CustomerOrderController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(
+        private readonly OrderService $orderService,
+    ) {}
 
     // ── Emergency Orders ─────────────────────────────────────────────────────
 
@@ -160,6 +166,62 @@ class CustomerOrderController extends Controller
         $subscription->update(['status' => 'cancelled']);
 
         return $this->success($subscription, 'Subscription cancelled successfully.');
+    }
+
+    // ── Cancel Order ─────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/v1/orders/{id}/cancel
+     * Customer cancels a pending order. Vendor admins/staff can cancel up to assigned.
+     */
+    public function cancel(Request $request, string $id): JsonResponse
+    {
+        $order = Order::where('customer_id', $request->user()->id)->findOrFail($id);
+
+        $this->authorize('cancel', $order);
+
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $cancelled = $this->orderService->cancelOrder(
+                orderId:    $id,
+                reason:     $validated['reason'] ?? null,
+                cancelledBy: $request->user()->id,
+            );
+
+            return $this->success(
+                new OrderResource($cancelled->load(['customer', 'vendor', 'items', 'statusLogs'])),
+                'Order cancelled successfully.'
+            );
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), null, 422);
+        }
+    }
+
+    // ── Reorder ──────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/v1/orders/{id}/reorder
+     * Duplicate a past order into a new pending order.
+     */
+    public function reorder(Request $request, string $id): JsonResponse
+    {
+        // Ownership check — customer can only reorder their own orders
+        $original = Order::where('customer_id', $request->user()->id)->findOrFail($id);
+
+        try {
+            $newOrder = $this->orderService->reorder($id, $request->user());
+
+            return $this->success(
+                new OrderResource($newOrder->load(['items', 'vendor', 'deliveryAddress'])),
+                'Order placed successfully. Your reorder is now pending.',
+                201
+            );
+        } catch (\DomainException $e) {
+            return $this->error($e->getMessage(), null, 422);
+        }
     }
 
     // ── Invoices ─────────────────────────────────────────────────────────────

@@ -9,6 +9,7 @@ use App\Modules\Order\Http\Requests\AssignDriverRequest;
 use App\Modules\Order\Http\Requests\UpdateOrderStatusRequest;
 use App\Modules\Order\Http\Resources\OrderResource;
 use App\Modules\Order\Models\Order;
+use App\Modules\Order\Models\OrderStatusLog;
 use App\Modules\Order\Policies\OrderPolicy;
 use App\Modules\Order\Services\OrderService;
 use App\Modules\Order\Enums\OrderStatus;
@@ -149,5 +150,55 @@ class OrderController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * POST /api/v1/orders/{id}/confirm-delivery
+     * Driver confirms delivery by submitting the OTP provided to the customer.
+     * Also accepts optional photo proof path.
+     */
+    public function confirmDelivery(Request $request, string $id): JsonResponse
+    {
+        $order = Order::where('driver_id', $request->user()->id)
+            ->where('status', OrderStatus::OutForDelivery->value)
+            ->findOrFail($id);
+
+        $validated = $request->validate([
+            'otp'                      => 'required|string|max:10',
+            'delivery_proof_photo'     => 'nullable|string|max:500',
+            'delivery_proof_signature' => 'nullable|string',
+        ]);
+
+        if ($order->delivery_otp && $order->delivery_otp !== $validated['otp']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid delivery OTP. Please ask the customer for the correct code.',
+            ], 422);
+        }
+
+        $order->update([
+            'status'                    => OrderStatus::Delivered,
+            'delivered_at'              => now(),
+            'otp_verified_at'           => now(),
+            'delivery_proof_photo'      => $validated['delivery_proof_photo'] ?? null,
+            'delivery_proof_signature'  => $validated['delivery_proof_signature'] ?? null,
+        ]);
+
+        // Log status change
+        OrderStatusLog::create([
+            'order_id'    => $order->id,
+            'from_status' => OrderStatus::OutForDelivery->value,
+            'to_status'   => OrderStatus::Delivered->value,
+            'changed_by'  => $request->user()->id,
+        ]);
+
+        // Fire delivery completed event for notifications / settlement
+        event(new \App\Modules\Order\Events\OrderCompleted($order->fresh()));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Delivery confirmed. Order marked as delivered.',
+            'data'    => new OrderResource($order->fresh()->load(['customer', 'vendor', 'driver', 'items'])),
+        ]);
     }
 }

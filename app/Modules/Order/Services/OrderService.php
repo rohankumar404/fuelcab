@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Services;
 
+use App\Models\User;
 use App\Modules\Order\Actions\AcceptOrderAction;
 use App\Modules\Order\Actions\AssignDriverAction;
+use App\Modules\Order\Actions\CancelOrderAction;
+use App\Modules\Order\Actions\ReorderAction;
 use App\Modules\Order\Actions\UpdateOrderStatusAction;
 use App\Modules\Order\Actions\UpdateTrackingLocationAction;
 use App\Modules\Order\Models\Order;
@@ -17,8 +20,10 @@ class OrderService
     public function __construct(
         private readonly AcceptOrderAction             $acceptOrder,
         private readonly AssignDriverAction             $assignDriver,
+        private readonly CancelOrderAction              $cancelOrder,
+        private readonly ReorderAction                  $reorder,
         private readonly UpdateOrderStatusAction       $updateStatus,
-        private readonly UpdateTrackingLocationAction $updateLocation,
+        private readonly UpdateTrackingLocationAction  $updateLocation,
     ) {}
 
     /**
@@ -35,6 +40,22 @@ class OrderService
     public function assignDriver(string $orderId, string $driverId): Order
     {
         return $this->assignDriver->execute($orderId, $driverId);
+    }
+
+    /**
+     * Cancel an order.
+     */
+    public function cancelOrder(string $orderId, ?string $reason = null, ?string $cancelledBy = null): Order
+    {
+        return $this->cancelOrder->execute($orderId, $reason, $cancelledBy);
+    }
+
+    /**
+     * Reorder — duplicate a past order.
+     */
+    public function reorder(string $originalOrderId, User $customer): Order
+    {
+        return $this->reorder->execute($originalOrderId, $customer);
     }
 
     /**
