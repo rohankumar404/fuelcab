@@ -88,13 +88,16 @@ class CartController extends Controller
             $guestToken = $this->getGuestToken($request);
 
             $item = CartItem::findOrFail($itemId);
+            $cart = $this->cartService->resolveCart($user, $guestToken);
+
+            if ($item->cart_id !== $cart->id) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+            }
 
             $this->cartService->updateItem(
                 $item,
                 UpdateCartItemDTO::fromArray($request->validated()),
             );
-
-            $cart = $this->cartService->resolveCart($user, $guestToken);
 
             return response()->json([
                 'success' => true,
@@ -117,6 +120,10 @@ class CartController extends Controller
 
         $item = CartItem::findOrFail($itemId);
         $cart = $this->cartService->resolveCart($user, $guestToken);
+
+        if ($item->cart_id !== $cart->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
 
         $this->cartService->removeItem($cart, $item);
 

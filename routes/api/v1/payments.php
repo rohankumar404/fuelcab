@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ── Public Webhook route ──────────────────────────────────────────────────
-Route::post('payments/webhook', [PaymentWebhookController::class, 'handle'])->name('payments.webhook');
+Route::post('payments/webhook', [PaymentWebhookController::class, 'handle'])
+    ->middleware('throttle:webhooks')
+    ->name('payments.webhook');
 
 // ── Authenticated Routes ──────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->group(function () {
