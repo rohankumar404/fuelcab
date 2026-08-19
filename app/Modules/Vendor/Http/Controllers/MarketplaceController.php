@@ -17,6 +17,7 @@ use App\Modules\Vendor\Http\Resources\VendorListingResource;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class MarketplaceController extends Controller
@@ -31,7 +32,9 @@ class MarketplaceController extends Controller
      */
     public function categories(): JsonResponse
     {
-        $categories = Category::with('children')->whereNull('parent_id')->get();
+        $categories = Cache::remember('marketplace_categories', 3600, function () {
+            return Category::with('children')->whereNull('parent_id')->get();
+        });
         return $this->success($categories, 'Marketplace categories retrieved successfully.');
     }
 

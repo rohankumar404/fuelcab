@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Building2,
   CheckCircle2,
@@ -190,10 +191,13 @@ export default function ListingDetailClient({ listing }: Props) {
             {/* Image Gallery */}
             <div className="bg-white rounded-3xl p-4 border border-[#e7ece8] shadow-sm space-y-4">
               <div className="relative rounded-2xl overflow-hidden bg-gray-100 h-80 sm:h-96 border border-[#e7ece8]">
-                <img
+                <Image
                   src={listing.product_images[activeImgIndex] || listing.product_images[0]}
                   alt={listing.listing_title}
-                  className="w-full h-full object-cover transition-all duration-300"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover transition-all duration-300"
+                  priority
                 />
 
                 <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#155c32] text-white text-xs font-bold shadow-md">
@@ -214,13 +218,19 @@ export default function ListingDetailClient({ listing }: Props) {
                       key={idx}
                       onClick={() => setActiveImgIndex(idx)}
                       className={cn(
-                        "w-20 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0",
+                        "relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0",
                         activeImgIndex === idx
                           ? "border-[#155c32] ring-2 ring-[#155c32]/20"
                           : "border-transparent opacity-75 hover:opacity-100"
                       )}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <Image
+                        src={img}
+                        alt=""
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
                     </button>
                   ))}
                 </div>

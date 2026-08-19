@@ -11,6 +11,7 @@ use App\Modules\Vendor\Models\VendorListing;
 use App\Modules\Vendor\Services\VendorListingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class VendorListingController extends Controller
 {
@@ -51,10 +52,12 @@ class VendorListingController extends Controller
      */
     public function publicShow(string $slug): JsonResponse
     {
-        $listing = VendorListing::with(['vendor', 'marketplaceProduct.category'])
-            ->public()
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $listing = Cache::remember('listing_details_' . $slug, 3600, function () use ($slug) {
+            return VendorListing::with(['vendor', 'marketplaceProduct.category'])
+                ->public()
+                ->where('slug', $slug)
+                ->firstOrFail();
+        });
 
         return response()->json([
             'success' => true,

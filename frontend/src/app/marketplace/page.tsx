@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useTransition, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -1133,16 +1134,17 @@ function MarketplaceContent() {
                           </div>
 
                           {/* Right 50%: Product Image */}
-                          <div className="flex-1 rounded-xl overflow-hidden bg-[#f4f8f5] border border-[#e7ece8] min-h-[90px] sm:min-h-0">
+                          <div className="relative flex-1 rounded-xl overflow-hidden bg-[#f4f8f5] border border-[#e7ece8] min-h-[90px] sm:min-h-0">
                             {item.product_image ? (
-                              <img
+                              <Image
                                 src={item.product_image}
                                 alt={item.listing_title}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
+                                fill
+                                sizes="(max-width: 640px) 100vw, 200px"
+                                className="object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[10px] text-[#555555]/60 font-medium p-2 text-center">
+                              <div className="absolute inset-0 flex items-center justify-center text-[10px] text-[#555555]/60 font-medium p-2 text-center">
                                 No Image Available
                               </div>
                             )}

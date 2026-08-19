@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Droplet,
@@ -161,10 +162,12 @@ export default function FuelCategories() {
                   {/* Full-cover background image for active (Diesel) card */}
                   {isActive && product.image && (
                     <>
-                      <img
+                      <Image
                         src={product.image}
                         alt={product.name}
-                        className="absolute inset-0 w-full h-full object-cover opacity-30"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="absolute inset-0 object-cover opacity-30"
                         aria-hidden="true"
                       />
                       <div className="absolute inset-0 bg-gradient-to-b from-[#0d3a1f]/60 via-[#0d3a1f]/40 to-[#0d3a1f]/90 pointer-events-none" />

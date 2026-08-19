@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Droplet,
   Mail,
@@ -255,18 +256,22 @@ export default function Footer() {
               Download App
             </h4>
             <div className="flex gap-2.5">
-              <a href="#" className="hover:opacity-85 transition">
-                <img
+              <a href="#" className="hover:opacity-85 transition block relative w-[109px] h-[32px]">
+                <Image
                   src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                   alt="Download on Google Play Store"
-                  className="h-8"
+                  fill
+                  sizes="109px"
+                  className="object-contain"
                 />
               </a>
-              <a href="#" className="hover:opacity-85 transition">
-                <img
+              <a href="#" className="hover:opacity-85 transition block relative w-[109px] h-[32px]">
+                <Image
                   src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
                   alt="Download on Apple App Store"
-                  className="h-8"
+                  fill
+                  sizes="109px"
+                  className="object-contain"
                 />
               </a>
             </div>

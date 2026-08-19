@@ -20,6 +20,11 @@ const nextConfig: NextConfig = {
         hostname: "www.fuelcab.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+        pathname: "/**",
+      },
     ],
   },
   async redirects() {

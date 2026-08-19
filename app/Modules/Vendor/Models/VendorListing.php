@@ -149,4 +149,18 @@ class VendorListing extends Model
         }
         return round($price + ($price * ((float) $this->tax_rate / 100)), 4);
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function (VendorListing $listing) {
+            \Illuminate\Support\Facades\Cache::forget('listing_details_' . $listing->slug);
+            if ($listing->wasChanged('slug')) {
+                \Illuminate\Support\Facades\Cache::forget('listing_details_' . $listing->getOriginal('slug'));
+            }
+        });
+
+        static::deleted(function (VendorListing $listing) {
+            \Illuminate\Support\Facades\Cache::forget('listing_details_' . $listing->slug);
+        });
+    }
 }

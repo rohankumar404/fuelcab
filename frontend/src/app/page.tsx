@@ -3,12 +3,15 @@ import Navbar from "@/components/layout/Navbar";
 import HeroSection from "@/components/hero/HeroSection";
 import FuelCategories from "@/components/sections/FuelCategories";
 import MarketplacePromo from "@/components/sections/MarketplacePromo";
-import HowItWorks from "@/components/sections/HowItWorks";
-import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
-import Testimonials from "@/components/sections/Testimonials";
-import FAQ from "@/components/sections/FAQ";
-import CTASection from "@/components/sections/CTASection";
-import Footer from "@/components/layout/Footer";
+import dynamic from "next/dynamic";
+
+// Below-the-fold components are loaded dynamically to decrease initial bundle size
+const HowItWorks = dynamic(() => import("@/components/sections/HowItWorks"), { ssr: true });
+const IndustriesWeServe = dynamic(() => import("@/components/sections/IndustriesWeServe"), { ssr: true });
+const Testimonials = dynamic(() => import("@/components/sections/Testimonials"), { ssr: true });
+const FAQ = dynamic(() => import("@/components/sections/FAQ"), { ssr: true });
+const CTASection = dynamic(() => import("@/components/sections/CTASection"), { ssr: true });
+const Footer = dynamic(() => import("@/components/layout/Footer"), { ssr: true });
 
 export default function HomePage() {
   return (

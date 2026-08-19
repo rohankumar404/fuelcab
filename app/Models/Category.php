@@ -54,4 +54,15 @@ class Category extends Model
     {
         return $this->hasMany(\App\Modules\Fuel\Models\MarketplaceProduct::class);
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('marketplace_categories');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('marketplace_categories');
+        });
+    }
 }

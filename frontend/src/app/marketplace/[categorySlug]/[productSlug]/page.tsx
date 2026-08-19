@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Metadata from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -178,10 +179,13 @@ export default async function ProductMasterPage({ params }: Props) {
 
               <div className="lg:col-span-4">
                 <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl h-64 lg:h-72">
-                  <img
+                  <Image
                     src={product.product_image}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    className="object-cover"
+                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-4">
                     <p className="text-xs text-gray-200 font-semibold flex items-center gap-1.5">
@@ -340,16 +344,17 @@ export default async function ProductMasterPage({ params }: Props) {
                         </div>
 
                         {/* Right 50%: Product Image */}
-                        <div className="flex-1 rounded-xl overflow-hidden bg-[#f4f8f5] border border-[#e7ece8] min-h-[100px] sm:min-h-0">
+                        <div className="relative flex-1 rounded-xl overflow-hidden bg-[#f4f8f5] border border-[#e7ece8] min-h-[100px] sm:min-h-0">
                           {(item.product_image || product.product_image) ? (
-                            <img
+                            <Image
                               src={item.product_image || product.product_image}
                               alt={item.listing_title}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
+                              fill
+                              sizes="(max-width: 640px) 100vw, 200px"
+                              className="object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[10px] text-[#555555]/60 font-medium p-3 text-center">
+                            <div className="absolute inset-0 flex items-center justify-center text-[10px] text-[#555555]/60 font-medium p-3 text-center">
                               No Image Available
                             </div>
                           )}
