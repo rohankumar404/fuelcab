@@ -14,7 +14,7 @@ class SendPaymentReceipt implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
 
     public function handle(PaymentVerified $event): void
     {
@@ -27,13 +27,13 @@ class SendPaymentReceipt implements ShouldQueue
             } else {
                 Log::warning('[SendPaymentReceipt] Could not resolve customer for payment notification.', [
                     'payment_id' => $payment->id,
-                    'order_id'   => $payment->order_id,
+                    'order_id' => $payment->order_id,
                 ]);
             }
         } catch (\Throwable $e) {
             Log::error('[SendPaymentReceipt] Failed to notify customer of payment receipt', [
                 'payment_id' => $event->payment->id ?? null,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

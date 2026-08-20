@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Vendor\Resources;
 
 use App\Enums\ListingStatus;
+use App\Enums\UnitOfMeasure;
 use App\Filament\Vendor\Resources\VendorListingResource\Pages;
 use App\Modules\Fuel\Models\MarketplaceProduct;
 use App\Modules\Vendor\Models\VendorListing;
@@ -16,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class VendorListingResource extends Resource
 {
@@ -63,7 +65,7 @@ class VendorListingResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
 
                         Forms\Components\TextInput::make('slug')
                             ->required()
@@ -103,7 +105,7 @@ class VendorListingResource extends Resource
 
                     Forms\Components\Section::make('Order Quantities & Unit')->schema([
                         Forms\Components\Select::make('unit')
-                            ->options(\App\Enums\UnitOfMeasure::class)
+                            ->options(UnitOfMeasure::class)
                             ->required(),
 
                         Forms\Components\TextInput::make('available_quantity')
@@ -239,13 +241,13 @@ class VendorListingResource extends Resource
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof ListingStatus ? $state->label() : $state)
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'DRAFT' => 'secondary',
-            'PENDING_APPROVAL' => 'warning',
-            'APPROVED' => 'success',
-            'REJECTED' => 'danger',
-            'SUSPENDED' => 'warning',
-            default => 'gray',
-        }),
+                        'DRAFT' => 'secondary',
+                        'PENDING_APPROVAL' => 'warning',
+                        'APPROVED' => 'success',
+                        'REJECTED' => 'danger',
+                        'SUSPENDED' => 'warning',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
@@ -257,47 +259,47 @@ class VendorListingResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('approval_status')
-                    ->options(ListingStatus::options()),
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active Only'),
-            ])
+                            Tables\Filters\SelectFilter::make('approval_status')
+                                ->options(ListingStatus::options()),
+                            Tables\Filters\TernaryFilter::make('is_active')
+                                ->label('Active Only'),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->visible(fn (VendorListing $record) => $record->isEditable()),
+                            Tables\Actions\EditAction::make()
+                                ->visible(fn (VendorListing $record) => $record->isEditable()),
 
-                Tables\Actions\Action::make('submit')
-                    ->label('Submit for Approval')
-                    ->icon('heroicon-o-paper-airplane')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->visible(fn (VendorListing $record) => $record->approval_status->isSubmittable())
-                    ->action(function (VendorListing $record) {
-                        app(VendorListingService::class)->submit($record);
-                        Notification::make()
-                            ->title('Listing submitted for approval.')
-                            ->success()
-                            ->send();
-                    }),
+                            Tables\Actions\Action::make('submit')
+                                ->label('Submit for Approval')
+                                ->icon('heroicon-o-paper-airplane')
+                                ->color('warning')
+                                ->requiresConfirmation()
+                                ->visible(fn (VendorListing $record) => $record->approval_status->isSubmittable())
+                                ->action(function (VendorListing $record) {
+                                    app(VendorListingService::class)->submit($record);
+                                    Notification::make()
+                                        ->title('Listing submitted for approval.')
+                                        ->success()
+                                        ->send();
+                                }),
 
-                Tables\Actions\Action::make('view_rejection')
-                    ->label('View Rejection Reason')
-                    ->icon('heroicon-o-exclamation-circle')
-                    ->color('danger')
-                    ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::Rejected)
-                    ->modalContent(fn (VendorListing $record) => view('filament.modals.rejection-reason', ['reason' => $record->rejection_reason]))
-                    ->modalHeading('Rejection Reason')
-                    ->modalSubmitAction(false),
-            ])
+                            Tables\Actions\Action::make('view_rejection')
+                                ->label('View Rejection Reason')
+                                ->icon('heroicon-o-exclamation-circle')
+                                ->color('danger')
+                                ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::Rejected)
+                                ->modalContent(fn (VendorListing $record) => view('filament.modals.rejection-reason', ['reason' => $record->rejection_reason]))
+                                ->modalHeading('Rejection Reason')
+                                ->modalSubmitAction(false),
+                        ])
             ->bulkActions([]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListVendorListings::route('/'),
+            'index' => Pages\ListVendorListings::route('/'),
             'create' => Pages\CreateVendorListing::route('/create'),
-            'edit'   => Pages\EditVendorListing::route('/{record}/edit'),
+            'edit' => Pages\EditVendorListing::route('/{record}/edit'),
         ];
     }
 }

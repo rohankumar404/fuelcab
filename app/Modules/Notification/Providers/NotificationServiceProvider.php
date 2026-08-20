@@ -14,7 +14,7 @@ class NotificationServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(FcmService::class, function ($app) {
-            return new FcmService();
+            return new FcmService;
         });
     }
 
@@ -22,7 +22,7 @@ class NotificationServiceProvider extends ServiceProvider
     {
         // Register custom notifications FCM channel
         $this->app->make(ChannelManager::class)->extend('fcm', function ($app) {
-            return new FcmChannel();
+            return new FcmChannel;
         });
     }
 }

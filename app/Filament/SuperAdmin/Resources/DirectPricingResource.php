@@ -151,7 +151,7 @@ class DirectPricingResource extends Resource
     {
         return [
             'index' => Pages\ListDirectPricing::route('/'),
-            'edit'  => Pages\EditDirectPricing::route('/{record}/edit'),
+            'edit' => Pages\EditDirectPricing::route('/{record}/edit'),
         ];
     }
 }

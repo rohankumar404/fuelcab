@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('status', 50)->default('draft'); // draft, published, archived
             $table->uuid('author_id')->nullable();
             $table->timestamp('published_at')->nullable();
-            
+
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();

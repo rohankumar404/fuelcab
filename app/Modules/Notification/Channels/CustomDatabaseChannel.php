@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Notification\Channels;
 
 use App\Modules\Notification\Models\Notification as DbNotification;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -18,9 +19,7 @@ class CustomDatabaseChannel
     /**
      * Send the given notification.
      *
-     * @param  mixed  $notifiable
-     * @param  \Illuminate\Notifications\Notification  $notification
-     * @return \Illuminate\Database\Eloquent\Model|null
+     * @return Model|null
      */
     public function send(mixed $notifiable, Notification $notification): ?DbNotification
     {
@@ -39,10 +38,10 @@ class CustomDatabaseChannel
         $data = $notification->toArray($notifiable);
 
         return DbNotification::create([
-            'type'            => get_class($notification),
+            'type' => get_class($notification),
             'notifiable_type' => get_class($notifiable),
-            'notifiable_id'   => (string) $notifiableId,
-            'data'            => $data,
+            'notifiable_id' => (string) $notifiableId,
+            'data' => $data,
         ]);
     }
 }

@@ -23,14 +23,13 @@ class GoogleAuthController extends Controller
 
     /**
      * Redirect the user to the Google authentication page.
-     *
-     * @return JsonResponse
      */
     public function redirectToGoogle(): JsonResponse
     {
         try {
             // For a single page app / mobile app, we can either return the URL or do a direct redirect
             $url = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
+
             return $this->success(['redirect_url' => $url], 'Redirect URL generated');
         } catch (Exception $e) {
             return $this->error('Failed to generate Google redirect URL', $e->getMessage(), 500);
@@ -39,8 +38,6 @@ class GoogleAuthController extends Controller
 
     /**
      * Obtain the user information from Google.
-     *
-     * @return JsonResponse
      */
     public function handleGoogleCallback(): JsonResponse
     {

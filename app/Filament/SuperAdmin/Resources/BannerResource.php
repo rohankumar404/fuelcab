@@ -59,12 +59,12 @@ class BannerResource extends Resource
                     Forms\Components\Section::make('Display Settings')->schema([
                         Forms\Components\Select::make('placement')
                             ->options([
-                                'homepage_hero'     => 'Homepage Hero',
-                                'marketplace_hero'  => 'Marketplace Hero',
-                                'sidebar'           => 'Sidebar',
-                                'category_banner'   => 'Category Banner',
-                                'product_banner'    => 'Product Banner',
-                                'email_header'      => 'Email Header',
+                                'homepage_hero' => 'Homepage Hero',
+                                'marketplace_hero' => 'Marketplace Hero',
+                                'sidebar' => 'Sidebar',
+                                'category_banner' => 'Category Banner',
+                                'product_banner' => 'Product Banner',
+                                'email_header' => 'Email Header',
                             ])
                             ->default('homepage_hero')
                             ->required(),
@@ -110,13 +110,13 @@ class BannerResource extends Resource
 
                 Tables\Columns\TextColumn::make('placement')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'homepage_hero' => 'primary',
-            'marketplace_hero' => 'success',
-            'sidebar' => 'info',
-            'category_banner' => 'warning',
-            'email_header' => 'gray',
-            default => 'gray',
-        })
+                        'homepage_hero' => 'primary',
+                        'marketplace_hero' => 'success',
+                        'sidebar' => 'info',
+                        'category_banner' => 'warning',
+                        'email_header' => 'gray',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn ($state) => ucwords(str_replace('_', ' ', $state))),
 
                 Tables\Columns\IconColumn::make('is_active')
@@ -140,34 +140,34 @@ class BannerResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('placement')
-                    ->options([
-                        'homepage_hero'    => 'Homepage Hero',
-                        'marketplace_hero' => 'Marketplace Hero',
-                        'sidebar'          => 'Sidebar',
-                        'category_banner'  => 'Category Banner',
-                        'email_header'     => 'Email Header',
-                    ]),
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active Only'),
-            ])
+                            Tables\Filters\SelectFilter::make('placement')
+                                ->options([
+                                    'homepage_hero' => 'Homepage Hero',
+                                    'marketplace_hero' => 'Marketplace Hero',
+                                    'sidebar' => 'Sidebar',
+                                    'category_banner' => 'Category Banner',
+                                    'email_header' => 'Email Header',
+                                ]),
+                            Tables\Filters\TernaryFilter::make('is_active')
+                                ->label('Active Only'),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()->requiresConfirmation(),
-            ])
+                            Tables\Actions\EditAction::make(),
+                            Tables\Actions\DeleteAction::make()->requiresConfirmation(),
+                        ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                            Tables\Actions\BulkActionGroup::make([
+                                Tables\Actions\DeleteBulkAction::make(),
+                            ]),
+                        ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBanners::route('/'),
+            'index' => Pages\ListBanners::route('/'),
             'create' => Pages\CreateBanner::route('/create'),
-            'edit'   => Pages\EditBanner::route('/{record}/edit'),
+            'edit' => Pages\EditBanner::route('/{record}/edit'),
         ];
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->string('status', 50)->default('draft'); // draft, published
             $table->string('template', 50)->default('default');
-            
+
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();

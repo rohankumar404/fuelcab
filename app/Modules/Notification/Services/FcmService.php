@@ -11,13 +11,15 @@ use Illuminate\Support\Facades\Log;
 class FcmService
 {
     protected string $serverKey;
+
     protected string $senderId;
+
     protected string $endpoint = 'https://fcm.googleapis.com/fcm/send';
 
     public function __construct()
     {
         $this->serverKey = (string) config('fuelcab.notifications.fcm.server_key', '');
-        $this->senderId  = (string) config('fuelcab.notifications.fcm.sender_id', '');
+        $this->senderId = (string) config('fuelcab.notifications.fcm.sender_id', '');
     }
 
     /**
@@ -30,6 +32,7 @@ class FcmService
 
         if (empty($tokens)) {
             Log::debug('[FcmService] No tokens provided to sendNotification.');
+
             return false;
         }
 
@@ -37,10 +40,11 @@ class FcmService
         if (empty($this->serverKey)) {
             Log::info('[FcmService] Skip real FCM request — FCM server key is empty. Logging payload:', [
                 'tokens' => $tokens,
-                'title'  => $title,
-                'body'   => $body,
-                'data'   => $data,
+                'title' => $title,
+                'body' => $body,
+                'data' => $data,
             ]);
+
             return true;
         }
 
@@ -49,7 +53,7 @@ class FcmService
                 'registration_ids' => $tokens,
                 'notification' => [
                     'title' => $title,
-                    'body'  => $body,
+                    'body' => $body,
                     'sound' => 'default',
                 ],
                 'data' => array_merge($data, [
@@ -58,23 +62,24 @@ class FcmService
             ];
 
             $response = Http::withHeaders([
-                'Authorization' => 'key=' . $this->serverKey,
-                'Content-Type'  => 'application/json',
+                'Authorization' => 'key='.$this->serverKey,
+                'Content-Type' => 'application/json',
             ])->timeout(15)->post($this->endpoint, $payload);
 
             if (! $response->successful()) {
                 Log::error('[FcmService] FCM HTTP request failed', [
-                    'status'   => $response->status(),
+                    'status' => $response->status(),
                     'response' => $response->body(),
                 ]);
+
                 return false;
             }
 
             $responseBody = $response->json();
             Log::info('[FcmService] Push notification request dispatched', [
                 'tokens_count' => count($tokens),
-                'success_count'=> $responseBody['success'] ?? 0,
-                'failure_count'=> $responseBody['failure'] ?? 0,
+                'success_count' => $responseBody['success'] ?? 0,
+                'failure_count' => $responseBody['failure'] ?? 0,
             ]);
 
             // Process token deactivations if failure reports exist
@@ -98,6 +103,7 @@ class FcmService
             Log::error('[FcmService] Error executing FCM dispatch', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

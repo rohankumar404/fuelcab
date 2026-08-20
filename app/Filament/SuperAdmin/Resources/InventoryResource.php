@@ -3,22 +3,22 @@
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\InventoryResource\Pages;
-use App\Filament\SuperAdmin\Resources\InventoryResource\RelationManagers;
 use App\Modules\Fuel\Models\FuelInventory as Inventory;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InventoryResource extends Resource
 {
     protected static ?string $model = Inventory::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+
     protected static ?string $navigationGroup = 'DIRECT COMMERCE';
+
     protected static ?string $navigationLabel = 'Direct Inventory';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form

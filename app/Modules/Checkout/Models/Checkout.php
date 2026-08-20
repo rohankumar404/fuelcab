@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Checkout extends Model
 {
-    use HasUuid, SoftDeletes, Auditable;
+    use Auditable, HasUuid, SoftDeletes;
 
     protected $table = 'checkouts';
 
@@ -26,10 +26,10 @@ class Checkout extends Model
     {
         return [
             'scheduled_delivery_at' => 'datetime',
-            'subtotal_amount'       => 'float',
-            'delivery_fee'          => 'float',
-            'tax_amount'            => 'float',
-            'total_amount'          => 'float',
+            'subtotal_amount' => 'float',
+            'delivery_fee' => 'float',
+            'tax_amount' => 'float',
+            'total_amount' => 'float',
         ];
     }
 

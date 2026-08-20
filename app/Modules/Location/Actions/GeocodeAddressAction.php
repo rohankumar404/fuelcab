@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Location\Actions;
 
+use App\Models\Address;
 use App\Modules\Location\DTOs\CoordinatesDTO;
 use App\Modules\Location\Services\GoogleMapsService;
 
@@ -18,7 +19,7 @@ class GeocodeAddressAction
      *
      * Optionally stores coordinates back to an Address model if one is provided.
      */
-    public function execute(string $address, ?\App\Models\Address $addressModel = null): CoordinatesDTO
+    public function execute(string $address, ?Address $addressModel = null): CoordinatesDTO
     {
         $result = $this->maps->geocode($address);
 
@@ -27,7 +28,7 @@ class GeocodeAddressAction
         // Store coordinates on the Address model if provided
         if ($addressModel) {
             $addressModel->update([
-                'latitude'  => $dto->lat,
+                'latitude' => $dto->lat,
                 'longitude' => $dto->lng,
             ]);
         }

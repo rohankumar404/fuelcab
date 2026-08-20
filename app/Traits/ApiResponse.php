@@ -20,8 +20,8 @@ trait ApiResponse
         $response = [
             'success' => true,
             'message' => $message,
-            'data'    => $data,
-            'errors'  => null,
+            'data' => $data,
+            'errors' => null,
         ];
 
         if (! empty($meta)) {
@@ -52,8 +52,8 @@ trait ApiResponse
         return response()->json([
             'success' => false,
             'message' => $message,
-            'data'    => null,
-            'errors'  => $errors,
+            'data' => null,
+            'errors' => $errors,
         ], $statusCode);
     }
 

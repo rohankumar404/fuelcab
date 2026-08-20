@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Notification\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
+
 class PushToken extends Model
 {
-    use SoftDeletes;
     use HasUuid;
+    use SoftDeletes;
 
     protected $guarded = ['id'];
 

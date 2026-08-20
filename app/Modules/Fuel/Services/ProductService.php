@@ -39,7 +39,7 @@ class ProductService
      */
     public function updateStatus(string $productId, string $status): Product
     {
-        if (!in_array($status, ['active', 'disabled', 'soon'], true)) {
+        if (! in_array($status, ['active', 'disabled', 'soon'], true)) {
             throw new \InvalidArgumentException("Invalid product status: {$status}");
         }
 
@@ -48,7 +48,7 @@ class ProductService
             $oldStatus = $product->status;
 
             $product->update([
-                'status'    => $status,
+                'status' => $status,
                 'is_active' => $status === 'active',
             ]);
 
@@ -77,10 +77,10 @@ class ProductService
             $inventory = FuelInventory::updateOrCreate(
                 ['product_id' => $productId],
                 [
-                    'vendor_id'           => $product->vendor_id,
-                    'quantity_available'  => $quantityAvailable,
+                    'vendor_id' => $product->vendor_id,
+                    'quantity_available' => $quantityAvailable,
                     'low_stock_threshold' => $lowStockThreshold,
-                    'last_restocked_at'   => now(),
+                    'last_restocked_at' => now(),
                 ]
             );
 

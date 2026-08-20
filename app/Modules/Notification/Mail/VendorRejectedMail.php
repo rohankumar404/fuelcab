@@ -16,7 +16,9 @@ class VendorRejectedMail extends Mailable
     use SerializesModels;
 
     public ?string $contactPerson;
+
     public ?string $companyName;
+
     public ?string $reason;
 
     public function __construct(
@@ -25,8 +27,8 @@ class VendorRejectedMail extends Mailable
         ?string $reason = 'Application details could not be verified'
     ) {
         $this->contactPerson = $contactPerson ?? 'Vendor';
-        $this->companyName   = $companyName ?? 'Company';
-        $this->reason        = $reason ?? 'Application details could not be verified';
+        $this->companyName = $companyName ?? 'Company';
+        $this->reason = $reason ?? 'Application details could not be verified';
     }
 
     public function envelope(): Envelope

@@ -49,8 +49,8 @@ return new class extends Migration
                 "SELECT 1 FROM pg_available_extensions WHERE name = 'postgis'"
             );
 
-            if (!empty($postgisAvailable)) {
-                DB::statement("CREATE EXTENSION IF NOT EXISTS postgis");
+            if (! empty($postgisAvailable)) {
+                DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
                 DB::statement('ALTER TABLE addresses ADD COLUMN geo_point GEOGRAPHY(POINT, 4326) NULL');
                 DB::statement('CREATE INDEX idx_addresses_geo_point ON addresses USING GIST (geo_point)');
             }

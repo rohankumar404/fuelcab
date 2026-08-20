@@ -13,19 +13,19 @@ class LogOrderActivity implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
 
     public function handle(OrderCreated $event): void
     {
         $order = $event->order;
 
         Log::info('New order created', [
-            'order_id'    => $order->id,
+            'order_id' => $order->id,
             'customer_id' => $order->customer_id,
-            'vendor_id'   => $order->vendor_id,
-            'total'       => $order->total_amount,
-            'status'      => $order->status?->value,
-            'created_at'  => $order->created_at,
+            'vendor_id' => $order->vendor_id,
+            'total' => $order->total_amount,
+            'status' => $order->status?->value,
+            'created_at' => $order->created_at,
         ]);
     }
 }

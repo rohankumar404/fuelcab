@@ -101,12 +101,12 @@ class InventoryResource extends Resource
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof ListingStatus ? $state->label() : $state)
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'DRAFT' => 'secondary',
-            'PENDING_APPROVAL' => 'warning',
-            'APPROVED' => 'success',
-            'REJECTED' => 'danger',
-            default => 'gray',
-        }),
+                        'DRAFT' => 'secondary',
+                        'PENDING_APPROVAL' => 'warning',
+                        'APPROVED' => 'success',
+                        'REJECTED' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Last Updated')
@@ -115,52 +115,53 @@ class InventoryResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\Filter::make('low_stock')
-                    ->label('Low Stock Only')
-                    ->query(fn (Builder $query) => $query->where('available_quantity', '<', 100))
-                    ->toggle(),
-            ])
+                            Tables\Filters\Filter::make('low_stock')
+                                ->label('Low Stock Only')
+                                ->query(fn (Builder $query) => $query->where('available_quantity', '<', 100))
+                                ->toggle(),
+                        ])
             ->actions([
-                Tables\Actions\Action::make('update_stock')
-                    ->label('Update Stock')
-                    ->icon('heroicon-o-pencil-square')
-                    ->color('primary')
-                    ->form([
-                        Forms\Components\TextInput::make('available_quantity')
-                            ->label('New Available Quantity')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0),
-                        Forms\Components\TextInput::make('min_order_quantity')
-                            ->label('Low Stock Threshold')
-                            ->numeric()
-                            ->required(),
-                    ])
-                    ->fillForm(fn (VendorListing $record) => [
-                        'available_quantity' => $record->available_quantity,
-                        'min_order_quantity' => $record->min_order_quantity,
-                    ])
-                    ->action(function (VendorListing $record, array $data): void {
-                        // SECURITY: Re-verify ownership before mutating
-                        if ($record->vendor_id !== auth()->user()->vendor_id) {
-                            Notification::make()
-                                ->title('Unauthorized action.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
+                            Tables\Actions\Action::make('update_stock')
+                                ->label('Update Stock')
+                                ->icon('heroicon-o-pencil-square')
+                                ->color('primary')
+                                ->form([
+                                    Forms\Components\TextInput::make('available_quantity')
+                                        ->label('New Available Quantity')
+                                        ->numeric()
+                                        ->required()
+                                        ->minValue(0),
+                                    Forms\Components\TextInput::make('min_order_quantity')
+                                        ->label('Low Stock Threshold')
+                                        ->numeric()
+                                        ->required(),
+                                ])
+                                ->fillForm(fn (VendorListing $record) => [
+                                    'available_quantity' => $record->available_quantity,
+                                    'min_order_quantity' => $record->min_order_quantity,
+                                ])
+                                ->action(function (VendorListing $record, array $data): void {
+                                    // SECURITY: Re-verify ownership before mutating
+                                    if ($record->vendor_id !== auth()->user()->vendor_id) {
+                                        Notification::make()
+                                            ->title('Unauthorized action.')
+                                            ->danger()
+                                            ->send();
 
-                        $record->update([
-                            'available_quantity' => $data['available_quantity'],
-                            'min_order_quantity' => $data['min_order_quantity'],
-                        ]);
+                                        return;
+                                    }
 
-                        Notification::make()
-                            ->title('Stock updated successfully.')
-                            ->success()
-                            ->send();
-                    }),
-            ])
+                                    $record->update([
+                                        'available_quantity' => $data['available_quantity'],
+                                        'min_order_quantity' => $data['min_order_quantity'],
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Stock updated successfully.')
+                                        ->success()
+                                        ->send();
+                                }),
+                        ])
             ->bulkActions([]);
     }
 

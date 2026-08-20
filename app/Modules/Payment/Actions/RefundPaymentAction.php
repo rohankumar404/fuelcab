@@ -27,7 +27,7 @@ class RefundPaymentAction
             $gateway = $this->gatewayFactory->make($gatewayName);
             $refundData = $gateway->refund([
                 'payment_id' => $payment->gateway_transaction_id,
-                'amount'     => $amount,
+                'amount' => $amount,
             ]);
 
             // Update status
@@ -37,8 +37,8 @@ class RefundPaymentAction
 
             Log::info('[RefundPaymentAction] Refund completed successfully', [
                 'payment_id' => $paymentId,
-                'refund_id'  => $refundData['id'],
-                'amount'     => $amount ?? $payment->amount,
+                'refund_id' => $refundData['id'],
+                'amount' => $amount ?? $payment->amount,
             ]);
 
             return $refundData;
@@ -46,10 +46,10 @@ class RefundPaymentAction
         } catch (\Throwable $e) {
             Log::error('[RefundPaymentAction] Failed to execute refund', [
                 'payment_id' => $paymentId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
-            throw new PaymentFailedException('Refund failed: ' . $e->getMessage());
+            throw new PaymentFailedException('Refund failed: '.$e->getMessage());
         }
     }
 }

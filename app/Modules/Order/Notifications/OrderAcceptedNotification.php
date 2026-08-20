@@ -27,9 +27,9 @@ class OrderAcceptedNotification extends Notification implements ShouldQueue
     {
         return [
             'title' => "Order Accepted ✅ — #{$this->order->id}",
-            'body'  => "Great news! Your order #{$this->order->id} has been accepted. A driver will be assigned shortly.",
-            'data'  => [
-                'type'     => 'order_accepted',
+            'body' => "Great news! Your order #{$this->order->id} has been accepted. A driver will be assigned shortly.",
+            'data' => [
+                'type' => 'order_accepted',
                 'order_id' => $this->order->id,
             ],
         ];
@@ -40,9 +40,9 @@ class OrderAcceptedNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("Order Accepted — #{$this->order->id}")
             ->greeting("Great news, {$notifiable->name}!")
-            ->line("Your fuel order has been accepted by the vendor.")
+            ->line('Your fuel order has been accepted by the vendor.')
             ->line("**Order ID:** {$this->order->id}")
-            ->line("A driver will be assigned to your order shortly.")
+            ->line('A driver will be assigned to your order shortly.')
             ->action('Track Order', url("/orders/{$this->order->id}"))
             ->line('Thank you for your patience!');
     }
@@ -50,9 +50,9 @@ class OrderAcceptedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type'     => 'order_accepted',
+            'type' => 'order_accepted',
             'order_id' => $this->order->id,
-            'message'  => "Your order #{$this->order->id} has been accepted. A driver will be assigned shortly.",
+            'message' => "Your order #{$this->order->id} has been accepted. A driver will be assigned shortly.",
         ];
     }
 }

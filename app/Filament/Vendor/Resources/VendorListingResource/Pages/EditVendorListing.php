@@ -7,6 +7,7 @@ namespace App\Filament\Vendor\Resources\VendorListingResource\Pages;
 use App\Filament\Vendor\Resources\VendorListingResource;
 use App\Modules\Vendor\Models\VendorListing;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditVendorListing extends EditRecord
@@ -32,7 +33,7 @@ class EditVendorListing extends EditRecord
         $listing = $this->record;
 
         if (! $listing->isEditable()) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('This listing cannot be edited in its current status.')
                 ->warning()
                 ->send();

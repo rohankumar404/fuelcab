@@ -13,7 +13,7 @@ class BroadcastLocationToCustomer implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
 
     public function handle(DriverLocationUpdated $event): void
     {
@@ -21,9 +21,9 @@ class BroadcastLocationToCustomer implements ShouldQueue
 
         Log::info('[BroadcastLocationToCustomer] Driver location update received', [
             'driver_id' => $location->driverId,
-            'lat'       => $location->latitude,
-            'lng'       => $location->longitude,
-            'order_id'  => $location->orderId,
+            'lat' => $location->latitude,
+            'lng' => $location->longitude,
+            'order_id' => $location->orderId,
         ]);
 
         // When a Pusher / WebSockets channel is configured, broadcast here.

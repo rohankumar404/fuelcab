@@ -12,8 +12,10 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class RecentVendorOrdersWidget extends BaseWidget
 {
     protected static ?string $heading = 'Recent Orders';
+
     protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
@@ -27,13 +29,13 @@ class RecentVendorOrdersWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('driver.user.name')->label('Driver')->placeholder('—'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'pending' => 'gray',
-            'confirmed' => 'warning',
-            'en_route' => 'info',
-            'completed' => 'success',
-            'cancelled' => 'danger',
-            default => 'gray',
-        }),
+                        'pending' => 'gray',
+                        'confirmed' => 'warning',
+                        'en_route' => 'info',
+                        'completed' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('total_amount')->money('INR'),
                 Tables\Columns\TextColumn::make('created_at')->since(),
             ]);

@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Payment\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
+use App\Modules\Order\Models\Order;
 use App\Traits\Auditable;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
+    use Auditable, HasUuid;
     use SoftDeletes;
-    use HasUuid, Auditable;
 
     protected $guarded = ['id'];
 
@@ -20,12 +22,12 @@ class Payment extends Model
     {
         return [
             'paid_at' => 'datetime',
-            'amount'  => 'float',
+            'amount' => 'float',
         ];
     }
 
-    public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function order(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Order\Models\Order::class, 'order_id');
+        return $this->belongsTo(Order::class, 'order_id');
     }
 }

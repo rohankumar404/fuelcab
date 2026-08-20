@@ -16,7 +16,7 @@ class InitializeCheckoutAction
             $cart = Cart::with(['items'])->where('user_id', $userId)->findOrFail($cartId);
 
             if ($cart->isEmpty()) {
-                throw new \DomainException("Cannot initialize checkout with an empty cart.");
+                throw new \DomainException('Cannot initialize checkout with an empty cart.');
             }
 
             $vendorId = $cart->vendor_id ?? $cart->items->first()?->vendor_id;
@@ -26,12 +26,12 @@ class InitializeCheckoutAction
                 [
                     'user_id' => $userId,
                     'cart_id' => $cartId,
-                    'status'  => 'draft',
+                    'status' => 'draft',
                 ],
                 [
-                    'vendor_id'       => $vendorId,
+                    'vendor_id' => $vendorId,
                     'subtotal_amount' => $cart->getTotal(),
-                    'total_amount'    => $cart->getTotal(),
+                    'total_amount' => $cart->getTotal(),
                 ]
             );
 

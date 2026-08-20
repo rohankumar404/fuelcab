@@ -27,9 +27,9 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
     {
         return [
             'title' => "Order Confirmed — #{$this->order->id}",
-            'body'  => "Your order #{$this->order->id} has been placed successfully.",
-            'data'  => [
-                'type'     => 'order_placed',
+            'body' => "Your order #{$this->order->id} has been placed successfully.",
+            'data' => [
+                'type' => 'order_placed',
                 'order_id' => $this->order->id,
             ],
         ];
@@ -40,10 +40,10 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("Order Confirmed — #{$this->order->id}")
             ->greeting("Hello {$notifiable->name}!")
-            ->line("Your fuel order has been placed successfully.")
+            ->line('Your fuel order has been placed successfully.')
             ->line("**Order ID:** {$this->order->id}")
-            ->line("**Total Amount:** ₹" . number_format($this->order->total_amount, 2))
-            ->line("**Scheduled Delivery:** " . ($this->order->scheduled_delivery_at?->format('d M Y, h:i A') ?? 'As soon as possible'))
+            ->line('**Total Amount:** ₹'.number_format($this->order->total_amount, 2))
+            ->line('**Scheduled Delivery:** '.($this->order->scheduled_delivery_at?->format('d M Y, h:i A') ?? 'As soon as possible'))
             ->action('View Order', url("/orders/{$this->order->id}"))
             ->line('Thank you for using FuelCab!');
     }
@@ -51,10 +51,10 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type'       => 'order_placed',
-            'order_id'   => $this->order->id,
-            'message'    => "Your order #{$this->order->id} has been placed successfully.",
-            'total'      => $this->order->total_amount,
+            'type' => 'order_placed',
+            'order_id' => $this->order->id,
+            'message' => "Your order #{$this->order->id} has been placed successfully.",
+            'total' => $this->order->total_amount,
         ];
     }
 }

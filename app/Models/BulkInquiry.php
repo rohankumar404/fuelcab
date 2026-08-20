@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasUuid;
+use App\Modules\Fuel\Models\Product;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorListing;
-use App\Modules\Fuel\Models\Product;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BulkInquiry extends Model
 {
@@ -37,28 +38,28 @@ class BulkInquiry extends Model
 
     protected $casts = [
         'preferred_delivery_date' => 'date',
-        'validity_date'           => 'date',
-        'quantity'                => 'decimal:2',
-        'quoted_price'            => 'decimal:2',
-        'quoted_min_quantity'     => 'decimal:2',
+        'validity_date' => 'date',
+        'quantity' => 'decimal:2',
+        'quoted_price' => 'decimal:2',
+        'quoted_min_quantity' => 'decimal:2',
     ];
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function listing(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function listing(): BelongsTo
     {
         return $this->belongsTo(VendorListing::class, 'vendor_listing_id');
     }

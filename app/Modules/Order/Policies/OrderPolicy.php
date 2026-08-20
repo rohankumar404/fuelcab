@@ -32,10 +32,10 @@ class OrderPolicy
     public function view(User $user, Order $order): bool
     {
         return match (true) {
-            $user->hasRole('customer')      => $order->customer_id === $user->id,
-            $user->hasRole('driver')        => $order->driver_id === $user->id,
+            $user->hasRole('customer') => $order->customer_id === $user->id,
+            $user->hasRole('driver') => $order->driver_id === $user->id,
             $user->hasRole(['vendor_admin', 'vendor_staff']) => $order->vendor_id === $user->vendor_id,
-            default                         => false,
+            default => false,
         };
     }
 
@@ -70,9 +70,9 @@ class OrderPolicy
     public function updateStatus(User $user, Order $order): bool
     {
         return match (true) {
-            $user->hasRole('driver')        => $order->driver_id === $user->id,
+            $user->hasRole('driver') => $order->driver_id === $user->id,
             $user->hasRole(['vendor_admin', 'vendor_staff']) => $order->vendor_id === $user->vendor_id,
-            default                         => false,
+            default => false,
         };
     }
 

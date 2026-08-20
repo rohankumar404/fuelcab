@@ -23,6 +23,7 @@ class ValidCoordinates implements ValidationRule
             || ! is_numeric($value['lng'])
         ) {
             $fail("The {$attribute} must contain valid 'lat' and 'lng' coordinates.");
+
             return;
         }
 

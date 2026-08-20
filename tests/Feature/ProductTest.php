@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\UnitOfMeasure;
+use App\Enums\UserRole;
 use App\Models\Category;
-use App\Modules\Vendor\Models\Vendor;
-use App\Modules\Fuel\Models\Product;
-use App\Modules\Fuel\Models\FuelInventory;
 use App\Models\User;
+use App\Modules\Fuel\Models\Product;
+use App\Modules\Vendor\Models\Vendor;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -17,7 +22,9 @@ class ProductTest extends TestCase
     use RefreshDatabase;
 
     protected Category $category;
+
     protected Vendor $vendor;
+
     protected Product $product;
 
     protected function setUp(): void
@@ -30,20 +37,20 @@ class ProductTest extends TestCase
             'description' => 'Premium high speed diesel',
         ]);
 
-        $companyId = \Illuminate\Support\Str::uuid()->toString();
-        \Illuminate\Support\Facades\DB::table('companies')->insert([
-            'id'         => $companyId,
-            'name'       => 'Apex Logistics LLC',
-            'status'     => 'active',
+        $companyId = Str::uuid()->toString();
+        DB::table('companies')->insert([
+            'id' => $companyId,
+            'name' => 'Apex Logistics LLC',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         $this->vendor = Vendor::create([
-            'company_id'            => $companyId,
-            'brand_name'            => 'Apex Fuel Station',
-            'status'                => 'approved',
-            'commission_rate'       => 0.00,
+            'company_id' => $companyId,
+            'brand_name' => 'Apex Fuel Station',
+            'status' => 'approved',
+            'commission_rate' => 0.00,
             'service_radius_meters' => 5000,
         ]);
 
@@ -59,15 +66,15 @@ class ProductTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::create([
-            'name'      => 'Admin User',
-            'email'     => 'admin@fuelcab.com',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::SuperAdmin,
+            'name' => 'Admin User',
+            'email' => 'admin@fuelcab.com',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::SuperAdmin,
         ]);
         $user->assignRole('super_admin');
-        \Laravel\Sanctum\Sanctum::actingAs($user);
+        Sanctum::actingAs($user);
     }
 
     /**
@@ -135,11 +142,11 @@ class ProductTest extends TestCase
             'is_featured' => true,
             'ordering_enabled' => true,
             'display_order' => 1,
-            'unit_of_measure' => \App\Enums\UnitOfMeasure::Litres,
+            'unit_of_measure' => UnitOfMeasure::Litres,
         ]);
 
         // Check enum casting
-        $this->assertEquals(\App\Enums\UnitOfMeasure::Litres, $this->product->fresh()->unit_of_measure);
+        $this->assertEquals(UnitOfMeasure::Litres, $this->product->fresh()->unit_of_measure);
 
         // Check query scopes
         $this->assertTrue(Product::direct()->where('id', $this->product->id)->exists());
@@ -157,7 +164,7 @@ class ProductTest extends TestCase
                     'ordering_enabled' => true,
                     'unit_of_measure' => 'litres',
                     'display_order' => 1,
-                ]
+                ],
             ]);
     }
 }

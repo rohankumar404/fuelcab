@@ -9,6 +9,7 @@ use App\Modules\Fuel\Http\Requests\SyncInventoryRequest;
 use App\Modules\Fuel\Http\Requests\UpdateProductStatusRequest;
 use App\Modules\Fuel\Http\Resources\ProductCollection;
 use App\Modules\Fuel\Http\Resources\ProductResource;
+use App\Modules\Fuel\Jobs\SyncInventoryJob;
 use App\Modules\Fuel\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,7 +57,7 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Product status updated to '{$product->status}'.",
-                'data'    => new ProductResource($product),
+                'data' => new ProductResource($product),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -75,7 +76,7 @@ class ProductController extends Controller
         try {
             $validated = $request->validated();
             $inventory = $this->productService->syncInventory(
-                productId:         $id,
+                productId: $id,
                 quantityAvailable: (float) $validated['quantity_available'],
                 lowStockThreshold: (float) ($validated['low_stock_threshold'] ?? 100.0),
             );
@@ -83,12 +84,12 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Inventory synchronized successfully.',
-                'data'    => [
-                    'product_id'         => $inventory->product_id,
+                'data' => [
+                    'product_id' => $inventory->product_id,
                     'quantity_available' => $inventory->quantity_available,
-                    'low_stock_threshold'=> $inventory->low_stock_threshold,
-                    'last_restocked_at'  => $inventory->last_restocked_at,
-                    'is_low_stock'       => $inventory->quantity_available <= $inventory->low_stock_threshold,
+                    'low_stock_threshold' => $inventory->low_stock_threshold,
+                    'last_restocked_at' => $inventory->last_restocked_at,
+                    'is_low_stock' => $inventory->quantity_available <= $inventory->low_stock_threshold,
                 ],
             ]);
         } catch (\Exception $e) {
@@ -106,12 +107,12 @@ class ProductController extends Controller
     public function bulkSync(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'items'                       => 'required|array|min:1',
-            'items.*.product_id'          => 'required|uuid|exists:products,id',
-            'items.*.quantity_available'  => 'required|numeric|min:0',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|uuid|exists:products,id',
+            'items.*.quantity_available' => 'required|numeric|min:0',
         ]);
 
-        \App\Modules\Fuel\Jobs\SyncInventoryJob::dispatch(
+        SyncInventoryJob::dispatch(
             $validated['items'],
             'api_sync',
         );
@@ -119,7 +120,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Bulk inventory sync dispatched to queue.',
-            'count'   => count($validated['items']),
+            'count' => count($validated['items']),
         ]);
     }
 }

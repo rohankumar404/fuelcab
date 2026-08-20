@@ -63,6 +63,7 @@ class SendPushNotificationJob implements ShouldQueue
             Log::info('[SendPushNotificationJob] No active FCM tokens resolved for targets.', [
                 'targets' => $this->targets,
             ]);
+
             return;
         }
 
@@ -83,8 +84,8 @@ class SendPushNotificationJob implements ShouldQueue
     {
         Log::error('[SendPushNotificationJob] Push notification job failed all retries.', [
             'targets' => $this->targets,
-            'title'   => $this->title,
-            'error'   => $exception->getMessage(),
+            'title' => $this->title,
+            'error' => $exception->getMessage(),
         ]);
     }
 }

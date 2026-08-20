@@ -3,15 +3,11 @@
 namespace App\Filament\Operations\Resources;
 
 use App\Filament\Operations\Resources\PaymentResource\Pages;
-use App\Filament\Operations\Resources\PaymentResource\RelationManagers;
 use App\Models\Payment;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PaymentResource extends Resource
 {

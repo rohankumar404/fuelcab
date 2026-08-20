@@ -13,32 +13,32 @@ class CartResource extends JsonResource
     {
         $sellerGroups = array_map(function ($group) {
             return [
-                'sales_channel'  => $group['sales_channel'],
-                'vendor_id'      => $group['vendor_id'],
-                'seller_name'    => $group['seller_name'],
+                'sales_channel' => $group['sales_channel'],
+                'vendor_id' => $group['vendor_id'],
+                'seller_name' => $group['seller_name'],
                 'is_first_party' => $group['is_first_party'],
-                'subtotal'       => $group['subtotal'],
-                'items'          => CartItemResource::collection($group['items']),
+                'subtotal' => $group['subtotal'],
+                'items' => CartItemResource::collection($group['items']),
             ];
         }, $this->groupByFulfillment());
 
         return [
-            'id'                   => $this->id,
-            'user_id'              => $this->user_id,
-            'guest_token'          => $this->guest_token,
-            'applied_coupon_code'  => $this->applied_coupon_code,
-            'items'                => CartItemResource::collection($this->whenLoaded('items')),
-            'seller_groups'        => $sellerGroups,
-            'item_count'           => $this->getItemCount(),
-            'subtotal'             => $this->getSubtotal(),
-            'coupon_discount'      => $this->getCouponDiscount(),
-            'delivery_charges'     => $this->getDeliveryCharges(),
-            'tax_amount'           => $this->getTaxAmount(),
-            'grand_total'          => $this->getGrandTotal(),
-            'total'                => $this->getGrandTotal(), // Keep total mapped to grand total for compatibility
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'guest_token' => $this->guest_token,
+            'applied_coupon_code' => $this->applied_coupon_code,
+            'items' => CartItemResource::collection($this->whenLoaded('items')),
+            'seller_groups' => $sellerGroups,
+            'item_count' => $this->getItemCount(),
+            'subtotal' => $this->getSubtotal(),
+            'coupon_discount' => $this->getCouponDiscount(),
+            'delivery_charges' => $this->getDeliveryCharges(),
+            'tax_amount' => $this->getTaxAmount(),
+            'grand_total' => $this->getGrandTotal(),
+            'total' => $this->getGrandTotal(), // Keep total mapped to grand total for compatibility
             'has_multiple_sellers' => $this->hasMultipleVendors(),
-            'is_empty'             => $this->isEmpty(),
-            'updated_at'           => $this->updated_at,
+            'is_empty' => $this->isEmpty(),
+            'updated_at' => $this->updated_at,
         ];
     }
 }

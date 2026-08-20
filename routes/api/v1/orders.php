@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Route;
+use App\Modules\Order\Http\Controllers\CustomerOrderController;
 use App\Modules\Order\Http\Controllers\OrderController;
 use App\Modules\Order\Http\Controllers\OrderTrackingController;
-use App\Modules\Order\Http\Controllers\CustomerOrderController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,28 +15,28 @@ use App\Modules\Order\Http\Controllers\CustomerOrderController;
 
 Route::middleware('auth:sanctum')->prefix('orders')->group(function (): void {
     // ── Customer Portal — static routes BEFORE {id} wildcards ──────────────
-    Route::post('emergency',            [CustomerOrderController::class, 'createEmergencyOrder']);
-    Route::get('subscriptions',         [CustomerOrderController::class, 'listSubscriptions']);
-    Route::post('subscriptions',        [CustomerOrderController::class, 'createSubscription']);
-    Route::patch('subscriptions/{id}',  [CustomerOrderController::class, 'updateSubscription']);
+    Route::post('emergency', [CustomerOrderController::class, 'createEmergencyOrder']);
+    Route::get('subscriptions', [CustomerOrderController::class, 'listSubscriptions']);
+    Route::post('subscriptions', [CustomerOrderController::class, 'createSubscription']);
+    Route::patch('subscriptions/{id}', [CustomerOrderController::class, 'updateSubscription']);
     Route::delete('subscriptions/{id}', [CustomerOrderController::class, 'cancelSubscription']);
 
     // ── List & Show ─────────────────────────────────────────────────────────
-    Route::get('/',    [OrderController::class, 'index']);
+    Route::get('/', [OrderController::class, 'index']);
     Route::get('{id}', [OrderController::class, 'show']);
 
     // ── Status Transitions (vendor/driver-facing) ───────────────────────────
-    Route::patch('{id}/accept',        [OrderController::class, 'accept']);
+    Route::patch('{id}/accept', [OrderController::class, 'accept']);
     Route::patch('{id}/assign-driver', [OrderController::class, 'assignDriver']);
-    Route::patch('{id}/status',        [OrderController::class, 'updateStatus']);
+    Route::patch('{id}/status', [OrderController::class, 'updateStatus']);
 
     // ── Customer Actions ─────────────────────────────────────────────────────
-    Route::post('{id}/cancel',  [CustomerOrderController::class, 'cancel']);
+    Route::post('{id}/cancel', [CustomerOrderController::class, 'cancel']);
     Route::post('{id}/reorder', [CustomerOrderController::class, 'reorder']);
 
     // ── GPS Tracking ─────────────────────────────────────────────────────────
     Route::post('{id}/tracking', [OrderTrackingController::class, 'store']);
-    Route::get('{id}/tracking',  [OrderTrackingController::class, 'track']);
+    Route::get('{id}/tracking', [OrderTrackingController::class, 'track']);
 
     // ── Delivery Confirmation (OTP proof-of-delivery) ────────────────────────
     Route::post('{id}/confirm-delivery', [OrderController::class, 'confirmDelivery']);

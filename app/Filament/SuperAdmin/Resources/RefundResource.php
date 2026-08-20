@@ -3,22 +3,22 @@
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\RefundResource\Pages;
-use App\Filament\SuperAdmin\Resources\RefundResource\RelationManagers;
 use App\Models\Refund;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RefundResource extends Resource
 {
-    protected static ?string $model = \App\Models\Refund::class;
+    protected static ?string $model = Refund::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-left';
+
     protected static ?string $navigationGroup = 'FINANCE';
+
     protected static ?string $navigationLabel = 'Refunds';
+
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form

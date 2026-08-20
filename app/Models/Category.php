@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
+use App\Modules\Fuel\Models\MarketplaceProduct;
+use App\Modules\Fuel\Models\Product;
 use App\Traits\Auditable;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class Category extends Model
 {
-    use HasUuid, Auditable, SoftDeletes;
+    use Auditable, HasUuid, SoftDeletes;
 
     protected $table = 'categories';
 
@@ -31,38 +36,38 @@ class Category extends Model
 
     protected $casts = [
         'is_coming_soon' => 'boolean',
-        'is_active'      => 'boolean',
-        'display_order'  => 'integer',
+        'is_active' => 'boolean',
+        'display_order' => 'integer',
     ];
 
-    public function parent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
 
-    public function children(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function children(): HasMany
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
 
-    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function products(): HasMany
     {
-        return $this->hasMany(\App\Modules\Fuel\Models\Product::class);
+        return $this->hasMany(Product::class);
     }
 
-    public function marketplaceProducts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function marketplaceProducts(): HasMany
     {
-        return $this->hasMany(\App\Modules\Fuel\Models\MarketplaceProduct::class);
+        return $this->hasMany(MarketplaceProduct::class);
     }
 
     protected static function booted(): void
     {
         static::saved(function () {
-            \Illuminate\Support\Facades\Cache::forget('marketplace_categories');
+            Cache::forget('marketplace_categories');
         });
 
         static::deleted(function () {
-            \Illuminate\Support\Facades\Cache::forget('marketplace_categories');
+            Cache::forget('marketplace_categories');
         });
     }
 }

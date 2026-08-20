@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Vendor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Vendor\Models\Vendor;
-use App\Modules\Vendor\Models\VendorDocument;
 use App\Modules\Vendor\Enums\DocumentStatus;
 use App\Modules\Vendor\Http\Resources\VendorDocumentResource;
+use App\Modules\Vendor\Models\Vendor;
+use App\Modules\Vendor\Models\VendorDocument;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -44,7 +44,7 @@ class VendorDocumentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => VendorDocumentResource::collection($documents),
+            'data' => VendorDocumentResource::collection($documents),
         ]);
     }
 
@@ -59,8 +59,8 @@ class VendorDocumentController extends Controller
 
         $request->validate([
             'document_type' => 'required|string|in:gst_certificate,pan,business_registration,cancelled_cheque,fuel_license,pollution_compliance,other',
-            'file'          => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'expires_at'    => 'nullable|date|after:today',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'expires_at' => 'nullable|date|after:today',
         ]);
 
         $user = $request->user();
@@ -78,17 +78,17 @@ class VendorDocumentController extends Controller
         $path = $request->file('file')->store("vendor-documents/{$vendorId}", 'local');
 
         $document = VendorDocument::create([
-            'vendor_id'     => $vendorId,
+            'vendor_id' => $vendorId,
             'document_type' => $request->document_type,
-            'file_path'     => $path,
-            'status'        => DocumentStatus::Pending,
-            'expires_at'    => $request->expires_at,
+            'file_path' => $path,
+            'status' => DocumentStatus::Pending,
+            'expires_at' => $request->expires_at,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Document uploaded and pending verification.',
-            'data'    => new VendorDocumentResource($document),
+            'data' => new VendorDocumentResource($document),
         ], 201);
     }
 
@@ -102,7 +102,7 @@ class VendorDocumentController extends Controller
         $this->authorize('verify', $document);
 
         $document->update([
-            'status'      => DocumentStatus::Verified,
+            'status' => DocumentStatus::Verified,
             'verified_at' => now(),
             'verified_by' => $request->user()->id,
         ]);
@@ -110,7 +110,7 @@ class VendorDocumentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Document verified successfully.',
-            'data'    => new VendorDocumentResource($document->fresh()),
+            'data' => new VendorDocumentResource($document->fresh()),
         ]);
     }
 
@@ -128,14 +128,14 @@ class VendorDocumentController extends Controller
         ]);
 
         $document->update([
-            'status'           => DocumentStatus::Rejected,
+            'status' => DocumentStatus::Rejected,
             'rejection_reason' => $request->reason,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Document rejected.',
-            'data'    => new VendorDocumentResource($document->fresh()),
+            'data' => new VendorDocumentResource($document->fresh()),
         ]);
     }
 

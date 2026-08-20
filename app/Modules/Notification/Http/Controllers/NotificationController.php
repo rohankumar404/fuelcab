@@ -16,6 +16,7 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $notifications = $request->user()->notifications()->paginate(20);
+
         return $this->success($notifications, 'Notifications retrieved successfully.');
     }
 
@@ -30,6 +31,7 @@ class NotificationController extends Controller
     public function markAllAsRead(Request $request): JsonResponse
     {
         $request->user()->unreadNotifications->markAsRead();
+
         return $this->success(null, 'All notifications marked as read.');
     }
 

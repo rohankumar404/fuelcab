@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Modules\Vendor\Models\Vendor;
 use App\Traits\Auditable;
 use App\Traits\Filterable;
 use App\Traits\HasUuid;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Company extends Model
 {
-    use HasUuid, Auditable, Filterable, SoftDeletes;
+    use Auditable, Filterable, HasUuid, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -49,18 +50,14 @@ class Company extends Model
 
     /**
      * Get the vendors for the company.
-     *
-     * @return HasMany
      */
     public function vendors(): HasMany
     {
-        return $this->hasMany(\App\Modules\Vendor\Models\Vendor::class, 'company_id');
+        return $this->hasMany(Vendor::class, 'company_id');
     }
 
     /**
      * Get the users for the company.
-     *
-     * @return HasMany
      */
     public function users(): HasMany
     {
@@ -69,8 +66,6 @@ class Company extends Model
 
     /**
      * Get the addresses for the company.
-     *
-     * @return HasMany
      */
     public function addresses(): HasMany
     {
@@ -79,8 +74,6 @@ class Company extends Model
 
     /**
      * Get the settings for the company.
-     *
-     * @return HasMany
      */
     public function settings(): HasMany
     {
@@ -89,9 +82,6 @@ class Company extends Model
 
     /**
      * Scope a query to only include active companies.
-     *
-     * @param Builder $query
-     * @return Builder
      */
     public function scopeActive(Builder $query): Builder
     {

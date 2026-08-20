@@ -40,13 +40,13 @@ class FaqResource extends Resource
 
                 Forms\Components\Select::make('category')
                     ->options([
-                        'general'     => 'General',
-                        'ordering'    => 'Ordering',
-                        'payment'     => 'Payment',
-                        'delivery'    => 'Delivery',
+                        'general' => 'General',
+                        'ordering' => 'Ordering',
+                        'payment' => 'Payment',
+                        'delivery' => 'Delivery',
                         'marketplace' => 'Marketplace',
-                        'vendor'      => 'Vendor',
-                        'account'     => 'Account',
+                        'vendor' => 'Vendor',
+                        'account' => 'Account',
                     ])
                     ->nullable(),
 
@@ -78,14 +78,14 @@ class FaqResource extends Resource
 
                 Tables\Columns\TextColumn::make('category')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'general' => 'gray',
-            'ordering' => 'info',
-            'payment' => 'success',
-            'delivery' => 'warning',
-            'marketplace' => 'primary',
-            'vendor' => 'danger',
-            default => 'gray',
-        }),
+                        'general' => 'gray',
+                        'ordering' => 'info',
+                        'payment' => 'success',
+                        'delivery' => 'warning',
+                        'marketplace' => 'primary',
+                        'vendor' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
@@ -98,37 +98,37 @@ class FaqResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')
-                    ->options([
-                        'general'     => 'General',
-                        'ordering'    => 'Ordering',
-                        'payment'     => 'Payment',
-                        'delivery'    => 'Delivery',
-                        'marketplace' => 'Marketplace',
-                        'vendor'      => 'Vendor',
-                        'account'     => 'Account',
-                    ]),
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active Only'),
-            ])
+                            Tables\Filters\SelectFilter::make('category')
+                                ->options([
+                                    'general' => 'General',
+                                    'ordering' => 'Ordering',
+                                    'payment' => 'Payment',
+                                    'delivery' => 'Delivery',
+                                    'marketplace' => 'Marketplace',
+                                    'vendor' => 'Vendor',
+                                    'account' => 'Account',
+                                ]),
+                            Tables\Filters\TernaryFilter::make('is_active')
+                                ->label('Active Only'),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
-                    ->requiresConfirmation(),
-            ])
+                            Tables\Actions\EditAction::make(),
+                            Tables\Actions\DeleteAction::make()
+                                ->requiresConfirmation(),
+                        ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                            Tables\Actions\BulkActionGroup::make([
+                                Tables\Actions\DeleteBulkAction::make(),
+                            ]),
+                        ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListFaqs::route('/'),
+            'index' => Pages\ListFaqs::route('/'),
             'create' => Pages\CreateFaq::route('/create'),
-            'edit'   => Pages\EditFaq::route('/{record}/edit'),
+            'edit' => Pages\EditFaq::route('/{record}/edit'),
         ];
     }
 }

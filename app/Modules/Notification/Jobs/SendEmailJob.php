@@ -7,11 +7,11 @@ namespace App\Modules\Notification\Jobs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Mail\Mailable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\Mail;
 
 class SendEmailJob implements ShouldQueue
 {
@@ -26,9 +26,6 @@ class SendEmailJob implements ShouldQueue
 
     /**
      * Create a new job instance.
-     *
-     * @param string $recipient
-     * @param Mailable $mailable
      */
     public function __construct(
         public readonly string $recipient,
@@ -46,8 +43,9 @@ class SendEmailJob implements ShouldQueue
         if (! config('fuelcab.notifications.email.enabled', true)) {
             Log::info('[SendEmailJob] Mail dispatch skipped (globally disabled in config).', [
                 'recipient' => $this->recipient,
-                'mailable'  => get_class($this->mailable),
+                'mailable' => get_class($this->mailable),
             ]);
+
             return;
         }
 
@@ -55,7 +53,7 @@ class SendEmailJob implements ShouldQueue
 
         Log::info('[SendEmailJob] Email sent successfully.', [
             'recipient' => $this->recipient,
-            'mailable'  => get_class($this->mailable),
+            'mailable' => get_class($this->mailable),
         ]);
     }
 
@@ -66,8 +64,8 @@ class SendEmailJob implements ShouldQueue
     {
         Log::error('[SendEmailJob] Email job failed after max attempts.', [
             'recipient' => $this->recipient,
-            'mailable'  => get_class($this->mailable),
-            'error'     => $exception->getMessage(),
+            'mailable' => get_class($this->mailable),
+            'error' => $exception->getMessage(),
         ]);
     }
 }

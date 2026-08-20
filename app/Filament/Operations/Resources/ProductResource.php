@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace App\Filament\Operations\Resources;
 
+use App\Enums\UnitOfMeasure;
 use App\Filament\Operations\Resources\ProductResource\Pages;
+use App\Modules\Fuel\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class ProductResource extends Resource
 {
-    protected static ?string $model = \App\Modules\Fuel\Models\Product::class;
+    protected static ?string $model = Product::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
+
     protected static ?string $navigationGroup = 'Fuel & Products';
+
     protected static ?int $navigationSort = 1;
 
     public static function getEloquentQuery(): Builder
@@ -38,7 +44,7 @@ class ProductResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                         Forms\Components\TextInput::make('slug')->required()->maxLength(255),
                         Forms\Components\TextInput::make('sku')->label('SKU')->required()->maxLength(100),
                         Forms\Components\Select::make('category_id')
@@ -51,7 +57,7 @@ class ProductResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('price_per_unit')->numeric()->prefix('₹')->required(),
                         Forms\Components\Select::make('unit_of_measure')
-                            ->options(\App\Enums\UnitOfMeasure::class)
+                            ->options(UnitOfMeasure::class)
                             ->required(),
                         Forms\Components\Textarea::make('short_description')->rows(2)->nullable()->columnSpanFull(),
                         Forms\Components\Textarea::make('full_description')->rows(4)->nullable()->columnSpanFull(),
@@ -126,9 +132,9 @@ class ProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListProducts::route('/'),
+            'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
-            'edit'   => Pages\EditProduct::route('/{record}/edit'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
     }
 }

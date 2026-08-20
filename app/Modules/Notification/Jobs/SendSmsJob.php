@@ -44,7 +44,7 @@ class SendSmsJob implements ShouldQueue
 
         if (! $sent) {
             Log::warning('[SendSmsJob] Delivery failed — will retry if attempts remain', [
-                'phone'   => $this->phone,
+                'phone' => $this->phone,
                 'attempt' => $this->attempts(),
             ]);
 

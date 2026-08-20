@@ -11,19 +11,19 @@ use App\Modules\Order\Actions\CancelOrderAction;
 use App\Modules\Order\Actions\ReorderAction;
 use App\Modules\Order\Actions\UpdateOrderStatusAction;
 use App\Modules\Order\Actions\UpdateTrackingLocationAction;
+use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Models\OrderTracking;
-use App\Modules\Order\Enums\OrderStatus;
 
 class OrderService
 {
     public function __construct(
-        private readonly AcceptOrderAction             $acceptOrder,
-        private readonly AssignDriverAction             $assignDriver,
-        private readonly CancelOrderAction              $cancelOrder,
-        private readonly ReorderAction                  $reorder,
-        private readonly UpdateOrderStatusAction       $updateStatus,
-        private readonly UpdateTrackingLocationAction  $updateLocation,
+        private readonly AcceptOrderAction $acceptOrder,
+        private readonly AssignDriverAction $assignDriver,
+        private readonly CancelOrderAction $cancelOrder,
+        private readonly ReorderAction $reorder,
+        private readonly UpdateOrderStatusAction $updateStatus,
+        private readonly UpdateTrackingLocationAction $updateLocation,
     ) {}
 
     /**

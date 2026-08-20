@@ -22,7 +22,7 @@ class PushTokenController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'token'    => ['required', 'string', 'max:512'],
+            'token' => ['required', 'string', 'max:512'],
             'platform' => ['required', 'string', 'in:ios,android,web'],
         ]);
 
@@ -31,18 +31,18 @@ class PushTokenController extends Controller
         $pushToken = PushToken::updateOrCreate(
             ['token' => $validated['token']],
             [
-                'user_id'      => $user->id,
-                'platform'     => $validated['platform'],
-                'is_active'    => true,
+                'user_id' => $user->id,
+                'platform' => $validated['platform'],
+                'is_active' => true,
                 'last_used_at' => now(),
             ]
         );
 
         return $this->success(
             data: [
-                'token'      => $pushToken->token,
-                'platform'   => $pushToken->platform,
-                'is_active'  => $pushToken->is_active,
+                'token' => $pushToken->token,
+                'platform' => $pushToken->platform,
+                'is_active' => $pushToken->is_active,
                 'registered' => true,
             ],
             message: 'Device push token registered successfully.'

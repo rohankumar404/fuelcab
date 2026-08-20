@@ -22,7 +22,7 @@ class ListMarketplaceOrders extends ListRecords
     public function getTabs(): array
     {
         $model = static::getResource()::getModel();
-        $base  = $model::where('channel', 'marketplace');
+        $base = $model::where('channel', 'marketplace');
 
         return [
             'all' => Tab::make('All')

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('tax_number', 100)->nullable()->unique();
             $table->string('status', 50)->default('active');
-            
+
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();

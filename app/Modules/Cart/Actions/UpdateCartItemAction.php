@@ -62,7 +62,7 @@ class UpdateCartItemAction
                 }
 
                 $item->update([
-                    'quantity'       => $newQuantity,
+                    'quantity' => $newQuantity,
                     'price_snapshot' => (float) $listing->base_price,
                 ]);
 
@@ -104,7 +104,7 @@ class UpdateCartItemAction
                 }
 
                 $item->update([
-                    'quantity'       => $newQuantity,
+                    'quantity' => $newQuantity,
                     'price_snapshot' => (float) $product->price_per_unit,
                 ]);
 
@@ -113,6 +113,7 @@ class UpdateCartItemAction
 
             // Fallback simple update if target product/listing no longer exists
             $item->update(['quantity' => $newQuantity]);
+
             return $item->fresh();
         });
     }

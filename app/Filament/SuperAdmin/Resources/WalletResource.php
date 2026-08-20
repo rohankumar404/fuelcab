@@ -3,22 +3,22 @@
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\WalletResource\Pages;
-use App\Filament\SuperAdmin\Resources\WalletResource\RelationManagers;
 use App\Modules\Wallet\Models\Wallet;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WalletResource extends Resource
 {
     protected static ?string $model = Wallet::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-wallet';
+
     protected static ?string $navigationGroup = 'FINANCE';
+
     protected static ?string $navigationLabel = 'Commissions & Wallets';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form

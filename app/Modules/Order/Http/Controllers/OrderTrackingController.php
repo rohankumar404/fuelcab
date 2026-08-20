@@ -24,20 +24,20 @@ class OrderTrackingController extends Controller
     {
         try {
             $tracking = $this->orderService->recordLocation(
-                orderId:   $id,
-                latitude:  (float) $request->validated('latitude'),
+                orderId: $id,
+                latitude: (float) $request->validated('latitude'),
                 longitude: (float) $request->validated('longitude')
             );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Tracking coordinate recorded.',
-                'data'    => [
-                    'id'          => $tracking->id,
-                    'order_id'    => $tracking->order_id,
-                    'latitude'    => $tracking->latitude,
-                    'longitude'   => $tracking->longitude,
-                    'status'      => $tracking->status,
+                'data' => [
+                    'id' => $tracking->id,
+                    'order_id' => $tracking->order_id,
+                    'latitude' => $tracking->latitude,
+                    'longitude' => $tracking->longitude,
+                    'status' => $tracking->status,
                     'recorded_at' => $tracking->recorded_at->toIso8601String(),
                 ],
             ], 201);
@@ -63,17 +63,17 @@ class OrderTrackingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'order_id'                  => $id,
-                'status'                    => $latest ? $latest->status : 'pending',
+            'data' => [
+                'order_id' => $id,
+                'status' => $latest ? $latest->status : 'pending',
                 'estimated_arrival_minutes' => $latest ? 15 : null, // Mocked for GPS projection
-                'latest_location'           => $latest ? [
-                    'latitude'  => $latest->latitude,
+                'latest_location' => $latest ? [
+                    'latitude' => $latest->latitude,
                     'longitude' => $latest->longitude,
                 ] : null,
-                'coordinate_trail'          => $trail->map(fn ($item) => [
-                    'latitude'    => $item->latitude,
-                    'longitude'   => $item->longitude,
+                'coordinate_trail' => $trail->map(fn ($item) => [
+                    'latitude' => $item->latitude,
+                    'longitude' => $item->longitude,
                     'recorded_at' => $item->recorded_at->toIso8601String(),
                 ]),
             ],

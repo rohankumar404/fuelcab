@@ -16,6 +16,7 @@ class WelcomeMail extends Mailable
     use SerializesModels;
 
     public ?string $name;
+
     public ?string $role;
 
     public function __construct(

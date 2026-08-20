@@ -17,6 +17,6 @@ class GuestCartMerged
     public function __construct(
         public readonly Cart $userCart,
         public readonly User $user,
-        public readonly int  $itemsMerged,
+        public readonly int $itemsMerged,
     ) {}
 }

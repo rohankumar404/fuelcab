@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
-use App\Traits\Auditable;
 
 class Address extends Model
 {
-    use HasUuid, Auditable, SoftDeletes;
+    use Auditable, HasUuid, SoftDeletes;
 
     protected $table = 'addresses';
 

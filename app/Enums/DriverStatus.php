@@ -6,20 +6,20 @@ namespace App\Enums;
 
 enum DriverStatus: string
 {
-    case Pending    = 'pending';
-    case Active     = 'active';
-    case Inactive   = 'inactive';
-    case Suspended  = 'suspended';
-    case Rejected   = 'rejected';
+    case Pending = 'pending';
+    case Active = 'active';
+    case Inactive = 'inactive';
+    case Suspended = 'suspended';
+    case Rejected = 'rejected';
 
     public function label(): string
     {
-        return match($this) {
-            self::Pending   => 'Pending Approval',
-            self::Active    => 'Active',
-            self::Inactive  => 'Inactive',
+        return match ($this) {
+            self::Pending => 'Pending Approval',
+            self::Active => 'Active',
+            self::Inactive => 'Inactive',
             self::Suspended => 'Suspended',
-            self::Rejected  => 'Rejected',
+            self::Rejected => 'Rejected',
         };
     }
 

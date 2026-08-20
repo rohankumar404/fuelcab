@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\DriverResource\Pages;
-use App\Enums\DriverStatus;
+use App\Modules\Driver\Models\Driver;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,10 +14,14 @@ use Filament\Tables\Table;
 
 class DriverResource extends Resource
 {
-    protected static ?string $model = \App\Modules\Driver\Models\Driver::class;
+    protected static ?string $model = Driver::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-truck';
+
     protected static ?string $navigationGroup = 'DIRECT COMMERCE';
+
     protected static ?string $navigationLabel = 'Delivery Operations Drivers';
+
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
@@ -47,40 +51,40 @@ class DriverResource extends Resource
                 Tables\Columns\TextColumn::make('license_number')->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'offline' => 'gray',
-            'available' => 'success',
-            'on_trip' => 'info',
-            'suspended' => 'danger',
-            default => 'gray',
-        }),
+                        'offline' => 'gray',
+                        'available' => 'success',
+                        'on_trip' => 'info',
+                        'suspended' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\IconColumn::make('is_approved')->boolean()->label('Approved'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(['offline' => 'Offline', 'available' => 'Available', 'on_trip' => 'On Trip', 'suspended' => 'Suspended']),
-                Tables\Filters\TernaryFilter::make('is_approved')->label('Approval Status'),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(['offline' => 'Offline', 'available' => 'Available', 'on_trip' => 'On Trip', 'suspended' => 'Suspended']),
+                            Tables\Filters\TernaryFilter::make('is_approved')->label('Approval Status'),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\Action::make('approve')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-badge')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(fn ($record) => $record->update(['is_approved' => true]))
-                    ->visible(fn ($record) => ! $record->is_approved),
-            ])
+                            Tables\Actions\EditAction::make(),
+                            Tables\Actions\DeleteAction::make(),
+                            Tables\Actions\Action::make('approve')
+                                ->label('Approve')
+                                ->icon('heroicon-o-check-badge')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->action(fn ($record) => $record->update(['is_approved' => true]))
+                                ->visible(fn ($record) => ! $record->is_approved),
+                        ])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListDrivers::route('/'),
+            'index' => Pages\ListDrivers::route('/'),
             'create' => Pages\CreateDriver::route('/create'),
-            'edit'   => Pages\EditDriver::route('/{record}/edit'),
+            'edit' => Pages\EditDriver::route('/{record}/edit'),
         ];
     }
 }

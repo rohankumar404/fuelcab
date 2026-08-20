@@ -13,25 +13,25 @@ return new class extends Migration
         Schema::create('marketplace_products', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuid('category_id');
-            
+
             $table->string('name', 150);
             $table->string('slug', 150)->unique();
             $table->text('description')->nullable();
             $table->string('product_image')->nullable();
             $table->string('unit_of_measure', 50)->default('litres');
-            
+
             // PostgreSQL JSONB for flexible specifications schema definitions
             $table->jsonb('specifications_schema')->nullable();
-            
+
             $table->boolean('is_active')->default(true)->index();
             $table->boolean('is_coming_soon')->default(false)->index();
             $table->boolean('ordering_enabled')->default(true)->index();
-            
+
             $table->integer('display_order')->default(0)->index();
-            
+
             $table->string('seo_title')->nullable();
             $table->text('seo_description')->nullable();
-            
+
             // Audit & Timestamps
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();

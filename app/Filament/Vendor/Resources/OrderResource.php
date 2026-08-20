@@ -51,11 +51,11 @@ class OrderResource extends Resource
                 Forms\Components\Select::make('status')
                     ->label('Fulfillment Status')
                     ->options([
-                        OrderStatus::Accepted->value      => 'Accepted',
-                        OrderStatus::Assigned->value      => 'Assigned / Processing',
+                        OrderStatus::Accepted->value => 'Accepted',
+                        OrderStatus::Assigned->value => 'Assigned / Processing',
                         OrderStatus::OutForDelivery->value => 'Out for Delivery',
-                        OrderStatus::Delivered->value     => 'Delivered',
-                        OrderStatus::Cancelled->value     => 'Cancelled',
+                        OrderStatus::Delivered->value => 'Delivered',
+                        OrderStatus::Cancelled->value => 'Cancelled',
                     ])
                     ->required(),
 
@@ -112,13 +112,13 @@ class OrderResource extends Resource
                     ->label('Status')
                     ->badge()
                     ->color(fn ($state) => match ($state?->value ?? $state) {
-                        'pending'         => 'warning',
-                        'accepted'        => 'info',
-                        'assigned'        => 'primary',
+                        'pending' => 'warning',
+                        'accepted' => 'info',
+                        'assigned' => 'primary',
                         'out_for_delivery' => 'primary',
-                        'delivered'       => 'success',
-                        'cancelled'       => 'danger',
-                        default           => 'gray',
+                        'delivered' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -140,12 +140,12 @@ class OrderResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'pending'          => 'Pending',
-                        'accepted'         => 'Accepted',
-                        'assigned'         => 'Assigned',
+                        'pending' => 'Pending',
+                        'accepted' => 'Accepted',
+                        'assigned' => 'Assigned',
                         'out_for_delivery' => 'Out for Delivery',
-                        'delivered'        => 'Delivered',
-                        'cancelled'        => 'Cancelled',
+                        'delivered' => 'Delivered',
+                        'cancelled' => 'Cancelled',
                     ]),
             ])
             ->actions([
@@ -160,11 +160,13 @@ class OrderResource extends Resource
                         // SECURITY: Re-verify vendor ownership
                         if ($record->vendor_id !== auth()->user()->vendor_id) {
                             Notification::make()->title('Unauthorized.')->danger()->send();
+
                             return;
                         }
 
                         if (! $record->status->canTransitionTo(OrderStatus::Accepted)) {
                             Notification::make()->title('Cannot accept this order.')->warning()->send();
+
                             return;
                         }
 
@@ -186,6 +188,7 @@ class OrderResource extends Resource
                     ->action(function (Order $record): void {
                         if ($record->vendor_id !== auth()->user()->vendor_id) {
                             Notification::make()->title('Unauthorized.')->danger()->send();
+
                             return;
                         }
 
@@ -207,6 +210,7 @@ class OrderResource extends Resource
                     ->action(function (Order $record): void {
                         if ($record->vendor_id !== auth()->user()->vendor_id) {
                             Notification::make()->title('Unauthorized.')->danger()->send();
+
                             return;
                         }
 
@@ -228,6 +232,7 @@ class OrderResource extends Resource
                     ->action(function (Order $record): void {
                         if ($record->vendor_id !== auth()->user()->vendor_id) {
                             Notification::make()->title('Unauthorized.')->danger()->send();
+
                             return;
                         }
 
@@ -249,9 +254,9 @@ class OrderResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListOrders::route('/'),
-            'view'   => Pages\ViewOrder::route('/{record}'),
-            'edit'   => Pages\EditOrder::route('/{record}/edit'),
+            'index' => Pages\ListOrders::route('/'),
+            'view' => Pages\ViewOrder::route('/{record}'),
+            'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 }

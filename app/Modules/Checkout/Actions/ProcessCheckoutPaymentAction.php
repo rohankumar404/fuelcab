@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Checkout\Actions;
 
-use App\Enums\SalesChannel;
 use App\Modules\Checkout\DTOs\CheckoutResultDTO;
 use App\Modules\Checkout\DTOs\FulfillmentGroupDTO;
 use App\Modules\Checkout\Models\Checkout;
+use App\Modules\Order\Enums\OrderStatus;
+use App\Modules\Order\Events\OrderCreated;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Models\OrderItem;
+use App\Modules\Payment\Events\PaymentVerified;
 use App\Modules\Payment\Models\Payment;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -80,32 +82,32 @@ class ProcessCheckoutPaymentAction
             }
 
             // ── 4. Create one Order per fulfillment group ─────────────────
-            $orders = new Collection();
+            $orders = new Collection;
 
             foreach ($groups as $group) {
-                $groupSubtotal  = $group->subtotal;
-                $gstRate        = 0.18;
-                $deliveryFee    = (float) ($checkout->delivery_fee / $groups->count()); // split delivery fee equally
-                $taxAmount      = round(($groupSubtotal + $deliveryFee) * $gstRate, 2);
-                $totalAmount    = round($groupSubtotal + $deliveryFee + $taxAmount, 2);
+                $groupSubtotal = $group->subtotal;
+                $gstRate = 0.18;
+                $deliveryFee = (float) ($checkout->delivery_fee / $groups->count()); // split delivery fee equally
+                $taxAmount = round(($groupSubtotal + $deliveryFee) * $gstRate, 2);
+                $totalAmount = round($groupSubtotal + $deliveryFee + $taxAmount, 2);
 
                 $order = Order::create([
-                    'customer_id'           => $checkout->user_id,
-                    'vendor_id'             => $group->vendorId ?? $checkout->vendor_id,
-                    'delivery_address_id'   => $checkout->address_id,
-                    'status'                => \App\Modules\Order\Enums\OrderStatus::Pending,
-                    'channel'               => $group->salesChannel,
-                    'subtotal_amount'       => $groupSubtotal,
-                    'delivery_fee'          => round($deliveryFee, 2),
-                    'tax_amount'            => $taxAmount,
-                    'total_amount'          => $totalAmount,
+                    'customer_id' => $checkout->user_id,
+                    'vendor_id' => $group->vendorId ?? $checkout->vendor_id,
+                    'delivery_address_id' => $checkout->address_id,
+                    'status' => OrderStatus::Pending,
+                    'channel' => $group->salesChannel,
+                    'subtotal_amount' => $groupSubtotal,
+                    'delivery_fee' => round($deliveryFee, 2),
+                    'tax_amount' => $taxAmount,
+                    'total_amount' => $totalAmount,
                     'scheduled_delivery_at' => $checkout->scheduled_delivery_at,
                 ]);
 
                 // ── 5. Write immutable OrderItem snapshots ────────────────
                 foreach ($group->items as $cartItem) {
                     $pricePerUnit = (float) $cartItem->price_snapshot;
-                    $totalPrice   = round($cartItem->quantity * $pricePerUnit, 2);
+                    $totalPrice = round($cartItem->quantity * $pricePerUnit, 2);
 
                     // Resolve unit string (may be enum or plain string)
                     $unitSnapshot = $cartItem->unit_of_measure instanceof \BackedEnum
@@ -116,19 +118,19 @@ class ProcessCheckoutPaymentAction
                     $product = $cartItem->product;
 
                     OrderItem::create([
-                        'order_id'              => $order->id,
-                        'product_id'            => $cartItem->product_id,
-                        'quantity'              => $cartItem->quantity,
-                        'price_per_unit'        => $pricePerUnit,
-                        'total_price'           => $totalPrice,
+                        'order_id' => $order->id,
+                        'product_id' => $cartItem->product_id,
+                        'quantity' => $cartItem->quantity,
+                        'price_per_unit' => $pricePerUnit,
+                        'total_price' => $totalPrice,
                         // ─── Immutable historical snapshots ──────────────
-                        'sales_channel'         => $group->salesChannel,
-                        'vendor_id'             => $group->vendorId,
+                        'sales_channel' => $group->salesChannel,
+                        'vendor_id' => $group->vendorId,
                         'product_name_snapshot' => $cartItem->product_name_snapshot
                             ?? $product?->name
                             ?? 'Unknown Product',
-                        'product_sku_snapshot'  => $product?->sku ?? null,
-                        'unit_snapshot'         => $unitSnapshot,
+                        'product_sku_snapshot' => $product?->sku ?? null,
+                        'unit_snapshot' => $unitSnapshot,
                     ]);
                 }
 
@@ -137,33 +139,33 @@ class ProcessCheckoutPaymentAction
 
             // ── 6. Create ONE parent Payment covering the full checkout ────
             $payment = Payment::create([
-                'order_id'               => $orders->first()->id, // anchor to first order
-                'payment_gateway'        => $paymentMethod,
-                'gateway_transaction_id' => 'TXN-' . strtoupper(Str::random(12)),
-                'amount'                 => $checkout->total_amount,
-                'status'                 => 'completed',
+                'order_id' => $orders->first()->id, // anchor to first order
+                'payment_gateway' => $paymentMethod,
+                'gateway_transaction_id' => 'TXN-'.strtoupper(Str::random(12)),
+                'amount' => $checkout->total_amount,
+                'status' => 'completed',
             ]);
 
             // Dispatch PaymentVerified event
-            event(new \App\Modules\Payment\Events\PaymentVerified($payment));
+            event(new PaymentVerified($payment));
 
             // ── 7. Clear cart and mark checkout complete ──────────────────
             $checkout->cart->items()->delete();
             $checkout->cart->update(['vendor_id' => null]);
 
             $checkout->update([
-                'status'         => 'completed',
+                'status' => 'completed',
                 'payment_method' => $paymentMethod,
                 'payment_status' => 'success',
             ]);
 
             // ── 8. Fire OrderCreated event for each order ─────────────────
             foreach ($orders as $order) {
-                event(new \App\Modules\Order\Events\OrderCreated($order));
+                event(new OrderCreated($order));
             }
 
             return new CheckoutResultDTO(
-                orders:  $orders,
+                orders: $orders,
                 payment: $payment,
             );
         });

@@ -30,8 +30,8 @@ class WalletController extends Controller
             ->get();
 
         return $this->success([
-            'balance'      => (float)$wallet->balance,
-            'currency'     => $wallet->currency,
+            'balance' => (float) $wallet->balance,
+            'currency' => $wallet->currency,
             'transactions' => $transactions,
         ], 'Wallet details retrieved successfully.');
     }
@@ -39,11 +39,11 @@ class WalletController extends Controller
     public function topUp(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'amount'      => 'required|numeric|min:10',
+            'amount' => 'required|numeric|min:10',
             'description' => 'nullable|string|max:255',
         ]);
 
-        $amount = (float)$validated['amount'];
+        $amount = (float) $validated['amount'];
 
         $wallet = DB::transaction(function () use ($request, $amount, $validated) {
             $wallet = Wallet::firstOrCreate(
@@ -51,20 +51,20 @@ class WalletController extends Controller
                 ['balance' => 0.00, 'currency' => 'INR']
             );
 
-            $balanceBefore = (float)$wallet->balance;
-            $balanceAfter  = $balanceBefore + $amount;
+            $balanceBefore = (float) $wallet->balance;
+            $balanceAfter = $balanceBefore + $amount;
 
             $wallet->update(['balance' => $balanceAfter]);
 
             WalletTransaction::create([
-                'wallet_id'      => $wallet->id,
-                'type'           => 'credit',
-                'amount'         => $amount,
+                'wallet_id' => $wallet->id,
+                'type' => 'credit',
+                'amount' => $amount,
                 'balance_before' => $balanceBefore,
-                'balance_after'  => $balanceAfter,
-                'description'    => $validated['description'] ?? 'Wallet Top-up',
+                'balance_after' => $balanceAfter,
+                'description' => $validated['description'] ?? 'Wallet Top-up',
                 'reference_type' => 'topup',
-                'reference_id'   => Str::uuid()->toString(),
+                'reference_id' => Str::uuid()->toString(),
             ]);
 
             return $wallet;
@@ -76,34 +76,34 @@ class WalletController extends Controller
     public function deduct(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'amount'      => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:1',
             'description' => 'nullable|string|max:255',
         ]);
 
-        $amount = (float)$validated['amount'];
+        $amount = (float) $validated['amount'];
 
         try {
             $wallet = DB::transaction(function () use ($request, $amount, $validated) {
                 $wallet = Wallet::where('user_id', $request->user()->id)->first();
 
-                if (!$wallet || (float)$wallet->balance < $amount) {
+                if (! $wallet || (float) $wallet->balance < $amount) {
                     throw new \Exception('Insufficient wallet balance.');
                 }
 
-                $balanceBefore = (float)$wallet->balance;
-                $balanceAfter  = $balanceBefore - $amount;
+                $balanceBefore = (float) $wallet->balance;
+                $balanceAfter = $balanceBefore - $amount;
 
                 $wallet->update(['balance' => $balanceAfter]);
 
                 WalletTransaction::create([
-                    'wallet_id'      => $wallet->id,
-                    'type'           => 'debit',
-                    'amount'         => $amount,
+                    'wallet_id' => $wallet->id,
+                    'type' => 'debit',
+                    'amount' => $amount,
                     'balance_before' => $balanceBefore,
-                    'balance_after'  => $balanceAfter,
-                    'description'    => $validated['description'] ?? 'Wallet Deduction',
+                    'balance_after' => $balanceAfter,
+                    'description' => $validated['description'] ?? 'Wallet Deduction',
                     'reference_type' => 'payment',
-                    'reference_id'   => Str::uuid()->toString(),
+                    'reference_id' => Str::uuid()->toString(),
                 ]);
 
                 return $wallet;

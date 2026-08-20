@@ -4,39 +4,41 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Enums\SalesChannel;
-use App\Traits\HasUuid;
-use App\Traits\HasTenantScope;
+use App\Models\Address;
+use App\Models\User;
+use App\Modules\Order\Enums\OrderStatus;
+use App\Modules\Vendor\Models\Vendor;
 use App\Traits\Auditable;
 use App\Traits\Filterable;
-use App\Models\User;
-use App\Models\Address;
-use App\Modules\Vendor\Models\Vendor;
+use App\Traits\HasTenantScope;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
+    use Auditable, Filterable, HasTenantScope, HasUuid;
     use SoftDeletes;
-    use HasUuid, HasTenantScope, Auditable, Filterable;
 
     protected $guarded = ['id'];
 
     protected function casts(): array
     {
         return [
-            'status'                => \App\Modules\Order\Enums\OrderStatus::class,
-            'channel'               => SalesChannel::class,
+            'status' => OrderStatus::class,
+            'channel' => SalesChannel::class,
             'scheduled_delivery_at' => 'datetime',
-            'delivered_at'          => 'datetime',
-            'otp_verified_at'       => 'datetime',
-            'subtotal_amount'       => 'float',
-            'delivery_fee'          => 'float',
-            'tax_amount'            => 'float',
-            'total_amount'          => 'float',
-            'commission_amount'     => 'float',
-            'commission_rate'       => 'float',
+            'delivered_at' => 'datetime',
+            'otp_verified_at' => 'datetime',
+            'subtotal_amount' => 'float',
+            'delivery_fee' => 'float',
+            'tax_amount' => 'float',
+            'total_amount' => 'float',
+            'commission_amount' => 'float',
+            'commission_rate' => 'float',
         ];
     }
 
@@ -70,17 +72,17 @@ class Order extends Model
         return $this->belongsTo(Address::class, 'delivery_address_id');
     }
 
-    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'order_id');
     }
 
-    public function statusLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function statusLogs(): HasMany
     {
         return $this->hasMany(OrderStatusLog::class, 'order_id');
     }
 
-    public function tracking(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function tracking(): HasMany
     {
         return $this->hasMany(OrderTracking::class, 'order_id');
     }

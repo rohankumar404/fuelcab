@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Modules\Vendor\Models\Vendor;
 use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Settlement extends Model
 {
@@ -24,14 +26,14 @@ class Settlement extends Model
     ];
 
     protected $casts = [
-        'gross_amount'      => 'decimal:2',
+        'gross_amount' => 'decimal:2',
         'commission_amount' => 'decimal:2',
-        'adjustments'       => 'decimal:2',
-        'net_payable'       => 'decimal:2',
+        'adjustments' => 'decimal:2',
+        'net_payable' => 'decimal:2',
     ];
 
-    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function vendor(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Vendor\Models\Vendor::class);
+        return $this->belongsTo(Vendor::class);
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Fuel\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HasUuid;
 
 class InventoryLog extends Model
 {
@@ -15,6 +15,7 @@ class InventoryLog extends Model
     protected $table = 'inventory_logs';
 
     public $timestamps = true;
+
     const UPDATED_AT = null; // logs are append-only
 
     protected $fillable = [
@@ -34,9 +35,9 @@ class InventoryLog extends Model
     protected function casts(): array
     {
         return [
-            'quantity_before'  => 'float',
+            'quantity_before' => 'float',
             'quantity_changed' => 'float',
-            'quantity_after'   => 'float',
+            'quantity_after' => 'float',
         ];
     }
 

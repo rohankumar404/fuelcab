@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\SalesChannel;
+use App\Enums\UnitOfMeasure;
+use App\Enums\UserRole;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\User;
-use App\Modules\Cart\Models\Cart;
-use App\Modules\Cart\Models\CartItem;
 use App\Modules\Cart\Actions\AddItemToCartAction;
 use App\Modules\Cart\DTOs\AddCartItemDTO;
+use App\Modules\Cart\Models\Cart;
 use App\Modules\Checkout\Models\Checkout;
 use App\Modules\Checkout\Services\CheckoutService;
 use App\Modules\Fuel\Models\Product;
 use App\Modules\Vendor\Models\Vendor;
-use App\Enums\SalesChannel;
-use App\Enums\UnitOfMeasure;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -27,116 +30,124 @@ class SalesChannelTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private Vendor $directVendor;
+
     private Vendor $vendorA;
+
     private Vendor $vendorB;
+
     private Product $diesel;
+
     private Product $biomass;
+
     private Product $rdf;
+
     private Address $address;
+
     private Cart $cart;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         // ── 1. Create customer first
         $this->customer = User::create([
-            'id'        => \Illuminate\Support\Str::uuid()->toString(),
-            'name'      => 'Test Customer',
-            'email'     => 'customer@fuelcab.com',
-            'phone'     => '+919999999999',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::Customer,
+            'id' => Str::uuid()->toString(),
+            'name' => 'Test Customer',
+            'email' => 'customer@fuelcab.com',
+            'phone' => '+919999999999',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::Customer,
         ]);
 
         // ── 2. Create customer address
         $this->address = Address::create([
-            'user_id'          => $this->customer->id,
+            'user_id' => $this->customer->id,
             'addressable_type' => 'App\Models\User',
-            'name'             => 'Headquarters',
-            'address_line_1'   => '100 MG Road',
-            'city'             => 'Bengaluru',
-            'state'            => 'Karnataka',
-            'postal_code'      => '560001',
-            'country'          => 'India',
-            'latitude'         => 12.9716,
-            'longitude'        => 77.5946,
+            'name' => 'Headquarters',
+            'address_line_1' => '100 MG Road',
+            'city' => 'Bengaluru',
+            'state' => 'Karnataka',
+            'postal_code' => '560001',
+            'country' => 'India',
+            'latitude' => 12.9716,
+            'longitude' => 77.5946,
         ]);
 
         // ── 3. Create Companies and Vendors
         // Direct (FuelCab-owned)
-        $companyDirectId = \Illuminate\Support\Str::uuid()->toString();
+        $companyDirectId = Str::uuid()->toString();
         $this->createCompanyRecord($companyDirectId, 'FuelCab Direct Ltd');
         $this->directVendor = Vendor::create([
-            'id'                     => \Illuminate\Support\Str::uuid()->toString(),
-            'company_id'             => $companyDirectId,
-            'brand_name'             => 'FuelCab Direct',
-            'status'                 => 'approved',
-            'commission_rate'        => 0.00,
-            'is_first_party'         => true,
-            'service_radius_meters'  => 50000,
+            'id' => Str::uuid()->toString(),
+            'company_id' => $companyDirectId,
+            'brand_name' => 'FuelCab Direct',
+            'status' => 'approved',
+            'commission_rate' => 0.00,
+            'is_first_party' => true,
+            'service_radius_meters' => 50000,
         ]);
         Address::create([
-            'company_id'       => $companyDirectId,
+            'company_id' => $companyDirectId,
             'addressable_type' => 'App\Models\Company',
-            'address_line_1'   => 'Direct Depot',
-            'city'             => 'Bengaluru',
-            'state'            => 'Karnataka',
-            'postal_code'      => '560001',
-            'country'          => 'India',
-            'latitude'         => 12.9716,
-            'longitude'        => 77.5946,
+            'address_line_1' => 'Direct Depot',
+            'city' => 'Bengaluru',
+            'state' => 'Karnataka',
+            'postal_code' => '560001',
+            'country' => 'India',
+            'latitude' => 12.9716,
+            'longitude' => 77.5946,
         ]);
 
         // Vendor A
-        $companyAId = \Illuminate\Support\Str::uuid()->toString();
+        $companyAId = Str::uuid()->toString();
         $this->createCompanyRecord($companyAId, 'Vendor A Corp');
         $this->vendorA = Vendor::create([
-            'id'                     => \Illuminate\Support\Str::uuid()->toString(),
-            'company_id'             => $companyAId,
-            'brand_name'             => 'Vendor A Fuels',
-            'status'                 => 'approved',
-            'commission_rate'        => 5.00,
-            'is_first_party'         => false,
-            'service_radius_meters'  => 50000,
+            'id' => Str::uuid()->toString(),
+            'company_id' => $companyAId,
+            'brand_name' => 'Vendor A Fuels',
+            'status' => 'approved',
+            'commission_rate' => 5.00,
+            'is_first_party' => false,
+            'service_radius_meters' => 50000,
         ]);
         Address::create([
-            'company_id'       => $companyAId,
+            'company_id' => $companyAId,
             'addressable_type' => 'App\Models\Company',
-            'address_line_1'   => 'Depot A',
-            'city'             => 'Bengaluru',
-            'state'            => 'Karnataka',
-            'postal_code'      => '560001',
-            'country'          => 'India',
-            'latitude'         => 12.9716,
-            'longitude'        => 77.5946,
+            'address_line_1' => 'Depot A',
+            'city' => 'Bengaluru',
+            'state' => 'Karnataka',
+            'postal_code' => '560001',
+            'country' => 'India',
+            'latitude' => 12.9716,
+            'longitude' => 77.5946,
         ]);
 
         // Vendor B
-        $companyBId = \Illuminate\Support\Str::uuid()->toString();
+        $companyBId = Str::uuid()->toString();
         $this->createCompanyRecord($companyBId, 'Vendor B Corp');
         $this->vendorB = Vendor::create([
-            'id'                     => \Illuminate\Support\Str::uuid()->toString(),
-            'company_id'             => $companyBId,
-            'brand_name'             => 'Vendor B Biofuels',
-            'status'                 => 'approved',
-            'commission_rate'        => 8.00,
-            'is_first_party'         => false,
-            'service_radius_meters'  => 50000,
+            'id' => Str::uuid()->toString(),
+            'company_id' => $companyBId,
+            'brand_name' => 'Vendor B Biofuels',
+            'status' => 'approved',
+            'commission_rate' => 8.00,
+            'is_first_party' => false,
+            'service_radius_meters' => 50000,
         ]);
         Address::create([
-            'company_id'       => $companyBId,
+            'company_id' => $companyBId,
             'addressable_type' => 'App\Models\Company',
-            'address_line_1'   => 'Depot B',
-            'city'             => 'Bengaluru',
-            'state'            => 'Karnataka',
-            'postal_code'      => '560001',
-            'country'          => 'India',
-            'latitude'         => 12.9716,
-            'longitude'        => 77.5946,
+            'address_line_1' => 'Depot B',
+            'city' => 'Bengaluru',
+            'state' => 'Karnataka',
+            'postal_code' => '560001',
+            'country' => 'India',
+            'latitude' => 12.9716,
+            'longitude' => 77.5946,
         ]);
 
         // ── 4. Create Category
@@ -147,41 +158,41 @@ class SalesChannelTest extends TestCase
 
         // ── 5. Create Products
         $this->diesel = Product::create([
-            'category_id'        => $category->id,
-            'vendor_id'          => $this->directVendor->id,
-            'name'               => 'Direct Diesel',
-            'slug'               => 'direct-diesel',
-            'sku'                => 'DSL-DIR-100',
-            'price_per_unit'     => 90.00,
-            'unit_of_measure'    => UnitOfMeasure::Litres,
-            'is_active'          => true,
-            'ordering_enabled'   => true,
+            'category_id' => $category->id,
+            'vendor_id' => $this->directVendor->id,
+            'name' => 'Direct Diesel',
+            'slug' => 'direct-diesel',
+            'sku' => 'DSL-DIR-100',
+            'price_per_unit' => 90.00,
+            'unit_of_measure' => UnitOfMeasure::Litres,
+            'is_active' => true,
+            'ordering_enabled' => true,
             'min_order_quantity' => 100.0,
         ]);
 
         $this->biomass = Product::create([
-            'category_id'        => $category->id,
-            'vendor_id'          => $this->vendorA->id,
-            'name'               => 'Biomass Briquettes',
-            'slug'               => 'biomass-briquettes',
-            'sku'                => 'BIO-MP-200',
-            'price_per_unit'     => 12000.00,
-            'unit_of_measure'    => UnitOfMeasure::MetricTonnes,
-            'is_active'          => true,
-            'ordering_enabled'   => true,
+            'category_id' => $category->id,
+            'vendor_id' => $this->vendorA->id,
+            'name' => 'Biomass Briquettes',
+            'slug' => 'biomass-briquettes',
+            'sku' => 'BIO-MP-200',
+            'price_per_unit' => 12000.00,
+            'unit_of_measure' => UnitOfMeasure::MetricTonnes,
+            'is_active' => true,
+            'ordering_enabled' => true,
             'min_order_quantity' => 1.0,
         ]);
 
         $this->rdf = Product::create([
-            'category_id'        => $category->id,
-            'vendor_id'          => $this->vendorB->id,
-            'name'               => 'RDF Solid Waste',
-            'slug'               => 'rdf-solid-waste',
-            'sku'                => 'RDF-MP-300',
-            'price_per_unit'     => 8000.00,
-            'unit_of_measure'    => UnitOfMeasure::MetricTonnes,
-            'is_active'          => true,
-            'ordering_enabled'   => true,
+            'category_id' => $category->id,
+            'vendor_id' => $this->vendorB->id,
+            'name' => 'RDF Solid Waste',
+            'slug' => 'rdf-solid-waste',
+            'sku' => 'RDF-MP-300',
+            'price_per_unit' => 8000.00,
+            'unit_of_measure' => UnitOfMeasure::MetricTonnes,
+            'is_active' => true,
+            'ordering_enabled' => true,
             'min_order_quantity' => 1.0,
         ]);
 
@@ -193,10 +204,10 @@ class SalesChannelTest extends TestCase
 
     private function createCompanyRecord(string $id, string $name): void
     {
-        \Illuminate\Support\Facades\DB::table('companies')->insert([
-            'id'         => $id,
-            'name'       => $name,
-            'status'     => 'active',
+        DB::table('companies')->insert([
+            'id' => $id,
+            'name' => $name,
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -384,8 +395,8 @@ class SalesChannelTest extends TestCase
 
         // Edit live product information
         $this->diesel->update([
-            'name'            => 'Premium Super Diesel',
-            'price_per_unit'  => 140.00,
+            'name' => 'Premium Super Diesel',
+            'price_per_unit' => 140.00,
             'unit_of_measure' => UnitOfMeasure::Units,
         ]);
 

@@ -35,14 +35,14 @@ class AuditLogResource extends Resource
             Forms\Components\Section::make('Audit Entry')->schema([
                 Forms\Components\Placeholder::make('user')
                     ->label('Actor')
-                    ->content(fn ($record) => ($record?->user_name ?? '—') . ($record?->user_id ? ' (' . $record->user_id . ')' : '')),
+                    ->content(fn ($record) => ($record?->user_name ?? '—').($record?->user_id ? ' ('.$record->user_id.')' : '')),
 
                 Forms\Components\Placeholder::make('action')
                     ->content(fn ($record) => $record?->action ?? '—'),
 
                 Forms\Components\Placeholder::make('model')
                     ->label('Affected Record')
-                    ->content(fn ($record) => ($record?->model_type ?? '—') . ' #' . ($record?->model_id ?? '—')),
+                    ->content(fn ($record) => ($record?->model_type ?? '—').' #'.($record?->model_id ?? '—')),
 
                 Forms\Components\Placeholder::make('ip_address')
                     ->label('IP Address')
@@ -110,13 +110,13 @@ class AuditLogResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('action')
                     ->options([
-                        'created'  => 'Created',
-                        'updated'  => 'Updated',
-                        'deleted'  => 'Deleted',
+                        'created' => 'Created',
+                        'updated' => 'Updated',
+                        'deleted' => 'Deleted',
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                         'suspended' => 'Suspended',
-                        'login'    => 'Login',
+                        'login' => 'Login',
                     ]),
                 Tables\Filters\Filter::make('today')
                     ->label('Today Only')
@@ -138,7 +138,7 @@ class AuditLogResource extends Resource
     {
         return [
             'index' => Pages\ListAuditLogs::route('/'),
-            'view'  => Pages\ViewAuditLog::route('/{record}'),
+            'view' => Pages\ViewAuditLog::route('/{record}'),
         ];
     }
 }

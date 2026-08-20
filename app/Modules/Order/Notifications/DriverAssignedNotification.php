@@ -26,12 +26,13 @@ class DriverAssignedNotification extends Notification implements ShouldQueue
     public function toFcm(object $notifiable): array
     {
         $driver = $this->order->driver;
+
         return [
             'title' => "Driver Assigned 🚚 — #{$this->order->id}",
-            'body'  => "A driver " . ($driver?->name ?? 'partner') . " has been assigned to your order #{$this->order->id}.",
-            'data'  => [
-                'type'      => 'driver_assigned',
-                'order_id'  => $this->order->id,
+            'body' => 'A driver '.($driver?->name ?? 'partner')." has been assigned to your order #{$this->order->id}.",
+            'data' => [
+                'type' => 'driver_assigned',
+                'order_id' => $this->order->id,
                 'driver_id' => $this->order->driver_id,
             ],
         ];
@@ -44,8 +45,8 @@ class DriverAssignedNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("Driver Assigned — #{$this->order->id}")
             ->greeting("Hello {$notifiable->name}!")
-            ->line("A driver has been assigned to your fuel order.")
-            ->line("**Driver Name:** " . ($driver?->name ?? 'N/A'))
+            ->line('A driver has been assigned to your fuel order.')
+            ->line('**Driver Name:** '.($driver?->name ?? 'N/A'))
             ->line("**Order ID:** {$this->order->id}")
             ->action('Track Your Order', url("/orders/{$this->order->id}"))
             ->line('Your delivery is on its way!');
@@ -54,10 +55,10 @@ class DriverAssignedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type'      => 'driver_assigned',
-            'order_id'  => $this->order->id,
+            'type' => 'driver_assigned',
+            'order_id' => $this->order->id,
             'driver_id' => $this->order->driver_id,
-            'message'   => "A driver has been assigned to your order #{$this->order->id}.",
+            'message' => "A driver has been assigned to your order #{$this->order->id}.",
         ];
     }
 }

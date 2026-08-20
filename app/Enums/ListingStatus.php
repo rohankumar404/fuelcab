@@ -6,31 +6,31 @@ namespace App\Enums;
 
 enum ListingStatus: string
 {
-    case Draft            = 'DRAFT';
-    case PendingApproval  = 'PENDING_APPROVAL';
-    case Approved         = 'APPROVED';
-    case Rejected         = 'REJECTED';
-    case Suspended        = 'SUSPENDED';
+    case Draft = 'DRAFT';
+    case PendingApproval = 'PENDING_APPROVAL';
+    case Approved = 'APPROVED';
+    case Rejected = 'REJECTED';
+    case Suspended = 'SUSPENDED';
 
     public function label(): string
     {
-        return match($this) {
-            self::Draft           => 'Draft',
+        return match ($this) {
+            self::Draft => 'Draft',
             self::PendingApproval => 'Pending Approval',
-            self::Approved        => 'Approved',
-            self::Rejected        => 'Rejected',
-            self::Suspended       => 'Suspended',
+            self::Approved => 'Approved',
+            self::Rejected => 'Rejected',
+            self::Suspended => 'Suspended',
         };
     }
 
     public function color(): string
     {
-        return match($this) {
-            self::Draft           => 'gray',
+        return match ($this) {
+            self::Draft => 'gray',
             self::PendingApproval => 'warning',
-            self::Approved        => 'success',
-            self::Rejected        => 'danger',
-            self::Suspended       => 'warning',
+            self::Approved => 'success',
+            self::Rejected => 'danger',
+            self::Suspended => 'warning',
         };
     }
 

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VendorDocument extends Model
 {
-    use HasUuid, Auditable, SoftDeletes;
+    use Auditable, HasUuid, SoftDeletes;
 
     protected $table = 'vendor_documents';
 
@@ -31,9 +31,9 @@ class VendorDocument extends Model
     ];
 
     protected $casts = [
-        'status'      => DocumentStatus::class,
+        'status' => DocumentStatus::class,
         'verified_at' => 'datetime',
-        'expires_at'  => 'date',
+        'expires_at' => 'date',
     ];
 
     public function vendor(): BelongsTo

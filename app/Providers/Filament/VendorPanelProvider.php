@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Enums\UserRole;
+use App\Filament\Vendor\Widgets\VendorStatsWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -14,7 +15,6 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -33,10 +33,10 @@ class VendorPanelProvider extends PanelProvider
             ->brandName('FuelCab — Vendor Portal')
             ->colors([
                 'primary' => Color::Emerald,
-                'danger'  => Color::Rose,
+                'danger' => Color::Rose,
                 'success' => Color::Teal,
                 'warning' => Color::Orange,
-                'info'    => Color::Sky,
+                'info' => Color::Sky,
             ])
             ->font('Inter', 'https://fonts.bunny.net/css?family=inter:100,200,300,400,500,600,700,800,900')
             ->darkMode(true)
@@ -79,7 +79,7 @@ class VendorPanelProvider extends PanelProvider
                 for: 'App\\Filament\\Vendor\\Widgets'
             )
             ->widgets([
-                \App\Filament\Vendor\Widgets\VendorStatsWidget::class,
+                VendorStatsWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

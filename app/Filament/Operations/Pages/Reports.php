@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace App\Filament\Operations\Pages;
 
-use App\Models\Address;
-use App\Models\User;
+use App\Enums\SalesChannel;
+use App\Modules\Fuel\Models\FuelInventory;
 use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
-use App\Modules\Fuel\Models\FuelInventory;
-use App\Modules\Fuel\Models\Product;
-use App\Modules\Driver\Models\Driver;
-use App\Modules\Vehicle\Models\Vehicle;
-use App\Enums\SalesChannel;
 use Filament\Pages\Page;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Reports extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+
     protected static ?string $navigationGroup = 'Order Management';
+
     protected static ?string $navigationLabel = 'Operations Reports';
+
     protected static ?int $navigationSort = 5;
+
     protected static string $view = 'filament.operations.pages.reports';
 
     public ?string $from = null;
+
     public ?string $to = null;
+
     public array $summary = [];
 
     public function mount(): void
@@ -43,16 +43,16 @@ class Reports extends Page
         $directOrderQuery = Order::query()
             ->where('channel', SalesChannel::Direct->value)
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to));
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to));
 
         $inventoryCount = FuelInventory::count();
         $lowStockCount = FuelInventory::whereColumn('quantity_available', '<=', 'reorder_threshold')->count();
 
         $this->summary = [
             'direct_orders_count' => $directOrderQuery->count(),
-            'direct_revenue'      => $directOrderQuery->whereIn('status', [OrderStatus::Delivered->value, 'delivered'])->sum('total_amount'),
-            'total_items_depot'   => $inventoryCount,
-            'low_stock_alerts'    => $lowStockCount,
+            'direct_revenue' => $directOrderQuery->whereIn('status', [OrderStatus::Delivered->value, 'delivered'])->sum('total_amount'),
+            'total_items_depot' => $inventoryCount,
+            'low_stock_alerts' => $lowStockCount,
         ];
     }
 
@@ -62,11 +62,11 @@ class Reports extends Page
             ->with(['customer', 'deliveryAddress'])
             ->where('channel', SalesChannel::Direct->value)
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to))
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'direct_sales_report_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'direct_sales_report_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($orders) {
             $handle = fopen('php://output', 'w');
@@ -107,11 +107,11 @@ class Reports extends Page
             ->with(['driver.user', 'customer'])
             ->whereNotNull('driver_id')
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to))
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'driver_deliveries_report_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'driver_deliveries_report_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($orders) {
             $handle = fopen('php://output', 'w');
@@ -141,7 +141,7 @@ class Reports extends Page
     public function exportInventoryReport(): StreamedResponse
     {
         $inventory = FuelInventory::with('product')->get();
-        $filename = 'depot_inventory_report_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'depot_inventory_report_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($inventory) {
             $handle = fopen('php://output', 'w');

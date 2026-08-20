@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Vendor\Resources\VendorListingResource\Pages;
 
+use App\Enums\ListingStatus;
 use App\Filament\Vendor\Resources\VendorListingResource;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -17,8 +18,8 @@ class CreateVendorListing extends CreateRecord
      */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['vendor_id']       = auth()->user()->vendor_id;
-        $data['approval_status'] = \App\Enums\ListingStatus::Draft->value;
+        $data['vendor_id'] = auth()->user()->vendor_id;
+        $data['approval_status'] = ListingStatus::Draft->value;
 
         // Flatten repeater image/doc arrays
         if (isset($data['product_images'])) {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Listeners;
 
-use App\Modules\Order\Events\OrderCompleted;
 use App\Modules\Notification\Jobs\SendEmailJob;
 use App\Modules\Notification\Mail\DeliveryCompletedMail;
+use App\Modules\Order\Events\OrderCompleted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +15,7 @@ class SendDeliveryCompletedNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
 
     public function handle(OrderCompleted $event): void
     {
@@ -25,11 +25,11 @@ class SendDeliveryCompletedNotification implements ShouldQueue
             return;
         }
 
-        $item        = $order->items->first();
+        $item = $order->items->first();
         $productName = $item?->product?->name ?? 'Fuel Product';
-        $quantity    = (float) ($item?->quantity ?? 0);
-        $driverName  = $order->driver?->name ?? 'FuelCab Delivery';
-        $plate       = $order->vehicle_registration_number ?? 'N/A';
+        $quantity = (float) ($item?->quantity ?? 0);
+        $driverName = $order->driver?->name ?? 'FuelCab Delivery';
+        $plate = $order->vehicle_registration_number ?? 'N/A';
         $completedAt = $order->delivered_at?->format('d M Y, h:i A') ?? now()->format('d M Y, h:i A');
 
         try {
@@ -37,19 +37,19 @@ class SendDeliveryCompletedNotification implements ShouldQueue
                 $order->customer->email,
                 new DeliveryCompletedMail(
                     customerName: $order->customer->name,
-                    orderNumber:  $order->id,
-                    productName:  $productName,
-                    quantity:     $quantity,
-                    driverName:   $driverName,
+                    orderNumber: $order->id,
+                    productName: $productName,
+                    quantity: $quantity,
+                    driverName: $driverName,
                     licensePlate: $plate,
-                    completedAt:  $completedAt,
-                    orderId:      $order->id
+                    completedAt: $completedAt,
+                    orderId: $order->id
                 )
             );
         } catch (\Throwable $e) {
             Log::error('[SendDeliveryCompletedNotification] Failed to queue delivery completed email', [
                 'order_id' => $order->id,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

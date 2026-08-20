@@ -12,8 +12,10 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class OrdersToDispatchWidget extends BaseWidget
 {
     protected static ?string $heading = 'Orders to Dispatch';
+
     protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {

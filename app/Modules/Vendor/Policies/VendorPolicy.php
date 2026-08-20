@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Vendor\Policies;
 
 use App\Models\User;
-use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Enums\VendorStatus;
+use App\Modules\Vendor\Models\Vendor;
 
 class VendorPolicy
 {

@@ -16,12 +16,12 @@ class CreateVehicleRequest extends ApiRequest
     public function rules(): array
     {
         return [
-            'plate_number'    => ['required', 'string', 'max:50', 'unique:vehicles,plate_number'],
-            'make'            => ['required', 'string', 'max:100'],
-            'model'           => ['required', 'string', 'max:100'],
-            'year'            => ['required', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+            'plate_number' => ['required', 'string', 'max:50', 'unique:vehicles,plate_number'],
+            'make' => ['required', 'string', 'max:100'],
+            'model' => ['required', 'string', 'max:100'],
+            'year' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'capacity_liters' => ['required', 'numeric', 'gt:0'],
-            'status'          => ['nullable', 'string', 'in:available,maintenance,retired,active'],
+            'status' => ['nullable', 'string', 'in:available,maintenance,retired,active'],
         ];
     }
 
@@ -29,9 +29,9 @@ class CreateVehicleRequest extends ApiRequest
     {
         return [
             'plate_number.unique' => 'This vehicle plate number is already registered.',
-            'year.max'            => 'The vehicle year cannot be in the future.',
-            'capacity_liters.gt'  => 'Vehicle capacity must be greater than zero.',
-            'status.in'           => 'The specified status is invalid.',
+            'year.max' => 'The vehicle year cannot be in the future.',
+            'capacity_liters.gt' => 'Vehicle capacity must be greater than zero.',
+            'status.in' => 'The specified status is invalid.',
         ];
     }
 }

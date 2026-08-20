@@ -24,7 +24,7 @@ class CancelOrderAction
 
             if (! $order->status->canTransitionTo(OrderStatus::Cancelled)) {
                 throw new \DomainException(
-                    "Cannot cancel an order with status '{$order->status->value}'. " .
+                    "Cannot cancel an order with status '{$order->status->value}'. ".
                     'Only pending, accepted, or assigned orders may be cancelled.'
                 );
             }
@@ -32,17 +32,17 @@ class CancelOrderAction
             $oldStatus = $order->status;
 
             $order->update([
-                'status'       => OrderStatus::Cancelled,
+                'status' => OrderStatus::Cancelled,
                 'cancel_reason' => $reason,
             ]);
 
             // Log the status transition
             OrderStatusLog::create([
-                'order_id'    => $order->id,
+                'order_id' => $order->id,
                 'from_status' => $oldStatus->value,
-                'to_status'   => OrderStatus::Cancelled->value,
-                'reason'      => $reason,
-                'changed_by'  => $cancelledBy,
+                'to_status' => OrderStatus::Cancelled->value,
+                'reason' => $reason,
+                'changed_by' => $cancelledBy,
             ]);
 
             event(new OrderCancelled($order, $oldStatus, $reason, $cancelledBy));

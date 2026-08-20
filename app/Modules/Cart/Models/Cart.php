@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Cart\Models;
 
 use App\Enums\SalesChannel;
+use App\Models\Coupon;
 use App\Models\User;
 use App\Modules\Vendor\Models\Vendor;
 use App\Traits\HasUuid;
@@ -53,12 +54,13 @@ class Cart extends Model
 
     // ─── Business Logic ───────────────────────────────────────────────────
 
-    public function getCoupon(): ?\App\Models\Coupon
+    public function getCoupon(): ?Coupon
     {
         if (! $this->applied_coupon_code) {
             return null;
         }
-        return \App\Models\Coupon::where('code', $this->applied_coupon_code)->where('is_active', true)->first();
+
+        return Coupon::where('code', $this->applied_coupon_code)->where('is_active', true)->first();
     }
 
     public function getSubtotal(): float
@@ -76,6 +78,7 @@ class Cart extends Model
         if (! $coupon->isValidForAmount($subtotal)) {
             return 0.0;
         }
+
         return (float) $coupon->calculateDiscount($subtotal);
     }
 
@@ -98,15 +101,17 @@ class Cart extends Model
                 $charges += 250.0;
             }
         }
+
         return (float) $charges;
     }
 
     public function getGrandTotal(): float
     {
         $subtotal = $this->getSubtotal();
-        $tax      = $this->getTaxAmount();
+        $tax = $this->getTaxAmount();
         $delivery = $this->getDeliveryCharges();
         $discount = $this->getCouponDiscount();
+
         return (float) max(0.0, round($subtotal + $tax + $delivery - $discount, 2));
     }
 
@@ -144,24 +149,24 @@ class Cart extends Model
         $groups = [];
 
         foreach ($this->items as $item) {
-            $channel  = $item->sales_channel instanceof SalesChannel
+            $channel = $item->sales_channel instanceof SalesChannel
                 ? $item->sales_channel->value
                 : ($item->sales_channel ?? SalesChannel::Direct->value);
 
             $vendorId = $item->vendor_id;
-            $key      = $channel . '|' . ($vendorId ?? 'direct');
+            $key = $channel.'|'.($vendorId ?? 'direct');
 
             if (! isset($groups[$key])) {
-                $sellerName   = $item->getSellerName();
+                $sellerName = $item->getSellerName();
                 $isFirstParty = $channel === 'direct' || ($item->vendor && $item->vendor->is_first_party);
 
                 $groups[$key] = [
-                    'sales_channel'  => $channel,
-                    'vendor_id'      => $vendorId,
-                    'seller_name'    => $sellerName,
+                    'sales_channel' => $channel,
+                    'vendor_id' => $vendorId,
+                    'seller_name' => $sellerName,
                     'is_first_party' => $isFirstParty,
-                    'items'          => new Collection(),
-                    'subtotal'       => 0.0,
+                    'items' => new Collection,
+                    'subtotal' => 0.0,
                 ];
             }
 

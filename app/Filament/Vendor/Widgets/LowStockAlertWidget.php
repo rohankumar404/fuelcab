@@ -12,6 +12,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class LowStockAlertWidget extends BaseWidget
 {
     protected static ?string $heading = 'Low Stock Alerts';
+
     protected static ?int $sort = 3;
 
     public function table(Table $table): Table

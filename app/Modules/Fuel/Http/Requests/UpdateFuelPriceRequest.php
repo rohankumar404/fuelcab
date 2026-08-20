@@ -17,8 +17,8 @@ class UpdateFuelPriceRequest extends ApiRequest
     {
         return [
             'base_price' => ['required', 'numeric', 'gt:0'],
-            'tax_rate'   => ['required', 'numeric', 'min:0', 'max:100'],
-            'currency'   => ['nullable', 'string', 'size:3'],
+            'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'currency' => ['nullable', 'string', 'size:3'],
         ];
     }
 
@@ -26,7 +26,7 @@ class UpdateFuelPriceRequest extends ApiRequest
     {
         return [
             'base_price.gt' => 'The base price must be greater than zero.',
-            'tax_rate.max'  => 'The tax rate cannot exceed 100%.',
+            'tax_rate.max' => 'The tax rate cannot exceed 100%.',
         ];
     }
 }

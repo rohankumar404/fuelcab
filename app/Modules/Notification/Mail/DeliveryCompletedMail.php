@@ -16,12 +16,19 @@ class DeliveryCompletedMail extends Mailable
     use SerializesModels;
 
     public ?string $customerName;
+
     public ?string $orderNumber;
+
     public ?string $productName;
+
     public ?float $quantity;
+
     public ?string $driverName;
+
     public ?string $licensePlate;
+
     public ?string $completedAt;
+
     public ?string $orderId;
 
     public function __construct(
@@ -35,19 +42,19 @@ class DeliveryCompletedMail extends Mailable
         ?string $orderId = 'N/A'
     ) {
         $this->customerName = $customerName ?? 'Customer';
-        $this->orderNumber  = $orderNumber ?? 'N/A';
-        $this->productName  = $productName ?? 'Fuel Product';
-        $this->quantity     = (float) ($quantity ?? 0.0);
-        $this->driverName   = $driverName ?? 'Driver';
+        $this->orderNumber = $orderNumber ?? 'N/A';
+        $this->productName = $productName ?? 'Fuel Product';
+        $this->quantity = (float) ($quantity ?? 0.0);
+        $this->driverName = $driverName ?? 'Driver';
         $this->licensePlate = $licensePlate ?? 'N/A';
-        $this->completedAt  = $completedAt ?? 'N/A';
-        $this->orderId      = $orderId ?? 'N/A';
+        $this->completedAt = $completedAt ?? 'N/A';
+        $this->orderId = $orderId ?? 'N/A';
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Delivery Completed for Order ' . $this->orderNumber,
+            subject: 'Delivery Completed for Order '.$this->orderNumber,
         );
     }
 

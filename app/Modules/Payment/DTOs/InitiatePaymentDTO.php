@@ -18,23 +18,23 @@ final class InitiatePaymentDTO extends BaseDTO
 
     public static function fromArray(array $data): static
     {
-        return new static(
-            paymentId:      (string) ($data['payment_id'] ?? ''),
+        return new self(
+            paymentId: (string) ($data['payment_id'] ?? ''),
             gatewayOrderId: (string) ($data['gateway_order_id'] ?? ''),
-            amount:         (float) ($data['amount'] ?? 0.0),
-            currency:       (string) ($data['currency'] ?? 'INR'),
-            gateway:        (string) ($data['gateway'] ?? 'razorpay')
+            amount: (float) ($data['amount'] ?? 0.0),
+            currency: (string) ($data['currency'] ?? 'INR'),
+            gateway: (string) ($data['gateway'] ?? 'razorpay')
         );
     }
 
     public function toArray(): array
     {
         return [
-            'payment_id'       => $this->paymentId,
+            'payment_id' => $this->paymentId,
             'gateway_order_id' => $this->gatewayOrderId,
-            'amount'           => $this->amount,
-            'currency'         => $this->currency,
-            'gateway'          => $this->gateway,
+            'amount' => $this->amount,
+            'currency' => $this->currency,
+            'gateway' => $this->gateway,
         ];
     }
 }

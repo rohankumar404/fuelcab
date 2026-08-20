@@ -4,21 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\SalesChannel;
+use App\Enums\UnitOfMeasure;
+use App\Enums\UserRole;
 use App\Models\Address;
+use App\Models\Category;
 use App\Models\User;
-use App\Modules\Vendor\Models\Vendor;
-use App\Modules\Order\Models\Order;
-use App\Modules\Order\Models\OrderStatusLog;
+use App\Modules\Fuel\Models\Product;
 use App\Modules\Order\Enums\OrderStatus;
-use App\Modules\Order\Notifications\OrderPlacedNotification;
-use App\Modules\Order\Notifications\OrderAcceptedNotification;
+use App\Modules\Order\Models\Order;
+use App\Modules\Order\Models\OrderItem;
+use App\Modules\Order\Models\OrderStatusLog;
 use App\Modules\Order\Notifications\DriverAssignedNotification;
-use App\Modules\Order\Notifications\OrderOutForDeliveryNotification;
-use App\Modules\Order\Notifications\OrderDeliveredNotification;
-use App\Modules\Order\Notifications\OrderCancelledNotification;
 use App\Modules\Order\Notifications\NewOrderAssignedToDriverNotification;
+use App\Modules\Order\Notifications\OrderAcceptedNotification;
+use App\Modules\Order\Notifications\OrderCancelledNotification;
+use App\Modules\Order\Notifications\OrderDeliveredNotification;
+use App\Modules\Order\Notifications\OrderOutForDeliveryNotification;
+use App\Modules\Vendor\Models\Vendor;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -27,152 +36,161 @@ class OrderManagementTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private User $driver;
+
     private User $vendorAdmin;
+
     private User $vendorStaff;
+
     private User $unauthorizedVendorAdmin;
+
     private User $superAdmin;
+
     private Vendor $vendor;
+
     private Vendor $otherVendor;
+
     private Address $address;
+
     private Order $order;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         // 1. Create Companies
-        $companyId = \Illuminate\Support\Str::uuid()->toString();
-        \Illuminate\Support\Facades\DB::table('companies')->insert([
-            'id'         => $companyId,
-            'name'       => 'Apex Logistics LLC',
-            'status'     => 'active',
+        $companyId = Str::uuid()->toString();
+        DB::table('companies')->insert([
+            'id' => $companyId,
+            'name' => 'Apex Logistics LLC',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        $otherCompanyId = \Illuminate\Support\Str::uuid()->toString();
-        \Illuminate\Support\Facades\DB::table('companies')->insert([
-            'id'         => $otherCompanyId,
-            'name'       => 'Other Logistics LLC',
-            'status'     => 'active',
+        $otherCompanyId = Str::uuid()->toString();
+        DB::table('companies')->insert([
+            'id' => $otherCompanyId,
+            'name' => 'Other Logistics LLC',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         // 2. Create Vendors
         $this->vendor = Vendor::create([
-            'id'                     => \Illuminate\Support\Str::uuid()->toString(),
-            'company_id'             => $companyId,
-            'brand_name'             => 'Apex Fuels',
-            'status'                 => 'approved',
-            'commission_rate'        => 5.00,
-            'service_radius_meters'  => 10000,
+            'id' => Str::uuid()->toString(),
+            'company_id' => $companyId,
+            'brand_name' => 'Apex Fuels',
+            'status' => 'approved',
+            'commission_rate' => 5.00,
+            'service_radius_meters' => 10000,
         ]);
 
         $this->otherVendor = Vendor::create([
-            'id'                     => \Illuminate\Support\Str::uuid()->toString(),
-            'company_id'             => $otherCompanyId,
-            'brand_name'             => 'Other Fuels',
-            'status'                 => 'approved',
-            'commission_rate'        => 4.50,
-            'service_radius_meters'  => 8000,
+            'id' => Str::uuid()->toString(),
+            'company_id' => $otherCompanyId,
+            'brand_name' => 'Other Fuels',
+            'status' => 'approved',
+            'commission_rate' => 4.50,
+            'service_radius_meters' => 8000,
         ]);
 
         // 3. Create Users
         $this->customer = User::create([
-            'name'      => 'John Customer',
-            'email'     => 'customer@fuelcab.com',
-            'phone'     => '+919999999999',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::Customer,
+            'name' => 'John Customer',
+            'email' => 'customer@fuelcab.com',
+            'phone' => '+919999999999',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::Customer,
         ]);
         $this->customer->assignRole('customer');
 
         $this->driver = User::create([
-            'name'      => 'Bob Driver',
-            'email'     => 'driver@fuelcab.com',
-            'phone'     => '+918888888888',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::Driver,
+            'name' => 'Bob Driver',
+            'email' => 'driver@fuelcab.com',
+            'phone' => '+918888888888',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::Driver,
         ]);
         $this->driver->assignRole('driver');
 
         // Create driver record in drivers table
-        \Illuminate\Support\Facades\DB::table('drivers')->insert([
-            'id'             => \Illuminate\Support\Str::uuid()->toString(),
-            'user_id'        => $this->driver->id,
+        DB::table('drivers')->insert([
+            'id' => Str::uuid()->toString(),
+            'user_id' => $this->driver->id,
             'license_number' => 'DL-999999',
             'license_expiry' => now()->addYears(5)->toDateString(),
-            'status'         => 'available',
-            'is_approved'    => true,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'status' => 'available',
+            'is_approved' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $this->vendorAdmin = User::create([
-            'name'      => 'Alice VendorAdmin',
-            'email'     => 'vendoradmin@fuelcab.com',
-            'phone'     => '+917777777777',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::VendorAdmin,
+            'name' => 'Alice VendorAdmin',
+            'email' => 'vendoradmin@fuelcab.com',
+            'phone' => '+917777777777',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::VendorAdmin,
             'vendor_id' => $this->vendor->id,
         ]);
         $this->vendorAdmin->assignRole('vendor_admin');
 
         $this->vendorStaff = User::create([
-            'name'      => 'Charlie Staff',
-            'email'     => 'staff@fuelcab.com',
-            'phone'     => '+916666666666',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::VendorStaff,
+            'name' => 'Charlie Staff',
+            'email' => 'staff@fuelcab.com',
+            'phone' => '+916666666666',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::VendorStaff,
             'vendor_id' => $this->vendor->id,
         ]);
         $this->vendorStaff->assignRole('vendor_staff');
 
         $this->unauthorizedVendorAdmin = User::create([
-            'name'      => 'Mallory BadAdmin',
-            'email'     => 'badadmin@fuelcab.com',
-            'phone'     => '+915555555555',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::VendorAdmin,
+            'name' => 'Mallory BadAdmin',
+            'email' => 'badadmin@fuelcab.com',
+            'phone' => '+915555555555',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::VendorAdmin,
             'vendor_id' => $this->otherVendor->id,
         ]);
         $this->unauthorizedVendorAdmin->assignRole('vendor_admin');
 
         $this->superAdmin = User::create([
-            'name'      => 'Super Admin',
-            'email'     => 'superadmin@fuelcab.com',
-            'phone'     => '+914444444444',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::SuperAdmin,
+            'name' => 'Super Admin',
+            'email' => 'superadmin@fuelcab.com',
+            'phone' => '+914444444444',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::SuperAdmin,
         ]);
         $this->superAdmin->assignRole('super_admin');
 
         // 4. Create Address
         $this->address = Address::create([
-            'user_id'          => $this->customer->id,
+            'user_id' => $this->customer->id,
             'addressable_type' => 'App\Models\User',
-            'address_line_1'   => '123 Business Rd',
-            'city'             => 'Bengaluru',
-            'state'            => 'Karnataka',
-            'postal_code'      => '560001',
-            'latitude'         => 12.9716,
-            'longitude'        => 77.5946,
+            'address_line_1' => '123 Business Rd',
+            'city' => 'Bengaluru',
+            'state' => 'Karnataka',
+            'postal_code' => '560001',
+            'latitude' => 12.9716,
+            'longitude' => 77.5946,
         ]);
 
         // 5. Create Order (Default status: pending)
         $this->order = Order::create([
-            'customer_id'         => $this->customer->id,
-            'vendor_id'           => $this->vendor->id,
+            'customer_id' => $this->customer->id,
+            'vendor_id' => $this->vendor->id,
             'delivery_address_id' => $this->address->id,
-            'status'              => OrderStatus::Pending,
-            'subtotal_amount'     => 8850.00,
-            'delivery_fee'        => 150.00,
-            'tax_amount'          => 1620.00,
-            'total_amount'        => 10620.00,
+            'status' => OrderStatus::Pending,
+            'subtotal_amount' => 8850.00,
+            'delivery_fee' => 150.00,
+            'tax_amount' => 1620.00,
+            'total_amount' => 10620.00,
         ]);
     }
 
@@ -189,20 +207,20 @@ class OrderManagementTest extends TestCase
                 'success' => true,
                 'message' => 'Order accepted successfully.',
                 'data' => [
-                    'id'     => $this->order->id,
+                    'id' => $this->order->id,
                     'status' => 'accepted',
                 ],
             ]);
 
         $this->assertDatabaseHas('orders', [
-            'id'     => $this->order->id,
+            'id' => $this->order->id,
             'status' => 'accepted',
         ]);
 
         $this->assertDatabaseHas('order_status_logs', [
-            'order_id'    => $this->order->id,
+            'order_id' => $this->order->id,
             'from_status' => 'pending',
-            'to_status'   => 'accepted',
+            'to_status' => 'accepted',
         ]);
 
         Notification::assertSentTo(
@@ -238,9 +256,9 @@ class OrderManagementTest extends TestCase
         // Pre-transition to accepted
         $this->order->update(['status' => OrderStatus::Accepted]);
         OrderStatusLog::create([
-            'order_id'    => $this->order->id,
+            'order_id' => $this->order->id,
             'from_status' => OrderStatus::Pending,
-            'to_status'   => OrderStatus::Accepted,
+            'to_status' => OrderStatus::Accepted,
         ]);
 
         $response = $this->patchJson("/api/v1/orders/{$this->order->id}/assign-driver", [
@@ -252,16 +270,16 @@ class OrderManagementTest extends TestCase
                 'success' => true,
                 'message' => 'Driver assigned successfully.',
                 'data' => [
-                    'id'        => $this->order->id,
+                    'id' => $this->order->id,
                     'driver_id' => $this->driver->id,
-                    'status'    => 'assigned',
+                    'status' => 'assigned',
                 ],
             ]);
 
         $this->assertDatabaseHas('orders', [
-            'id'        => $this->order->id,
+            'id' => $this->order->id,
             'driver_id' => $this->driver->id,
-            'status'    => 'assigned',
+            'status' => 'assigned',
         ]);
 
         Notification::assertSentTo(
@@ -298,7 +316,7 @@ class OrderManagementTest extends TestCase
 
         // Setup: Order is assigned to driver
         $this->order->update([
-            'status'    => OrderStatus::Assigned,
+            'status' => OrderStatus::Assigned,
             'driver_id' => $this->driver->id,
         ]);
 
@@ -352,7 +370,7 @@ class OrderManagementTest extends TestCase
     {
         // Setup: driver is active and order is out_for_delivery
         $this->order->update([
-            'status'    => OrderStatus::OutForDelivery,
+            'status' => OrderStatus::OutForDelivery,
             'driver_id' => $this->driver->id,
         ]);
 
@@ -360,7 +378,7 @@ class OrderManagementTest extends TestCase
 
         // Post tracking point
         $response = $this->postJson("/api/v1/orders/{$this->order->id}/tracking", [
-            'latitude'  => 12.9810,
+            'latitude' => 12.9810,
             'longitude' => 77.6010,
         ]);
 
@@ -368,9 +386,9 @@ class OrderManagementTest extends TestCase
             ->assertJson([
                 'success' => true,
                 'data' => [
-                    'latitude'  => 12.9810,
+                    'latitude' => 12.9810,
                     'longitude' => 77.6010,
-                    'status'    => 'out_for_delivery',
+                    'status' => 'out_for_delivery',
                 ],
             ]);
 
@@ -387,7 +405,7 @@ class OrderManagementTest extends TestCase
                     'status',
                     'latest_location' => ['latitude', 'longitude'],
                     'coordinate_trail' => [
-                        ['latitude', 'longitude', 'recorded_at']
+                        ['latitude', 'longitude', 'recorded_at'],
                     ],
                 ],
             ]);
@@ -397,22 +415,22 @@ class OrderManagementTest extends TestCase
     {
         // Create an order for another vendor and customer
         $otherCustomer = User::create([
-            'name'      => 'Other Customer',
-            'email'     => 'othercust@fuelcab.com',
-            'phone'     => '+913333333333',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::Customer,
+            'name' => 'Other Customer',
+            'email' => 'othercust@fuelcab.com',
+            'phone' => '+913333333333',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::Customer,
         ]);
 
         $otherOrder = Order::create([
-            'customer_id'         => $otherCustomer->id,
-            'vendor_id'           => $this->otherVendor->id,
+            'customer_id' => $otherCustomer->id,
+            'vendor_id' => $this->otherVendor->id,
             'delivery_address_id' => $this->address->id,
-            'status'              => OrderStatus::Pending,
-            'subtotal_amount'     => 5000.00,
-            'delivery_fee'        => 100.00,
-            'tax_amount'          => 900.00,
-            'total_amount'        => 6000.00,
+            'status' => OrderStatus::Pending,
+            'subtotal_amount' => 5000.00,
+            'delivery_fee' => 100.00,
+            'tax_amount' => 900.00,
+            'total_amount' => 6000.00,
         ]);
 
         // 1. Customer should only see their own order (1 order)
@@ -509,34 +527,34 @@ class OrderManagementTest extends TestCase
         Sanctum::actingAs($this->customer);
 
         // Create a Category first to avoid foreign key violation
-        $category = \App\Models\Category::create([
-            'id'   => \Illuminate\Support\Str::uuid()->toString(),
+        $category = Category::create([
+            'id' => Str::uuid()->toString(),
             'name' => 'Liquid Fuels',
             'slug' => 'liquid-fuels',
         ]);
 
         // Pre-create order item so reorder has products to duplicate
-        $product = \App\Modules\Fuel\Models\Product::create([
-            'id' => \Illuminate\Support\Str::uuid()->toString(),
+        $product = Product::create([
+            'id' => Str::uuid()->toString(),
             'category_id' => $category->id,
             'vendor_id' => $this->vendor->id,
             'name' => 'Premium Diesel HSD',
             'slug' => 'premium-diesel-hsd',
             'sku' => 'DSL-HSD-001',
             'price_per_unit' => 88.50,
-            'unit_of_measure' => \App\Enums\UnitOfMeasure::Litres,
+            'unit_of_measure' => UnitOfMeasure::Litres,
             'is_active' => true,
             'ordering_enabled' => true,
             'min_order_quantity' => 100.0,
         ]);
 
-        \App\Modules\Order\Models\OrderItem::create([
+        OrderItem::create([
             'order_id' => $this->order->id,
             'product_id' => $product->id,
             'quantity' => 100,
             'price_per_unit' => 88.50,
             'total_price' => 8850.00,
-            'sales_channel' => \App\Enums\SalesChannel::Direct,
+            'sales_channel' => SalesChannel::Direct,
             'vendor_id' => $this->vendor->id,
             'product_name_snapshot' => 'Premium Diesel HSD',
             'product_sku_snapshot' => 'DSL-HSD-001',
@@ -568,7 +586,7 @@ class OrderManagementTest extends TestCase
 
     public function test_customer_can_download_invoice(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('public');
+        Storage::fake('public');
 
         Sanctum::actingAs($this->customer);
 

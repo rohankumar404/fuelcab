@@ -6,6 +6,7 @@ namespace App\Filament\SuperAdmin\Resources;
 
 use App\Enums\UserRole;
 use App\Filament\SuperAdmin\Resources\OperationsUserResource\Pages;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class OperationsUserResource extends Resource
 {
-    protected static ?string $model = \App\Models\User::class;
+    protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
@@ -69,7 +70,7 @@ class OperationsUserResource extends Resource
             Forms\Components\Section::make('Role & Access')->schema([
                 Forms\Components\Select::make('role_type')
                     ->options([
-                        UserRole::SuperAdmin->value     => UserRole::SuperAdmin->label(),
+                        UserRole::SuperAdmin->value => UserRole::SuperAdmin->label(),
                         UserRole::OperationsTeam->value => UserRole::OperationsTeam->label(),
                     ])
                     ->required(),
@@ -101,19 +102,19 @@ class OperationsUserResource extends Resource
                 Tables\Columns\TextColumn::make('role_type')
                     ->label('Role')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            UserRole::SuperAdmin->value => 'danger',
-            UserRole::OperationsTeam->value => 'info',
-            default => 'gray',
-        })
+                        UserRole::SuperAdmin->value => 'danger',
+                        UserRole::OperationsTeam->value => 'info',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'active' => 'success',
-            'inactive' => 'warning',
-            'suspended' => 'danger',
-            default => 'gray',
-        }),
+                        'active' => 'success',
+                        'inactive' => 'warning',
+                        'suspended' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\IconColumn::make('email_verified_at')
                     ->boolean()
@@ -131,39 +132,39 @@ class OperationsUserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role_type')
-                    ->label('Role')
-                    ->options([
-                        UserRole::SuperAdmin->value     => UserRole::SuperAdmin->label(),
-                        UserRole::OperationsTeam->value => UserRole::OperationsTeam->label(),
-                    ]),
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
-            ])
+                            Tables\Filters\SelectFilter::make('role_type')
+                                ->label('Role')
+                                ->options([
+                                    UserRole::SuperAdmin->value => UserRole::SuperAdmin->label(),
+                                    UserRole::OperationsTeam->value => UserRole::OperationsTeam->label(),
+                                ]),
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('suspend')
-                    ->label('Suspend')
-                    ->icon('heroicon-o-pause-circle')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->visible(fn ($record) => $record->status === 'active')
-                    ->action(function ($record): void {
-                        $record->update(['status' => 'suspended']);
-                        Notification::make()->title('User suspended.')->warning()->send();
-                    }),
-                Tables\Actions\Action::make('reactivate')
-                    ->label('Reactivate')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn ($record) => $record->status === 'suspended')
-                    ->action(function ($record): void {
-                        $record->update(['status' => 'active']);
-                        Notification::make()->title('User reactivated.')->success()->send();
-                    }),
-                // No delete — operations users may have audit history
-            ])
+                            Tables\Actions\EditAction::make(),
+                            Tables\Actions\Action::make('suspend')
+                                ->label('Suspend')
+                                ->icon('heroicon-o-pause-circle')
+                                ->color('warning')
+                                ->requiresConfirmation()
+                                ->visible(fn ($record) => $record->status === 'active')
+                                ->action(function ($record): void {
+                                    $record->update(['status' => 'suspended']);
+                                    Notification::make()->title('User suspended.')->warning()->send();
+                                }),
+                            Tables\Actions\Action::make('reactivate')
+                                ->label('Reactivate')
+                                ->icon('heroicon-o-arrow-path')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->visible(fn ($record) => $record->status === 'suspended')
+                                ->action(function ($record): void {
+                                    $record->update(['status' => 'active']);
+                                    Notification::make()->title('User reactivated.')->success()->send();
+                                }),
+                            // No delete — operations users may have audit history
+                        ])
             ->bulkActions([
                 // No bulk delete for staff accounts
             ]);
@@ -172,9 +173,9 @@ class OperationsUserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListOperationsUsers::route('/'),
+            'index' => Pages\ListOperationsUsers::route('/'),
             'create' => Pages\CreateOperationsUser::route('/create'),
-            'edit'   => Pages\EditOperationsUser::route('/{record}/edit'),
+            'edit' => Pages\EditOperationsUser::route('/{record}/edit'),
         ];
     }
 }

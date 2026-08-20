@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Traits\HasUuid;
 use App\Modules\Vendor\Models\VendorListing;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,7 +25,7 @@ class OrderSubscription extends Model
     ];
 
     protected $casts = [
-        'quantity'         => 'float',
+        'quantity' => 'float',
         'next_delivery_at' => 'datetime',
     ];
 

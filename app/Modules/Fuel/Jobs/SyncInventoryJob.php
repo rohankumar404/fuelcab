@@ -17,10 +17,11 @@ class SyncInventoryJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $backoff = 60;
 
     /**
-     * @param array<int, array{product_id: string, quantity_available: float}> $items
+     * @param  array<int, array{product_id: string, quantity_available: float}>  $items
      */
     public function __construct(
         private readonly array $items,
@@ -41,7 +42,7 @@ class SyncInventoryJob implements ShouldQueue
             } catch (\Throwable $e) {
                 Log::error('SyncInventoryJob: failed for product', [
                     'product_id' => $item['product_id'],
-                    'error'      => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }

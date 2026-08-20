@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Enums\UserRole;
 use App\Modules\Auth\Events\OtpRequested;
 use App\Modules\Auth\Events\UserRegistered;
 use App\Modules\Notification\Jobs\SendEmailJob;
@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -28,7 +27,8 @@ class AuthController extends Controller
     //  Constants
     // ─────────────────────────────────────────────────────────────────────────
 
-    private const OTP_CACHE_PREFIX   = 'otp_';
+    private const OTP_CACHE_PREFIX = 'otp_';
+
     private const RESEND_CACHE_PREFIX = 'otp_resend_';
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -41,19 +41,19 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'phone'    => 'required|string|unique:users,phone',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|unique:users,phone',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = User::create([
-            'name'              => $validated['name'],
-            'email'             => $validated['email'],
-            'phone'             => $validated['phone'],
-            'password'          => Hash::make($validated['password']),
-            'role_type'         => UserRole::Customer,
-            'status'            => 'active',
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'password' => Hash::make($validated['password']),
+            'role_type' => UserRole::Customer,
+            'status' => 'active',
             'email_verified_at' => now(),
         ]);
 
@@ -65,9 +65,9 @@ class AuthController extends Controller
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return $this->success([
-            'user'         => $user,
+            'user' => $user,
             'access_token' => $token,
-            'token_type'   => 'Bearer',
+            'token_type' => 'Bearer',
         ], 'User registered successfully', 201);
     }
 
@@ -77,8 +77,8 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email'    => 'required_without:phone|email|nullable',
-            'phone'    => 'required_without:email|string|nullable',
+            'email' => 'required_without:phone|email|nullable',
+            'phone' => 'required_without:email|string|nullable',
             'password' => 'required|string',
         ]);
 
@@ -99,9 +99,9 @@ class AuthController extends Controller
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return $this->success([
-            'user'         => $user,
+            'user' => $user,
             'access_token' => $token,
-            'token_type'   => 'Bearer',
+            'token_type' => 'Bearer',
         ], 'Successfully authenticated');
     }
 
@@ -126,10 +126,10 @@ class AuthController extends Controller
 
         $ttlSeconds = (int) config('fuelcab.notifications.otp.expiry_minutes', 10) * 60;
 
-        Cache::put(self::OTP_CACHE_PREFIX . $phone, $code, $ttlSeconds);
+        Cache::put(self::OTP_CACHE_PREFIX.$phone, $code, $ttlSeconds);
 
         Log::info('[OTP] Generated', [
-            'phone'   => $phone,
+            'phone' => $phone,
             'sandbox' => $sandbox,
         ]);
 
@@ -147,8 +147,8 @@ class AuthController extends Controller
      */
     private function checkResendRateLimit(string $phone): bool
     {
-        $key    = self::RESEND_CACHE_PREFIX . $phone;
-        $max    = (int) config('fuelcab.notifications.otp.max_resend', 3);
+        $key = self::RESEND_CACHE_PREFIX.$phone;
+        $max = (int) config('fuelcab.notifications.otp.max_resend', 3);
         $window = (int) config('fuelcab.notifications.otp.resend_window', 10) * 60;
 
         $attempts = (int) Cache::get($key, 0);
@@ -176,7 +176,7 @@ class AuthController extends Controller
         ]);
 
         $phone = $validated['phone'];
-        $code  = $this->generateAndSendOtp($phone);
+        $code = $this->generateAndSendOtp($phone);
 
         $sandbox = app()->environment('testing')
             || (bool) config('fuelcab.notifications.otp.sandbox', false);
@@ -184,7 +184,7 @@ class AuthController extends Controller
         return $this->success([
             'phone' => $phone,
             // Expose OTP only in sandbox / test environments — never in production
-            'otp'   => $sandbox ? $code : null,
+            'otp' => $sandbox ? $code : null,
         ], 'OTP sent successfully');
     }
 
@@ -203,6 +203,7 @@ class AuthController extends Controller
 
         if (! $this->checkResendRateLimit($phone)) {
             $window = config('fuelcab.notifications.otp.resend_window', 10);
+
             return $this->error(
                 'Too many requests',
                 "You have exceeded the OTP resend limit. Please try again in {$window} minutes.",
@@ -210,13 +211,13 @@ class AuthController extends Controller
             );
         }
 
-        $code    = $this->generateAndSendOtp($phone);
+        $code = $this->generateAndSendOtp($phone);
         $sandbox = app()->environment('testing')
             || (bool) config('fuelcab.notifications.otp.sandbox', false);
 
         return $this->success([
             'phone' => $phone,
-            'otp'   => $sandbox ? $code : null,
+            'otp' => $sandbox ? $code : null,
         ], 'OTP resent successfully');
     }
 
@@ -227,36 +228,36 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'phone' => 'required|string',
-            'otp'   => 'required|string',
+            'otp' => 'required|string',
         ]);
 
         $phone = $validated['phone'];
-        $otp   = $validated['otp'];
+        $otp = $validated['otp'];
 
-        $cachedCode = Cache::get(self::OTP_CACHE_PREFIX . $phone);
+        $cachedCode = Cache::get(self::OTP_CACHE_PREFIX.$phone);
 
         if (! $cachedCode || $cachedCode !== $otp) {
             return $this->error('Verification failed', 'Invalid or expired OTP code.', 422);
         }
 
         // Clear OTP once successfully verified (single-use)
-        Cache::forget(self::OTP_CACHE_PREFIX . $phone);
+        Cache::forget(self::OTP_CACHE_PREFIX.$phone);
 
         // Clear resend counter on successful verification
-        Cache::forget(self::RESEND_CACHE_PREFIX . $phone);
+        Cache::forget(self::RESEND_CACHE_PREFIX.$phone);
 
-        $user      = User::where('phone', $phone)->first();
+        $user = User::where('phone', $phone)->first();
         $isNewUser = false;
 
         if (! $user) {
             $isNewUser = true;
-            $user      = User::create([
-                'name'              => 'Customer ' . substr($phone, -4),
-                'email'             => 'user_' . Str::random(10) . '@fuelcab.com',
-                'phone'             => $phone,
-                'password'          => Hash::make(Str::random(24)),
-                'role_type'         => UserRole::Customer,
-                'status'            => 'active',
+            $user = User::create([
+                'name' => 'Customer '.substr($phone, -4),
+                'email' => 'user_'.Str::random(10).'@fuelcab.com',
+                'phone' => $phone,
+                'password' => Hash::make(Str::random(24)),
+                'role_type' => UserRole::Customer,
+                'status' => 'active',
                 'email_verified_at' => now(),
             ]);
 
@@ -264,18 +265,18 @@ class AuthController extends Controller
         }
 
         Log::info('[OTP] Verified', [
-            'phone'      => $phone,
-            'is_new'     => $isNewUser,
-            'user_id'    => $user->id,
+            'phone' => $phone,
+            'is_new' => $isNewUser,
+            'user_id' => $user->id,
         ]);
 
         $token = $user->createToken('otp-auth-token')->plainTextToken;
 
         return $this->success([
-            'user'         => $user,
+            'user' => $user,
             'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'is_new_user'  => $isNewUser,
+            'token_type' => 'Bearer',
+            'is_new_user' => $isNewUser,
         ], 'OTP verified successfully');
     }
 
@@ -293,10 +294,10 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
         ]);
 
-        $user    = User::where('email', $validated['email'])->firstOrFail();
-        $otp     = (string) random_int(100000, 999999);
-        $expiry  = (int) config('fuelcab.notifications.otp.expiry_minutes', 10);
-        $cacheKey = 'pwd_reset_' . md5($validated['email']);
+        $user = User::where('email', $validated['email'])->firstOrFail();
+        $otp = (string) random_int(100000, 999999);
+        $expiry = (int) config('fuelcab.notifications.otp.expiry_minutes', 10);
+        $cacheKey = 'pwd_reset_'.md5($validated['email']);
 
         Cache::put($cacheKey, $otp, now()->addMinutes($expiry));
 
@@ -313,11 +314,11 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'email' => 'required|email|exists:users,email',
-            'otp'   => 'required|string|digits:6',
+            'otp' => 'required|string|digits:6',
         ]);
 
-        $cacheKey = 'pwd_reset_' . md5($validated['email']);
-        $cached   = Cache::get($cacheKey);
+        $cacheKey = 'pwd_reset_'.md5($validated['email']);
+        $cached = Cache::get($cacheKey);
 
         if (! $cached || $cached !== $validated['otp']) {
             return $this->error('Invalid or expired OTP.', null, 422);
@@ -325,7 +326,7 @@ class AuthController extends Controller
 
         // Exchange OTP for a short-lived reset token
         $resetToken = Str::random(64);
-        Cache::put('pwd_reset_token_' . $resetToken, $validated['email'], now()->addMinutes(15));
+        Cache::put('pwd_reset_token_'.$resetToken, $validated['email'], now()->addMinutes(15));
         Cache::forget($cacheKey);
 
         return $this->success(['reset_token' => $resetToken], 'OTP verified. Use the reset token to set a new password.');
@@ -338,13 +339,13 @@ class AuthController extends Controller
     public function resetPassword(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'reset_token'          => 'required|string',
-            'password'             => 'required|string|min:8|confirmed',
+            'reset_token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string',
         ]);
 
-        $tokenKey = 'pwd_reset_token_' . $validated['reset_token'];
-        $email    = Cache::get($tokenKey);
+        $tokenKey = 'pwd_reset_token_'.$validated['reset_token'];
+        $email = Cache::get($tokenKey);
 
         if (! $email) {
             return $this->error('Reset token is invalid or has expired.', null, 422);

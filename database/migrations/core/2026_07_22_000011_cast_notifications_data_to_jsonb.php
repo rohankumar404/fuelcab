@@ -22,14 +22,14 @@ return new class extends Migration
 
         if ($driver === 'pgsql') {
             // Safely cast text → jsonb. Rows with NULL data stay NULL.
-            DB::statement("
+            DB::statement('
                 ALTER TABLE notifications
                 ALTER COLUMN data TYPE jsonb
                 USING CASE
                     WHEN data IS NULL THEN NULL
                     ELSE data::jsonb
                 END
-            ");
+            ');
         }
         // SQLite/MySQL: no action needed (TEXT with JSON_EXTRACT works natively)
     }
@@ -39,11 +39,11 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver === 'pgsql') {
-            DB::statement("
+            DB::statement('
                 ALTER TABLE notifications
                 ALTER COLUMN data TYPE text
                 USING data::text
-            ");
+            ');
         }
     }
 };

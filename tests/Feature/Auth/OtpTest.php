@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
 use App\Enums\UserRole;
+use App\Models\User;
 use App\Modules\Auth\Events\OtpRequested;
 use App\Modules\Notification\Jobs\SendSmsJob;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -28,7 +29,7 @@ class OtpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -78,10 +79,10 @@ class OtpTest extends TestCase
     public function test_verify_otp_returns_token_for_existing_user(): void
     {
         $user = User::create([
-            'name'      => 'Existing OTP User',
-            'email'     => 'otp-existing@example.com',
-            'phone'     => '+919000000020',
-            'password'  => Hash::make('password'),
+            'name' => 'Existing OTP User',
+            'email' => 'otp-existing@example.com',
+            'phone' => '+919000000020',
+            'password' => Hash::make('password'),
             'role_type' => UserRole::Customer,
         ]);
 
@@ -90,7 +91,7 @@ class OtpTest extends TestCase
 
         $response = $this->postJson('/api/v1/auth/verify-otp', [
             'phone' => '+919000000020',
-            'otp'   => $code,
+            'otp' => $code,
         ]);
 
         $response->assertStatus(200)
@@ -105,14 +106,14 @@ class OtpTest extends TestCase
 
         $response = $this->postJson('/api/v1/auth/verify-otp', [
             'phone' => '+919000000021',
-            'otp'   => $code,
+            'otp' => $code,
         ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.is_new_user', true);
 
         $this->assertDatabaseHas('users', [
-            'phone'     => '+919000000021',
+            'phone' => '+919000000021',
             'role_type' => UserRole::Customer->value,
         ]);
     }
@@ -123,9 +124,9 @@ class OtpTest extends TestCase
 
         $this->postJson('/api/v1/auth/verify-otp', [
             'phone' => '+919000000022',
-            'otp'   => '000000', // deliberate wrong code
+            'otp' => '000000', // deliberate wrong code
         ])->assertStatus(422)
-          ->assertJsonPath('success', false);
+            ->assertJsonPath('success', false);
     }
 
     public function test_verify_otp_fails_after_cache_expiry(): void
@@ -137,7 +138,7 @@ class OtpTest extends TestCase
 
         $this->postJson('/api/v1/auth/verify-otp', [
             'phone' => $phone,
-            'otp'   => '123456',
+            'otp' => '123456',
         ])->assertStatus(422);
     }
 
@@ -148,7 +149,7 @@ class OtpTest extends TestCase
 
         $this->postJson('/api/v1/auth/verify-otp', [
             'phone' => '+919000000024',
-            'otp'   => $code,
+            'otp' => $code,
         ])->assertStatus(200);
 
         // OTP cache entry must be cleared after successful verification
@@ -194,7 +195,7 @@ class OtpTest extends TestCase
     public function test_resend_otp_is_rate_limited_after_max_attempts(): void
     {
         $phone = '+919000000032';
-        $max   = (int) config('fuelcab.notifications.otp.max_resend', 3);
+        $max = (int) config('fuelcab.notifications.otp.max_resend', 3);
 
         // Exhaust the allowed resend attempts
         for ($i = 0; $i < $max; $i++) {
@@ -258,7 +259,7 @@ class OtpTest extends TestCase
 
         Queue::assertPushed(SendSmsJob::class, function (SendSmsJob $job) {
             return $job->phone === '+919000000050'
-                && $job->code  === '123456'
+                && $job->code === '123456'
                 && $job->queue === 'sms';
         });
     }

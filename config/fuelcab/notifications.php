@@ -11,8 +11,8 @@ return [
     */
 
     'channels' => [
-        'push'  => env('PUSH_ENABLED', true),
-        'sms'   => env('SMS_ENABLED', true),
+        'push' => env('PUSH_ENABLED', true),
+        'sms' => env('SMS_ENABLED', true),
         'email' => env('EMAIL_ENABLED', true),
     ],
 
@@ -24,7 +24,7 @@ return [
 
     'fcm' => [
         'server_key' => env('FCM_SERVER_KEY'),
-        'sender_id'  => env('FCM_SENDER_ID'),
+        'sender_id' => env('FCM_SENDER_ID'),
     ],
 
     /*
@@ -36,10 +36,10 @@ return [
     */
 
     'authkey' => [
-        'key'          => env('AUTHKEY_KEY', ''),
-        'sid'          => env('AUTHKEY_SID', ''),
+        'key' => env('AUTHKEY_KEY', ''),
+        'sid' => env('AUTHKEY_SID', ''),
         'country_code' => env('AUTHKEY_COUNTRY_CODE', '91'),
-        'base_url'     => 'https://api.authkey.io/request',
+        'base_url' => 'https://api.authkey.io/request',
     ],
 
     /*
@@ -49,12 +49,12 @@ return [
     */
 
     'otp' => [
-        'expiry_minutes'  => (int) env('OTP_EXPIRY_MINUTES', 10),
-        'length'          => (int) env('OTP_LENGTH', 6),
-        'max_resend'      => (int) env('OTP_MAX_RESEND', 3),
-        'resend_window'   => (int) env('OTP_RESEND_WINDOW_MINUTES', 10),
-        'sandbox'         => (bool) env('OTP_SANDBOX', false),
-        'sandbox_code'    => env('OTP_SANDBOX_CODE', '123456'),
+        'expiry_minutes' => (int) env('OTP_EXPIRY_MINUTES', 10),
+        'length' => (int) env('OTP_LENGTH', 6),
+        'max_resend' => (int) env('OTP_MAX_RESEND', 3),
+        'resend_window' => (int) env('OTP_RESEND_WINDOW_MINUTES', 10),
+        'sandbox' => (bool) env('OTP_SANDBOX', false),
+        'sandbox_code' => env('OTP_SANDBOX_CODE', '123456'),
     ],
 
     /*
@@ -64,7 +64,7 @@ return [
     */
 
     'email' => [
-        'enabled'     => (bool) env('EMAIL_ENABLED', true),
+        'enabled' => (bool) env('EMAIL_ENABLED', true),
         'admin_email' => env('ADMIN_LEAD_EMAIL', 'admin@fuelcab.com'),
     ],
 

@@ -17,12 +17,12 @@ use Illuminate\Support\Collection;
 final class CheckoutResultDTO
 {
     /**
-     * @param Collection<int, Order> $orders   All orders created (one per fulfillment group)
-     * @param Payment                $payment  Single payment covering the full checkout amount
+     * @param  Collection<int, Order>  $orders  All orders created (one per fulfillment group)
+     * @param  Payment  $payment  Single payment covering the full checkout amount
      */
     public function __construct(
         public readonly Collection $orders,
-        public readonly Payment    $payment,
+        public readonly Payment $payment,
     ) {}
 
     /**

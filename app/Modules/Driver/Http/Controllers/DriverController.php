@@ -8,13 +8,12 @@ use App\Http\Controllers\Controller;
 use App\Modules\Driver\Actions\ToggleAvailabilityAction;
 use App\Modules\Driver\Models\Driver;
 use App\Modules\Order\Enums\OrderStatus;
-use App\Modules\Order\Models\Order;
 use App\Modules\Order\Events\OrderCompleted;
+use App\Modules\Order\Models\Order;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class DriverController extends Controller
 {
@@ -28,7 +27,7 @@ class DriverController extends Controller
     public function profile(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         $driver = Driver::where('user_id', $user->id)
             ->with(['activeVehicle'])
             ->first();
@@ -42,23 +41,23 @@ class DriverController extends Controller
 
         return $this->success(
             data: [
-                'user_id'         => $user->id,
-                'name'            => $user->name,
-                'email'           => $user->email,
-                'phone'           => $user->phone,
-                'role_type'       => $user->role_type,
-                'license_number'  => $driver->license_number,
-                'license_expiry'  => $driver->license_expiry?->toDateString(),
-                'status'          => $driver->status,
-                'is_approved'     => $driver->is_approved,
-                'approved_at'     => $driver->approved_at,
-                'active_vehicle'  => $driver->activeVehicle->first() ? [
-                    'id'                  => $driver->activeVehicle->first()->id,
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'role_type' => $user->role_type,
+                'license_number' => $driver->license_number,
+                'license_expiry' => $driver->license_expiry?->toDateString(),
+                'status' => $driver->status,
+                'is_approved' => $driver->is_approved,
+                'approved_at' => $driver->approved_at,
+                'active_vehicle' => $driver->activeVehicle->first() ? [
+                    'id' => $driver->activeVehicle->first()->id,
                     'registration_number' => $driver->activeVehicle->first()->registration_number,
-                    'make'                => $driver->activeVehicle->first()->make,
-                    'model'               => $driver->activeVehicle->first()->model,
-                    'capacity_liters'     => $driver->activeVehicle->first()->capacity_liters,
-                    'fuel_type'           => $driver->activeVehicle->first()->fuel_type,
+                    'make' => $driver->activeVehicle->first()->make,
+                    'model' => $driver->activeVehicle->first()->model,
+                    'capacity_liters' => $driver->activeVehicle->first()->capacity_liters,
+                    'fuel_type' => $driver->activeVehicle->first()->fuel_type,
                 ] : null,
             ],
             message: 'Driver profile retrieved successfully.'
@@ -85,7 +84,7 @@ class DriverController extends Controller
             data: [
                 'status' => $driver->status,
             ],
-            message: 'Driver availability status updated to ' . $driver->status . '.'
+            message: 'Driver availability status updated to '.$driver->status.'.'
         );
     }
 
@@ -99,7 +98,7 @@ class DriverController extends Controller
         $orders = Order::where('driver_id', $request->user()->id)
             ->whereIn('status', [
                 OrderStatus::Assigned,
-                OrderStatus::OutForDelivery
+                OrderStatus::OutForDelivery,
             ])
             ->with(['customer:id,name,phone', 'deliveryAddress'])
             ->latest()
@@ -115,17 +114,17 @@ class DriverController extends Controller
         }
 
         return $this->success(
-            data: $orders->map(fn($o) => [
-                'id'                    => $o->id,
-                'status'                => $o->status->value,
-                'total_amount'          => $o->total_amount,
+            data: $orders->map(fn ($o) => [
+                'id' => $o->id,
+                'status' => $o->status->value,
+                'total_amount' => $o->total_amount,
                 'scheduled_delivery_at' => $o->scheduled_delivery_at?->toDateTimeString(),
-                'delivery_otp'          => $o->delivery_otp,
-                'customer'              => [
-                    'name'  => $o->customer?->name,
+                'delivery_otp' => $o->delivery_otp,
+                'customer' => [
+                    'name' => $o->customer?->name,
                     'phone' => $o->customer?->phone,
                 ],
-                'delivery_address'      => $o->deliveryAddress?->full_address,
+                'delivery_address' => $o->deliveryAddress?->full_address,
             ]),
             message: 'Assigned orders retrieved successfully.'
         );
@@ -141,7 +140,7 @@ class DriverController extends Controller
         $orders = Order::where('driver_id', $request->user()->id)
             ->whereIn('status', [
                 OrderStatus::Delivered,
-                OrderStatus::Cancelled
+                OrderStatus::Cancelled,
             ])
             ->with(['customer:id,name', 'deliveryAddress'])
             ->latest()
@@ -195,7 +194,7 @@ class DriverController extends Controller
     public function completeOrder(Request $request, string $orderId): JsonResponse
     {
         $request->validate([
-            'photo'     => ['required', 'string'], // path or base64
+            'photo' => ['required', 'string'], // path or base64
             'signature' => ['required', 'string'], // path or base64
         ]);
 
@@ -213,10 +212,10 @@ class DriverController extends Controller
 
         DB::transaction(function () use ($order, $request) {
             $order->update([
-                'delivery_proof_photo'     => $request->input('photo'),
+                'delivery_proof_photo' => $request->input('photo'),
                 'delivery_proof_signature' => $request->input('signature'),
-                'status'                   => OrderStatus::Delivered,
-                'delivered_at'             => now(),
+                'status' => OrderStatus::Delivered,
+                'delivered_at' => now(),
             ]);
 
             // Fire OrderCompleted event to trigger settlement and invoice mail

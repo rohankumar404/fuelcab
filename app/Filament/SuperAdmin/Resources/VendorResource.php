@@ -5,26 +5,29 @@ declare(strict_types=1);
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\VendorResource\Pages;
-use App\Modules\Vendor\Models\Vendor;
-use App\Modules\Vendor\Enums\VendorStatus;
-use App\Modules\Vendor\Enums\DocumentStatus;
 use App\Models\Company;
+use App\Modules\Vendor\Enums\DocumentStatus;
+use App\Modules\Vendor\Enums\VendorStatus;
+use App\Modules\Vendor\Models\Vendor;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 
 class VendorResource extends Resource
 {
     protected static ?string $model = Vendor::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
+
     protected static ?string $navigationGroup = 'VENDORS';
+
     protected static ?string $navigationLabel = 'Vendor Applications & Accounts';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'brand_name';
 
     public static function form(Form $form): Form
@@ -51,11 +54,11 @@ class VendorResource extends Resource
                             ->label('Company Type')
                             ->options([
                                 'private_limited' => 'Private Limited',
-                                'public_limited'  => 'Public Limited',
-                                'llp'             => 'LLP',
-                                'partnership'     => 'Partnership',
-                                'proprietorship'  => 'Proprietorship',
-                                'other'           => 'Other',
+                                'public_limited' => 'Public Limited',
+                                'llp' => 'LLP',
+                                'partnership' => 'Partnership',
+                                'proprietorship' => 'Proprietorship',
+                                'other' => 'Other',
                             ])
                             ->nullable(),
                         Forms\Components\Select::make('company_id')
@@ -167,98 +170,98 @@ class VendorResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            VendorStatus::Pending->value => 'warning',
-            VendorStatus::UnderReview->value => 'info',
-            VendorStatus::Approved->value => 'success',
-            VendorStatus::Rejected->value => 'danger',
-            VendorStatus::Suspended->value => 'gray',
-            default => 'gray',
-        }),
+                        VendorStatus::Pending->value => 'warning',
+                        VendorStatus::UnderReview->value => 'info',
+                        VendorStatus::Approved->value => 'success',
+                        VendorStatus::Rejected->value => 'danger',
+                        VendorStatus::Suspended->value => 'gray',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('verification_status')
                     ->label('Verification')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            DocumentStatus::Pending->value => 'warning',
-            DocumentStatus::Verified->value => 'success',
-            DocumentStatus::Rejected->value => 'danger',
-            default => 'gray',
-        }),
+                        DocumentStatus::Pending->value => 'warning',
+                        DocumentStatus::Verified->value => 'success',
+                        DocumentStatus::Rejected->value => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(collect(VendorStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
-                Tables\Filters\SelectFilter::make('verification_status')
-                    ->options(collect(DocumentStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(collect(VendorStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
+                            Tables\Filters\SelectFilter::make('verification_status')
+                                ->options(collect(DocumentStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                            Tables\Actions\EditAction::make(),
 
-                Tables\Actions\Action::make('approve')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function (Vendor $record) {
-                        $record->update([
-                            'status'              => VendorStatus::Approved,
-                            'verification_status' => DocumentStatus::Verified,
-                        ]);
-                        Notification::make()->title('Vendor approved.')->success()->send();
-                    })
-                    ->visible(fn (Vendor $record) => $record->status !== VendorStatus::Approved),
+                            Tables\Actions\Action::make('approve')
+                                ->label('Approve')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->action(function (Vendor $record) {
+                                    $record->update([
+                                        'status' => VendorStatus::Approved,
+                                        'verification_status' => DocumentStatus::Verified,
+                                    ]);
+                                    Notification::make()->title('Vendor approved.')->success()->send();
+                                })
+                                ->visible(fn (Vendor $record) => $record->status !== VendorStatus::Approved),
 
-                Tables\Actions\Action::make('reject')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->form([
-                        Forms\Components\Textarea::make('reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->rows(3),
-                    ])
-                    ->action(function (Vendor $record, array $data) {
-                        $record->update([
-                            'status'         => VendorStatus::Rejected,
-                            'internal_notes' => $data['reason'],
-                        ]);
-                        Notification::make()->title('Vendor rejected.')->danger()->send();
-                    })
-                    ->visible(fn (Vendor $record) => $record->status !== VendorStatus::Rejected),
+                            Tables\Actions\Action::make('reject')
+                                ->label('Reject')
+                                ->icon('heroicon-o-x-circle')
+                                ->color('danger')
+                                ->form([
+                                    Forms\Components\Textarea::make('reason')
+                                        ->label('Rejection Reason')
+                                        ->required()
+                                        ->rows(3),
+                                ])
+                                ->action(function (Vendor $record, array $data) {
+                                    $record->update([
+                                        'status' => VendorStatus::Rejected,
+                                        'internal_notes' => $data['reason'],
+                                    ]);
+                                    Notification::make()->title('Vendor rejected.')->danger()->send();
+                                })
+                                ->visible(fn (Vendor $record) => $record->status !== VendorStatus::Rejected),
 
-                Tables\Actions\Action::make('suspend')
-                    ->label('Suspend')
-                    ->icon('heroicon-o-pause-circle')
-                    ->color('warning')
-                    ->form([
-                        Forms\Components\Textarea::make('reason')
-                            ->label('Suspension Reason')
-                            ->required()
-                            ->rows(2),
-                    ])
-                    ->action(function (Vendor $record, array $data) {
-                        $record->update([
-                            'status'         => VendorStatus::Suspended,
-                            'internal_notes' => $data['reason'],
-                        ]);
-                        Notification::make()->title('Vendor suspended.')->warning()->send();
-                    })
-                    ->visible(fn (Vendor $record) => $record->status === VendorStatus::Approved),
+                            Tables\Actions\Action::make('suspend')
+                                ->label('Suspend')
+                                ->icon('heroicon-o-pause-circle')
+                                ->color('warning')
+                                ->form([
+                                    Forms\Components\Textarea::make('reason')
+                                        ->label('Suspension Reason')
+                                        ->required()
+                                        ->rows(2),
+                                ])
+                                ->action(function (Vendor $record, array $data) {
+                                    $record->update([
+                                        'status' => VendorStatus::Suspended,
+                                        'internal_notes' => $data['reason'],
+                                    ]);
+                                    Notification::make()->title('Vendor suspended.')->warning()->send();
+                                })
+                                ->visible(fn (Vendor $record) => $record->status === VendorStatus::Approved),
 
-                Tables\Actions\Action::make('reactivate')
-                    ->label('Reactivate')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('info')
-                    ->requiresConfirmation()
-                    ->action(function (Vendor $record) {
-                        $record->update(['status' => VendorStatus::Approved]);
-                        Notification::make()->title('Vendor reactivated.')->success()->send();
-                    })
-                    ->visible(fn (Vendor $record) => $record->status === VendorStatus::Suspended),
-            ])
+                            Tables\Actions\Action::make('reactivate')
+                                ->label('Reactivate')
+                                ->icon('heroicon-o-arrow-path')
+                                ->color('info')
+                                ->requiresConfirmation()
+                                ->action(function (Vendor $record) {
+                                    $record->update(['status' => VendorStatus::Approved]);
+                                    Notification::make()->title('Vendor reactivated.')->success()->send();
+                                })
+                                ->visible(fn (Vendor $record) => $record->status === VendorStatus::Suspended),
+                        ])
             ->bulkActions([
                 // No DeleteBulkAction — vendors are historically referenced by orders
             ]);
@@ -267,9 +270,9 @@ class VendorResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListVendors::route('/'),
+            'index' => Pages\ListVendors::route('/'),
             'create' => Pages\CreateVendor::route('/create'),
-            'edit'   => Pages\EditVendor::route('/{record}/edit'),
+            'edit' => Pages\EditVendor::route('/{record}/edit'),
         ];
     }
 }

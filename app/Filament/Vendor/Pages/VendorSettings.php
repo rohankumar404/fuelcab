@@ -32,13 +32,13 @@ class VendorSettings extends Page implements HasForms
         $user = auth()->user();
 
         $this->form->fill([
-            'name'                        => $user?->name,
-            'email'                       => $user?->email,
-            'phone'                       => $user?->phone,
-            'notify_new_order'            => true,
-            'notify_quote_request'        => true,
-            'notify_listing_status'       => true,
-            'notify_settlement'           => true,
+            'name' => $user?->name,
+            'email' => $user?->email,
+            'phone' => $user?->phone,
+            'notify_new_order' => true,
+            'notify_quote_request' => true,
+            'notify_listing_status' => true,
+            'notify_settlement' => true,
         ]);
     }
 
@@ -113,7 +113,7 @@ class VendorSettings extends Page implements HasForms
 
         // Update allowed user fields
         $user->update([
-            'name'  => $data['name'],
+            'name' => $data['name'],
             'phone' => $data['phone'] ?? $user->phone,
         ]);
 

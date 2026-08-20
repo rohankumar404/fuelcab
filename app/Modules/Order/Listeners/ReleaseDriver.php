@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Listeners;
 
+use App\Modules\Driver\Models\Driver;
 use App\Modules\Order\Events\OrderCancelled;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -13,7 +14,9 @@ class ReleaseDriver implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
+
+    public int $tries = 3;
 
     public function handle(OrderCancelled $event): void
     {
@@ -23,11 +26,17 @@ class ReleaseDriver implements ShouldQueue
             return; // No driver was assigned, nothing to release
         }
 
-        // TODO: Update driver availability/status via Driver module.
-        // DriverAvailabilityService::release($order->driver_id);
-        Log::info('OrderModule: Driver released from cancelled order', [
-            'order_id'  => $order->id,
-            'driver_id' => $order->driver_id,
-        ]);
+        // Retrieve driver by user_id
+        $driver = Driver::where('user_id', $order->driver_id)->first();
+
+        if ($driver && $driver->status === 'on_trip') {
+            $driver->update(['status' => 'available']);
+
+            Log::info('[ReleaseDriver] Driver released from cancelled order.', [
+                'order_id' => $order->id,
+                'driver_id' => $order->driver_id,
+                'status' => 'available',
+            ]);
+        }
     }
 }

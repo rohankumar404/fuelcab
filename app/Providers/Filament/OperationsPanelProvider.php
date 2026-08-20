@@ -33,10 +33,10 @@ class OperationsPanelProvider extends PanelProvider
             ->brandName('FuelCab — Operations')
             ->colors([
                 'primary' => Color::Blue,
-                'danger'  => Color::Rose,
+                'danger' => Color::Rose,
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
-                'info'    => Color::Sky,
+                'info' => Color::Sky,
             ])
             ->font('Inter', 'https://fonts.bunny.net/css?family=inter:100,200,300,400,500,600,700,800,900')
             ->darkMode(true)

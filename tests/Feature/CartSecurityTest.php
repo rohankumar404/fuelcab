@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\UnitOfMeasure;
 use App\Enums\UserRole;
 use App\Models\Category;
+use App\Models\Company;
 use App\Models\User;
 use App\Modules\Cart\Models\Cart;
 use App\Modules\Cart\Models\CartItem;
 use App\Modules\Fuel\Models\Product;
 use App\Modules\Vendor\Models\Vendor;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -20,30 +24,35 @@ class CartSecurityTest extends TestCase
     use RefreshDatabase;
 
     private User $userA;
+
     private User $userB;
+
     private Cart $cartA;
+
     private Cart $cartB;
+
     private CartItem $itemA;
+
     private CartItem $itemB;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         // Create two users
         $this->userA = User::create([
-            'name'      => 'User A',
-            'email'     => 'usera@fuelcab.com',
-            'password'  => bcrypt('password'),
+            'name' => 'User A',
+            'email' => 'usera@fuelcab.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::Customer,
         ]);
         $this->userA->assignRole(UserRole::Customer->value);
 
         $this->userB = User::create([
-            'name'      => 'User B',
-            'email'     => 'userb@fuelcab.com',
-            'password'  => bcrypt('password'),
+            'name' => 'User B',
+            'email' => 'userb@fuelcab.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::Customer,
         ]);
         $this->userB->assignRole(UserRole::Customer->value);
@@ -59,41 +68,41 @@ class CartSecurityTest extends TestCase
 
         // Create a Category and Vendor for Product references
         $category = Category::create(['name' => 'Fuel Category', 'slug' => 'fuel-cat']);
-        $company  = \App\Models\Company::create(['name' => 'Company X', 'tax_number' => 'TAX1123', 'status' => 'active']);
-        $vendor   = Vendor::create([
-            'company_id'    => $company->id,
-            'brand_name'    => 'Vendor X',
-            'status'        => 'approved',
+        $company = Company::create(['name' => 'Company X', 'tax_number' => 'TAX1123', 'status' => 'active']);
+        $vendor = Vendor::create([
+            'company_id' => $company->id,
+            'brand_name' => 'Vendor X',
+            'status' => 'approved',
             'contact_email' => 'vendorx@example.com',
         ]);
 
         // Create product
         $product = Product::create([
-            'id'                 => \Illuminate\Support\Str::uuid()->toString(),
-            'category_id'        => $category->id,
-            'vendor_id'          => $vendor->id,
-            'name'               => 'Regular Diesel',
-            'slug'               => 'regular-diesel',
-            'sku'                => 'DSL-REG',
-            'price_per_unit'     => 90.00,
-            'unit_of_measure'    => \App\Enums\UnitOfMeasure::Litres,
-            'is_active'          => true,
-            'ordering_enabled'   => true,
+            'id' => Str::uuid()->toString(),
+            'category_id' => $category->id,
+            'vendor_id' => $vendor->id,
+            'name' => 'Regular Diesel',
+            'slug' => 'regular-diesel',
+            'sku' => 'DSL-REG',
+            'price_per_unit' => 90.00,
+            'unit_of_measure' => UnitOfMeasure::Litres,
+            'is_active' => true,
+            'ordering_enabled' => true,
             'min_order_quantity' => 100.0,
         ]);
 
         // Create cart items
         $this->itemA = CartItem::create([
-            'cart_id'        => $this->cartA->id,
-            'product_id'     => $product->id,
-            'quantity'       => 150,
+            'cart_id' => $this->cartA->id,
+            'product_id' => $product->id,
+            'quantity' => 150,
             'price_per_unit' => 90.00,
         ]);
 
         $this->itemB = CartItem::create([
-            'cart_id'        => $this->cartB->id,
-            'product_id'     => $product->id,
-            'quantity'       => 200,
+            'cart_id' => $this->cartB->id,
+            'product_id' => $product->id,
+            'quantity' => 200,
             'price_per_unit' => 90.00,
         ]);
     }

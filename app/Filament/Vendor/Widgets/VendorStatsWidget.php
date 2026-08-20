@@ -6,8 +6,8 @@ namespace App\Filament\Vendor\Widgets;
 
 use App\Enums\ListingStatus;
 use App\Models\Settlement;
-use App\Modules\Order\Models\Order;
 use App\Modules\Order\Enums\OrderStatus;
+use App\Modules\Order\Models\Order;
 use App\Modules\Vendor\Models\VendorListing;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -25,13 +25,13 @@ class VendorStatsWidget extends BaseWidget
         }
 
         // Orders scoped to this vendor
-        $totalOrders   = Order::where('vendor_id', $vendorId)->count();
+        $totalOrders = Order::where('vendor_id', $vendorId)->count();
         $pendingOrders = Order::where('vendor_id', $vendorId)
             ->where('status', OrderStatus::Pending->value)
             ->count();
 
         // Listings
-        $activeListings  = VendorListing::where('vendor_id', $vendorId)
+        $activeListings = VendorListing::where('vendor_id', $vendorId)
             ->where('approval_status', ListingStatus::Approved->value)
             ->where('is_active', true)
             ->count();
@@ -76,12 +76,12 @@ class VendorStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-hourglass')
                 ->color($pendingListings > 0 ? 'info' : 'gray'),
 
-            Stat::make('Revenue', '₹' . number_format((float) $revenue, 0))
+            Stat::make('Revenue', '₹'.number_format((float) $revenue, 0))
                 ->description('From delivered orders')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
 
-            Stat::make('Pending Settlement', '₹' . number_format((float) $pendingSettlement, 0))
+            Stat::make('Pending Settlement', '₹'.number_format((float) $pendingSettlement, 0))
                 ->description('Awaiting payout')
                 ->descriptionIcon('heroicon-m-queue-list')
                 ->color($pendingSettlement > 0 ? 'warning' : 'gray'),

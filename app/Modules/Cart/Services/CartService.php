@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Cart\Services;
 
+use App\Models\Coupon;
 use App\Models\User;
 use App\Modules\Cart\Actions\AddItemToCartAction;
 use App\Modules\Cart\Actions\ClearCartAction;
@@ -19,11 +20,11 @@ use App\Modules\Cart\Repositories\CartRepository;
 class CartService
 {
     public function __construct(
-        private readonly CartRepository       $repository,
-        private readonly AddItemToCartAction  $addItem,
+        private readonly CartRepository $repository,
+        private readonly AddItemToCartAction $addItem,
         private readonly UpdateCartItemAction $updateItem,
         private readonly RemoveCartItemAction $removeItem,
-        private readonly ClearCartAction      $clearCart,
+        private readonly ClearCartAction $clearCart,
         private readonly MergeGuestCartAction $mergeGuest,
     ) {}
 
@@ -57,6 +58,7 @@ class CartService
     public function addItemForContext(?User $user, ?string $guestToken, AddCartItemDTO $dto): CartItem
     {
         $cart = $this->resolveCart($user, $guestToken);
+
         return $this->addItem->execute($cart, $dto);
     }
 
@@ -105,8 +107,8 @@ class CartService
      */
     public function applyCoupon(?User $user, ?string $guestToken, string $code): Cart
     {
-        $cart   = $this->resolveCart($user, $guestToken);
-        $coupon = \App\Models\Coupon::where('code', $code)->where('is_active', true)->first();
+        $cart = $this->resolveCart($user, $guestToken);
+        $coupon = Coupon::where('code', $code)->where('is_active', true)->first();
 
         if (! $coupon) {
             throw new \DomainException("Coupon code '{$code}' is invalid or expired.");

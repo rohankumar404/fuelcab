@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Filament\SuperAdmin\Widgets;
 
+use App\Enums\DriverStatus;
+use App\Models\User;
+use App\Modules\Driver\Models\Driver;
 use App\Modules\Order\Models\Order;
 use App\Modules\Payment\Models\Payment;
 use App\Modules\Vendor\Models\Vendor;
-use App\Models\User;
-use App\Enums\DriverStatus;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -18,11 +19,11 @@ class StatsOverviewWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        $todayOrders   = Order::whereDate('created_at', today())->count();
-        $weekOrders    = Order::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
-        $monthRevenue  = Payment::where('status', 'success')->whereMonth('created_at', now()->month)->sum('amount');
+        $todayOrders = Order::whereDate('created_at', today())->count();
+        $weekOrders = Order::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $monthRevenue = Payment::where('status', 'success')->whereMonth('created_at', now()->month)->sum('amount');
         $activeVendors = Vendor::where('status', 'approved')->count();
-        $onlineDrivers = \App\Modules\Driver\Models\Driver::where('status', DriverStatus::Active->value)->count();
+        $onlineDrivers = Driver::where('status', DriverStatus::Active->value)->count();
         $totalCustomers = User::where('role_type', 'customer')->count();
 
         return [
@@ -31,7 +32,7 @@ class StatsOverviewWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('primary'),
 
-            Stat::make('Monthly Revenue', '₹' . number_format($monthRevenue, 0))
+            Stat::make('Monthly Revenue', '₹'.number_format($monthRevenue, 0))
                 ->description('Successful payments')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),

@@ -6,9 +6,9 @@ namespace App\Modules\Vendor\Policies;
 
 use App\Enums\ListingStatus;
 use App\Models\User;
+use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorListing;
-use App\Modules\Vendor\Enums\VendorStatus;
 
 class VendorListingPolicy
 {

@@ -17,9 +17,9 @@ class FilterUsersRequest extends ApiRequest
     {
         return [
             'role_type' => ['nullable', 'string', 'in:super_admin,operations_team,vendor_admin,vendor_staff,driver,customer'],
-            'status'    => ['nullable', 'string', 'in:active,inactive,suspended'],
-            'search'    => ['nullable', 'string', 'max:255'],
-            'per_page'  => ['nullable', 'integer', 'min:1', 'max:100'],
+            'status' => ['nullable', 'string', 'in:active,inactive,suspended'],
+            'search' => ['nullable', 'string', 'max:255'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 
@@ -27,7 +27,7 @@ class FilterUsersRequest extends ApiRequest
     {
         return [
             'role_type.in' => 'The selected role type filter is invalid.',
-            'status.in'    => 'The selected status filter is invalid.',
+            'status.in' => 'The selected status filter is invalid.',
             'per_page.max' => 'Cannot request more than 100 users per page.',
         ];
     }

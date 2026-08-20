@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\UserRole;
+use App\Models\Address;
 use App\Models\Company;
 use App\Models\User;
 use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Models\Vendor;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -28,43 +30,46 @@ class SecurityAuditTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private User $superAdmin;
+
     private Vendor $vendor;
+
     private User $vendorAdmin;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         $this->customer = User::create([
-            'name'      => 'Test Customer',
-            'email'     => 'customer@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Test Customer',
+            'email' => 'customer@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::Customer,
         ]);
         $this->customer->assignRole(UserRole::Customer->value);
 
         $this->superAdmin = User::create([
-            'name'      => 'Super Admin',
-            'email'     => 'admin@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Super Admin',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::SuperAdmin,
         ]);
         $this->superAdmin->assignRole(UserRole::SuperAdmin->value);
 
         $company = Company::create(['name' => 'Acme Fuels', 'tax_number' => 'TAXACME', 'status' => 'active']);
         $this->vendor = Vendor::create([
-            'company_id'    => $company->id,
-            'brand_name'    => 'Acme Fuels',
-            'status'        => VendorStatus::Pending,
+            'company_id' => $company->id,
+            'brand_name' => 'Acme Fuels',
+            'status' => VendorStatus::Pending,
             'contact_email' => 'acme@example.com',
         ]);
 
         $this->vendorAdmin = User::create([
-            'name'      => 'Vendor Admin',
-            'email'     => 'vendoradmin@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Vendor Admin',
+            'email' => 'vendoradmin@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::VendorAdmin,
             'vendor_id' => $this->vendor->id,
         ]);
@@ -111,13 +116,13 @@ class SecurityAuditTest extends TestCase
     public function test_registration_cannot_elevate_role(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
-            'name'                  => 'Attacker',
-            'email'                 => 'attacker@evil.com',
-            'phone'                 => '+919999999999',
-            'password'              => 'password123',
+            'name' => 'Attacker',
+            'email' => 'attacker@evil.com',
+            'phone' => '+919999999999',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
-            'role_type'             => 'super_admin',  // attempted privilege escalation
-            'status'                => 'active',
+            'role_type' => 'super_admin',  // attempted privilege escalation
+            'status' => 'active',
         ]);
 
         $response->assertStatus(201);
@@ -150,16 +155,16 @@ class SecurityAuditTest extends TestCase
     public function test_customer_cannot_delete_another_users_address(): void
     {
         // Create an address belonging to superAdmin using correct polymorphic structure
-        $address = \App\Models\Address::create([
-            'addressable_type' => \App\Models\User::class,
-            'addressable_id'   => $this->superAdmin->id,
-            'user_id'          => $this->superAdmin->id,
-            'address_line_1'   => '123 Admin Street',
-            'city'             => 'Mumbai',
-            'state'            => 'Maharashtra',
-            'postal_code'      => '400001',
-            'latitude'         => 19.0760,
-            'longitude'        => 72.8777,
+        $address = Address::create([
+            'addressable_type' => User::class,
+            'addressable_id' => $this->superAdmin->id,
+            'user_id' => $this->superAdmin->id,
+            'address_line_1' => '123 Admin Street',
+            'city' => 'Mumbai',
+            'state' => 'Maharashtra',
+            'postal_code' => '400001',
+            'latitude' => 19.0760,
+            'longitude' => 72.8777,
         ]);
 
         Sanctum::actingAs($this->customer);

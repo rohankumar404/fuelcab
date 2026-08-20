@@ -75,11 +75,11 @@ class VendorDocumentResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            DocumentStatus::Pending->value => 'warning',
-            DocumentStatus::Verified->value => 'success',
-            DocumentStatus::Rejected->value => 'danger',
-            default => 'gray',
-        })
+                        DocumentStatus::Pending->value => 'warning',
+                        DocumentStatus::Verified->value => 'success',
+                        DocumentStatus::Rejected->value => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn ($state) => $state instanceof DocumentStatus ? $state->label() : $state),
                 Tables\Columns\TextColumn::make('verified_at')
                     ->label('Verified At')
@@ -101,73 +101,73 @@ class VendorDocumentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(collect(DocumentStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
-                Tables\Filters\SelectFilter::make('vendor_id')
-                    ->label('Vendor')
-                    ->relationship('vendor', 'brand_name')
-                    ->searchable(),
-                Tables\Filters\SelectFilter::make('document_type')
-                    ->options([
-                        'gst_certificate'   => 'GST Certificate',
-                        'pan'               => 'PAN Card',
-                        'bank_statement'    => 'Bank Statement',
-                        'trade_license'     => 'Trade License',
-                        'quality_cert'      => 'Quality Certificate',
-                        'other'             => 'Other',
-                    ]),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(collect(DocumentStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
+                            Tables\Filters\SelectFilter::make('vendor_id')
+                                ->label('Vendor')
+                                ->relationship('vendor', 'brand_name')
+                                ->searchable(),
+                            Tables\Filters\SelectFilter::make('document_type')
+                                ->options([
+                                    'gst_certificate' => 'GST Certificate',
+                                    'pan' => 'PAN Card',
+                                    'bank_statement' => 'Bank Statement',
+                                    'trade_license' => 'Trade License',
+                                    'quality_cert' => 'Quality Certificate',
+                                    'other' => 'Other',
+                                ]),
+                        ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->label('Review'),
-                Tables\Actions\Action::make('verify')
-                    ->label('Verify')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn (VendorDocument $record) => $record->status !== DocumentStatus::Verified)
-                    ->action(function (VendorDocument $record): void {
-                        $record->update([
-                            'status'      => DocumentStatus::Verified,
-                            'verified_at' => now(),
-                            'verified_by' => auth()->id(),
-                        ]);
-                        Notification::make()->title('Document verified.')->success()->send();
-                    }),
-                Tables\Actions\Action::make('reject')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn (VendorDocument $record) => $record->status !== DocumentStatus::Rejected)
-                    ->form([
-                        Forms\Components\Textarea::make('reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->rows(3),
-                    ])
-                    ->action(function (VendorDocument $record, array $data): void {
-                        $record->update([
-                            'status'           => DocumentStatus::Rejected,
-                            'rejection_reason' => $data['reason'],
-                        ]);
-                        Notification::make()->title('Document rejected.')->danger()->send();
-                    }),
-            ])
+                            Tables\Actions\ViewAction::make(),
+                            Tables\Actions\EditAction::make()
+                                ->label('Review'),
+                            Tables\Actions\Action::make('verify')
+                                ->label('Verify')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->visible(fn (VendorDocument $record) => $record->status !== DocumentStatus::Verified)
+                                ->action(function (VendorDocument $record): void {
+                                    $record->update([
+                                        'status' => DocumentStatus::Verified,
+                                        'verified_at' => now(),
+                                        'verified_by' => auth()->id(),
+                                    ]);
+                                    Notification::make()->title('Document verified.')->success()->send();
+                                }),
+                            Tables\Actions\Action::make('reject')
+                                ->label('Reject')
+                                ->icon('heroicon-o-x-circle')
+                                ->color('danger')
+                                ->visible(fn (VendorDocument $record) => $record->status !== DocumentStatus::Rejected)
+                                ->form([
+                                    Forms\Components\Textarea::make('reason')
+                                        ->label('Rejection Reason')
+                                        ->required()
+                                        ->rows(3),
+                                ])
+                                ->action(function (VendorDocument $record, array $data): void {
+                                    $record->update([
+                                        'status' => DocumentStatus::Rejected,
+                                        'rejection_reason' => $data['reason'],
+                                    ]);
+                                    Notification::make()->title('Document rejected.')->danger()->send();
+                                }),
+                        ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('verify_all')
-                    ->label('Verify Selected')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function ($records): void {
-                        $records->each->update([
-                            'status'      => DocumentStatus::Verified,
-                            'verified_at' => now(),
-                            'verified_by' => auth()->id(),
-                        ]);
-                        Notification::make()->title('Documents verified.')->success()->send();
-                    }),
+                                ->label('Verify Selected')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->action(function ($records): void {
+                                    $records->each->update([
+                                        'status' => DocumentStatus::Verified,
+                                        'verified_at' => now(),
+                                        'verified_by' => auth()->id(),
+                                    ]);
+                                    Notification::make()->title('Documents verified.')->success()->send();
+                                }),
             ]);
     }
 
@@ -175,7 +175,7 @@ class VendorDocumentResource extends Resource
     {
         return [
             'index' => Pages\ListVendorDocuments::route('/'),
-            'edit'  => Pages\EditVendorDocument::route('/{record}/edit'),
+            'edit' => Pages\EditVendorDocument::route('/{record}/edit'),
         ];
     }
 }

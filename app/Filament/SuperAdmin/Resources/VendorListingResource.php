@@ -14,6 +14,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class VendorListingResource extends Resource
 {
@@ -126,12 +127,12 @@ class VendorListingResource extends Resource
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state instanceof ListingStatus ? $state->label() : $state)
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'DRAFT' => 'secondary',
-            'PENDING_APPROVAL' => 'warning',
-            'APPROVED' => 'success',
-            'REJECTED' => 'danger',
-            default => 'gray',
-        }),
+                        'DRAFT' => 'secondary',
+                        'PENDING_APPROVAL' => 'warning',
+                        'APPROVED' => 'success',
+                        'REJECTED' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\IconColumn::make('is_active')->boolean()->label('Active'),
                 Tables\Columns\IconColumn::make('is_featured')->boolean()->label('Featured'),
@@ -141,124 +142,124 @@ class VendorListingResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('approval_status')
-                    ->options(ListingStatus::options()),
+                            Tables\Filters\SelectFilter::make('approval_status')
+                                ->options(ListingStatus::options()),
 
-                Tables\Filters\SelectFilter::make('vendor_id')
-                    ->label('Vendor')
-                    ->relationship('vendor', 'brand_name')
-                    ->searchable(),
+                            Tables\Filters\SelectFilter::make('vendor_id')
+                                ->label('Vendor')
+                                ->relationship('vendor', 'brand_name')
+                                ->searchable(),
 
-                Tables\Filters\SelectFilter::make('marketplace_product_id')
-                    ->label('Product Master')
-                    ->relationship('marketplaceProduct', 'name')
-                    ->searchable(),
+                            Tables\Filters\SelectFilter::make('marketplace_product_id')
+                                ->label('Product Master')
+                                ->relationship('marketplaceProduct', 'name')
+                                ->searchable(),
 
-                Tables\Filters\TernaryFilter::make('is_featured')->label('Featured'),
-            ])
+                            Tables\Filters\TernaryFilter::make('is_featured')->label('Featured'),
+                        ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                            Tables\Actions\ViewAction::make(),
 
-                Tables\Actions\Action::make('approve')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::PendingApproval)
-                    ->action(function (VendorListing $record) {
-                        app(VendorListingService::class)->approve($record, auth()->user());
-                        Notification::make()->title('Listing approved.')->success()->send();
-                    }),
+                            Tables\Actions\Action::make('approve')
+                                ->label('Approve')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::PendingApproval)
+                                ->action(function (VendorListing $record) {
+                                    app(VendorListingService::class)->approve($record, auth()->user());
+                                    Notification::make()->title('Listing approved.')->success()->send();
+                                }),
 
-                Tables\Actions\Action::make('reject')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::PendingApproval)
-                    ->form([
-                        Forms\Components\Textarea::make('reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->minLength(10),
-                    ])
-                    ->action(function (VendorListing $record, array $data) {
-                        app(VendorListingService::class)->reject($record, auth()->user(), $data['reason']);
-                        Notification::make()->title('Listing rejected.')->warning()->send();
-                    }),
+                            Tables\Actions\Action::make('reject')
+                                ->label('Reject')
+                                ->icon('heroicon-o-x-circle')
+                                ->color('danger')
+                                ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::PendingApproval)
+                                ->form([
+                                    Forms\Components\Textarea::make('reason')
+                                        ->label('Rejection Reason')
+                                        ->required()
+                                        ->minLength(10),
+                                ])
+                                ->action(function (VendorListing $record, array $data) {
+                                    app(VendorListingService::class)->reject($record, auth()->user(), $data['reason']);
+                                    Notification::make()->title('Listing rejected.')->warning()->send();
+                                }),
 
-                Tables\Actions\Action::make('suspend')
-                    ->label('Suspend')
-                    ->icon('heroicon-o-pause-circle')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::Approved)
-                    ->action(function (VendorListing $record) {
-                        app(VendorListingService::class)->suspend($record);
-                        Notification::make()->title('Listing suspended.')->warning()->send();
-                    }),
+                            Tables\Actions\Action::make('suspend')
+                                ->label('Suspend')
+                                ->icon('heroicon-o-pause-circle')
+                                ->color('warning')
+                                ->requiresConfirmation()
+                                ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::Approved)
+                                ->action(function (VendorListing $record) {
+                                    app(VendorListingService::class)->suspend($record);
+                                    Notification::make()->title('Listing suspended.')->warning()->send();
+                                }),
 
-                Tables\Actions\Action::make('feature')
-                    ->label(fn (VendorListing $record) => $record->is_featured ? 'Unfeature' : 'Feature')
-                    ->icon('heroicon-o-star')
-                    ->color('gray')
-                    ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::Approved)
-                    ->action(function (VendorListing $record) {
-                        app(VendorListingService::class)->toggleFeatured($record);
-                        Notification::make()->title('Featured status updated.')->success()->send();
-                    }),
+                            Tables\Actions\Action::make('feature')
+                                ->label(fn (VendorListing $record) => $record->is_featured ? 'Unfeature' : 'Feature')
+                                ->icon('heroicon-o-star')
+                                ->color('gray')
+                                ->visible(fn (VendorListing $record) => $record->approval_status === ListingStatus::Approved)
+                                ->action(function (VendorListing $record) {
+                                    app(VendorListingService::class)->toggleFeatured($record);
+                                    Notification::make()->title('Featured status updated.')->success()->send();
+                                }),
 
-                Tables\Actions\DeleteAction::make(),
-            ])
+                            Tables\Actions\DeleteAction::make(),
+                        ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('bulkApprove')
-                    ->label('Bulk Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-                        $service = app(VendorListingService::class);
-                        $user = auth()->user();
-                        $count = 0;
-                        foreach ($records as $record) {
-                            if ($record->approval_status === ListingStatus::PendingApproval) {
-                                $service->approve($record, $user);
-                                $count++;
-                            }
-                        }
-                        if ($count > 0) {
-                            Notification::make()->title("{$count} listings approved.")->success()->send();
-                        } else {
-                            Notification::make()->title('No listings were pending approval.')->warning()->send();
-                        }
-                    }),
+                                ->label('Bulk Approve')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->action(function (Collection $records) {
+                                    $service = app(VendorListingService::class);
+                                    $user = auth()->user();
+                                    $count = 0;
+                                    foreach ($records as $record) {
+                                        if ($record->approval_status === ListingStatus::PendingApproval) {
+                                            $service->approve($record, $user);
+                                            $count++;
+                                        }
+                                    }
+                                    if ($count > 0) {
+                                        Notification::make()->title("{$count} listings approved.")->success()->send();
+                                    } else {
+                                        Notification::make()->title('No listings were pending approval.')->warning()->send();
+                                    }
+                                }),
                 Tables\Actions\BulkAction::make('bulkSuspend')
-                    ->label('Bulk Suspend')
-                    ->icon('heroicon-o-pause-circle')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-                        $service = app(VendorListingService::class);
-                        $count = 0;
-                        foreach ($records as $record) {
-                            if ($record->approval_status === ListingStatus::Approved) {
-                                $service->suspend($record);
-                                $count++;
-                            }
-                        }
-                        if ($count > 0) {
-                            Notification::make()->title("{$count} listings suspended.")->warning()->send();
-                        } else {
-                            Notification::make()->title('No active approved listings selected.')->warning()->send();
-                        }
-                    })
+                                ->label('Bulk Suspend')
+                                ->icon('heroicon-o-pause-circle')
+                                ->color('warning')
+                                ->requiresConfirmation()
+                                ->action(function (Collection $records) {
+                                    $service = app(VendorListingService::class);
+                                    $count = 0;
+                                    foreach ($records as $record) {
+                                        if ($record->approval_status === ListingStatus::Approved) {
+                                            $service->suspend($record);
+                                            $count++;
+                                        }
+                                    }
+                                    if ($count > 0) {
+                                        Notification::make()->title("{$count} listings suspended.")->warning()->send();
+                                    } else {
+                                        Notification::make()->title('No active approved listings selected.')->warning()->send();
+                                    }
+                                }),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListVendorListings::route('/'),
-            'view'   => Pages\ViewVendorListing::route('/{record}'),
+            'index' => Pages\ListVendorListings::route('/'),
+            'view' => Pages\ViewVendorListing::route('/{record}'),
         ];
     }
 }

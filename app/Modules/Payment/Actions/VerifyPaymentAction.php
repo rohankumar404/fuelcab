@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Payment\Actions;
 
 use App\Exceptions\PaymentFailedException;
+use App\Modules\Order\Enums\OrderStatus;
+use App\Modules\Order\Events\OrderAccepted;
 use App\Modules\Payment\Events\PaymentFailed;
 use App\Modules\Payment\Events\PaymentVerified;
 use App\Modules\Payment\Gateways\PaymentGatewayFactory;
@@ -20,7 +22,7 @@ class VerifyPaymentAction
     public function execute(array $payload, string $gatewayName = 'razorpay'): bool
     {
         $gatewayOrderId = (string) ($payload['razorpay_order_id'] ?? '');
-        $paymentId      = (string) ($payload['razorpay_payment_id'] ?? '');
+        $paymentId = (string) ($payload['razorpay_payment_id'] ?? '');
 
         if (empty($gatewayOrderId) || empty($paymentId)) {
             throw new PaymentFailedException('Invalid verification payload.');
@@ -36,26 +38,26 @@ class VerifyPaymentAction
 
             if ($verified) {
                 $payment->update([
-                    'status'                 => 'completed',
+                    'status' => 'completed',
                     'gateway_transaction_id' => $paymentId, // update to actual transaction reference
-                    'paid_at'                => now(),
+                    'paid_at' => now(),
                 ]);
 
                 // Transition the order status from Pending to Accepted on successful payment
                 $order = $payment->order;
-                if ($order && $order->status === \App\Modules\Order\Enums\OrderStatus::Pending) {
+                if ($order && $order->status === OrderStatus::Pending) {
                     $order->update([
-                        'status' => \App\Modules\Order\Enums\OrderStatus::Accepted,
+                        'status' => OrderStatus::Accepted,
                     ]);
 
-                    event(new \App\Modules\Order\Events\OrderAccepted($order));
+                    event(new OrderAccepted($order));
                 }
 
                 event(new PaymentVerified($payment));
 
                 Log::info('[VerifyPaymentAction] Payment verified and completed successfully.', [
                     'payment_id' => $payment->id,
-                    'order_id'   => $payment->order_id,
+                    'order_id' => $payment->order_id,
                 ]);
 
                 return true;
@@ -63,7 +65,7 @@ class VerifyPaymentAction
 
             // If not verified
             $payment->update([
-                'status'        => 'failed',
+                'status' => 'failed',
                 'error_message' => 'Signature verification failed.',
             ]);
 
@@ -73,7 +75,7 @@ class VerifyPaymentAction
 
         } catch (\Throwable $e) {
             $payment->update([
-                'status'        => 'failed',
+                'status' => 'failed',
                 'error_message' => $e->getMessage(),
             ]);
 
@@ -81,7 +83,7 @@ class VerifyPaymentAction
 
             Log::error('[VerifyPaymentAction] Exception during payment verification', [
                 'payment_id' => $payment->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return false;

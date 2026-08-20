@@ -29,8 +29,8 @@ abstract class ApiRequest extends FormRequest
             response()->json([
                 'success' => false,
                 'message' => 'Validation failed.',
-                'data'    => null,
-                'errors'  => $validator->errors(),
+                'data' => null,
+                'errors' => $validator->errors(),
             ], 422)
         );
     }

@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Modules\Checkout\Services;
 
+use App\Modules\Checkout\Actions\CalculateCheckoutSummaryAction;
 use App\Modules\Checkout\Actions\InitializeCheckoutAction;
+use App\Modules\Checkout\Actions\ProcessCheckoutPaymentAction;
 use App\Modules\Checkout\Actions\UpdateCheckoutAddressAction;
 use App\Modules\Checkout\Actions\UpdateCheckoutScheduleAction;
-use App\Modules\Checkout\Actions\CalculateCheckoutSummaryAction;
-use App\Modules\Checkout\Actions\ProcessCheckoutPaymentAction;
 use App\Modules\Checkout\DTOs\CheckoutResultDTO;
 use App\Modules\Checkout\Models\Checkout;
 
 class CheckoutService
 {
     public function __construct(
-        private readonly InitializeCheckoutAction        $initializeCheckout,
-        private readonly UpdateCheckoutAddressAction     $updateAddress,
-        private readonly UpdateCheckoutScheduleAction    $updateSchedule,
-        private readonly CalculateCheckoutSummaryAction  $calculateSummary,
-        private readonly ProcessCheckoutPaymentAction    $processPayment,
+        private readonly InitializeCheckoutAction $initializeCheckout,
+        private readonly UpdateCheckoutAddressAction $updateAddress,
+        private readonly UpdateCheckoutScheduleAction $updateSchedule,
+        private readonly CalculateCheckoutSummaryAction $calculateSummary,
+        private readonly ProcessCheckoutPaymentAction $processPayment,
     ) {}
 
     public function initialize(string $userId, string $cartId): Checkout

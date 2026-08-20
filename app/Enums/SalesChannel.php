@@ -6,13 +6,13 @@ namespace App\Enums;
 
 enum SalesChannel: string
 {
-    case Direct      = 'direct';
+    case Direct = 'direct';
     case Marketplace = 'marketplace';
 
     public function label(): string
     {
-        return match($this) {
-            self::Direct      => 'FuelCab Direct',
+        return match ($this) {
+            self::Direct => 'FuelCab Direct',
             self::Marketplace => 'Marketplace',
         };
     }

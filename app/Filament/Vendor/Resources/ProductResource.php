@@ -2,8 +2,8 @@
 
 namespace App\Filament\Vendor\Resources;
 
+use App\Enums\UnitOfMeasure;
 use App\Filament\Vendor\Resources\ProductResource\Pages;
-use App\Filament\Vendor\Resources\ProductResource\RelationManagers;
 use App\Modules\Fuel\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class ProductResource extends Resource
 {
@@ -36,7 +37,7 @@ class ProductResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                         Forms\Components\TextInput::make('slug')->required()->maxLength(255),
                         Forms\Components\TextInput::make('sku')->label('SKU')->required()->maxLength(100),
                         Forms\Components\Select::make('category_id')
@@ -48,7 +49,7 @@ class ProductResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('price_per_unit')->numeric()->prefix('₹')->required(),
                         Forms\Components\Select::make('unit_of_measure')
-                            ->options(\App\Enums\UnitOfMeasure::class)
+                            ->options(UnitOfMeasure::class)
                             ->required(),
                         Forms\Components\Textarea::make('short_description')->rows(2)->nullable()->columnSpanFull(),
                         Forms\Components\Textarea::make('full_description')->rows(4)->nullable()->columnSpanFull(),

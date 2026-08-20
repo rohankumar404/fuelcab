@@ -22,8 +22,8 @@ class ApiException extends Exception
         return response()->json([
             'success' => false,
             'message' => $this->getMessage(),
-            'data'    => null,
-            'errors'  => $this->errors,
+            'data' => null,
+            'errors' => $this->errors,
         ], $this->getCode() ?: 400);
     }
 }

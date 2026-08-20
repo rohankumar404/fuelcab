@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Payment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Order\Enums\OrderStatus;
+use App\Modules\Order\Events\OrderAccepted;
 use App\Modules\Payment\Events\PaymentFailed;
 use App\Modules\Payment\Events\PaymentVerified;
 use App\Modules\Payment\Models\Payment;
@@ -22,11 +24,12 @@ class PaymentWebhookController extends Controller
     public function handle(Request $request): JsonResponse
     {
         $signature = $request->header('X-Razorpay-Signature');
-        $secret    = config('fuelcab.payment.webhook.secret', '');
-        $payload   = $request->getContent();
+        $secret = config('fuelcab.payment.webhook.secret', '');
+        $payload = $request->getContent();
 
         if (empty($signature)) {
             Log::warning('[PaymentWebhook] Missing X-Razorpay-Signature header.');
+
             return response()->json(['error' => 'Missing signature'], 400);
         }
 
@@ -34,13 +37,14 @@ class PaymentWebhookController extends Controller
         $expected = hash_hmac('sha256', $payload, $secret);
         if (! hash_equals($expected, $signature)) {
             Log::warning('[PaymentWebhook] Webhook signature verification failed.');
+
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
         $eventData = json_decode($payload, true) ?? [];
-        $event     = $eventData['event'] ?? '';
+        $event = $eventData['event'] ?? '';
 
-        Log::info('[PaymentWebhook] Received Razorpay webhook event: ' . $event);
+        Log::info('[PaymentWebhook] Received Razorpay webhook event: '.$event);
 
         switch ($event) {
             case 'payment.captured':
@@ -56,7 +60,7 @@ class PaymentWebhookController extends Controller
                 break;
 
             default:
-                Log::debug('[PaymentWebhook] Unhandled event type: ' . $event);
+                Log::debug('[PaymentWebhook] Unhandled event type: '.$event);
                 break;
         }
 
@@ -67,7 +71,7 @@ class PaymentWebhookController extends Controller
     {
         $paymentPayload = $eventData['payload']['payment']['entity'] ?? [];
         $gatewayOrderId = $paymentPayload['order_id'] ?? '';
-        $paymentId      = $paymentPayload['id'] ?? '';
+        $paymentId = $paymentPayload['id'] ?? '';
 
         if (empty($gatewayOrderId) || empty($paymentId)) {
             return;
@@ -79,26 +83,26 @@ class PaymentWebhookController extends Controller
 
         if ($payment && $payment->status !== 'completed') {
             $payment->update([
-                'status'                 => 'completed',
+                'status' => 'completed',
                 'gateway_transaction_id' => $paymentId,
-                'paid_at'                => now(),
+                'paid_at' => now(),
             ]);
 
             // Transition the order status from Pending to Accepted on successful payment
             $order = $payment->order;
-            if ($order && $order->status === \App\Modules\Order\Enums\OrderStatus::Pending) {
+            if ($order && $order->status === OrderStatus::Pending) {
                 $order->update([
-                    'status' => \App\Modules\Order\Enums\OrderStatus::Accepted,
+                    'status' => OrderStatus::Accepted,
                 ]);
 
-                event(new \App\Modules\Order\Events\OrderAccepted($order));
+                event(new OrderAccepted($order));
             }
 
             event(new PaymentVerified($payment));
 
             Log::info('[PaymentWebhook] Webhook processed payment.captured successfully.', [
                 'payment_id' => $payment->id,
-                'order_id'   => $payment->order_id,
+                'order_id' => $payment->order_id,
             ]);
         }
     }
@@ -107,8 +111,8 @@ class PaymentWebhookController extends Controller
     {
         $paymentPayload = $eventData['payload']['payment']['entity'] ?? [];
         $gatewayOrderId = $paymentPayload['order_id'] ?? '';
-        $paymentId      = $paymentPayload['id'] ?? '';
-        $errorMessage   = $paymentPayload['error_description'] ?? 'Webhook reported payment failure';
+        $paymentId = $paymentPayload['id'] ?? '';
+        $errorMessage = $paymentPayload['error_description'] ?? 'Webhook reported payment failure';
 
         if (empty($gatewayOrderId)) {
             return;
@@ -120,7 +124,7 @@ class PaymentWebhookController extends Controller
 
         if ($payment && $payment->status !== 'completed') {
             $payment->update([
-                'status'        => 'failed',
+                'status' => 'failed',
                 'error_message' => $errorMessage,
             ]);
 
@@ -128,7 +132,7 @@ class PaymentWebhookController extends Controller
 
             Log::info('[PaymentWebhook] Webhook processed payment.failed successfully.', [
                 'payment_id' => $payment->id,
-                'error'      => $errorMessage,
+                'error' => $errorMessage,
             ]);
         }
     }
@@ -136,7 +140,7 @@ class PaymentWebhookController extends Controller
     protected function handleRefundProcessed(array $eventData): void
     {
         $refundPayload = $eventData['payload']['refund']['entity'] ?? [];
-        $paymentId     = $refundPayload['payment_id'] ?? '';
+        $paymentId = $refundPayload['payment_id'] ?? '';
 
         if (empty($paymentId)) {
             return;

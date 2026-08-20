@@ -6,23 +6,23 @@ namespace App\Enums;
 
 enum PaymentStatus: string
 {
-    case Pending   = 'pending';
+    case Pending = 'pending';
     case Initiated = 'initiated';
-    case Verified  = 'verified';
-    case Captured  = 'captured';
-    case Failed    = 'failed';
-    case Refunded  = 'refunded';
+    case Verified = 'verified';
+    case Captured = 'captured';
+    case Failed = 'failed';
+    case Refunded = 'refunded';
     case Cancelled = 'cancelled';
 
     public function label(): string
     {
-        return match($this) {
-            self::Pending   => 'Pending',
+        return match ($this) {
+            self::Pending => 'Pending',
             self::Initiated => 'Initiated',
-            self::Verified  => 'Verified',
-            self::Captured  => 'Captured',
-            self::Failed    => 'Failed',
-            self::Refunded  => 'Refunded',
+            self::Verified => 'Verified',
+            self::Captured => 'Captured',
+            self::Failed => 'Failed',
+            self::Refunded => 'Refunded',
             self::Cancelled => 'Cancelled',
         };
     }

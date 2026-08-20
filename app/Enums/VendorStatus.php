@@ -6,18 +6,18 @@ namespace App\Enums;
 
 enum VendorStatus: string
 {
-    case Pending   = 'pending';
-    case Approved  = 'approved';
+    case Pending = 'pending';
+    case Approved = 'approved';
     case Suspended = 'suspended';
-    case Rejected  = 'rejected';
+    case Rejected = 'rejected';
 
     public function label(): string
     {
-        return match($this) {
-            self::Pending   => 'Pending Review',
-            self::Approved  => 'Approved',
+        return match ($this) {
+            self::Pending => 'Pending Review',
+            self::Approved => 'Approved',
             self::Suspended => 'Suspended',
-            self::Rejected  => 'Rejected',
+            self::Rejected => 'Rejected',
         };
     }
 

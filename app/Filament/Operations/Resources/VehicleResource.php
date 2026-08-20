@@ -52,17 +52,17 @@ class VehicleResource extends Resource
                 Forms\Components\Select::make('fuel_type')
                     ->options([
                         'diesel' => 'Diesel',
-                        'cng'    => 'CNG',
-                        'lpg'    => 'LPG',
+                        'cng' => 'CNG',
+                        'lpg' => 'LPG',
                         'electric' => 'Electric',
                     ])
                     ->default('diesel')
                     ->required(),
                 Forms\Components\Select::make('status')
                     ->options([
-                        'active'      => 'Active',
+                        'active' => 'Active',
                         'maintenance' => 'In Maintenance',
-                        'retired'     => 'Retired',
+                        'retired' => 'Retired',
                     ])
                     ->default('active')
                     ->required(),
@@ -87,39 +87,39 @@ class VehicleResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('fuel_type')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'diesel' => 'info',
-            'cng' => 'success',
-            'lpg' => 'warning',
-            default => 'gray',
-        }),
+                        'diesel' => 'info',
+                        'cng' => 'success',
+                        'lpg' => 'warning',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'active' => 'success',
-            'maintenance' => 'warning',
-            'retired' => 'danger',
-            default => 'gray',
-        }),
+                        'active' => 'success',
+                        'maintenance' => 'warning',
+                        'retired' => 'danger',
+                        default => 'gray',
+                    }),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'active'      => 'Active',
-                        'maintenance' => 'In Maintenance',
-                        'retired'     => 'Retired',
-                    ]),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options([
+                                    'active' => 'Active',
+                                    'maintenance' => 'In Maintenance',
+                                    'retired' => 'Retired',
+                                ]),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
+                            Tables\Actions\EditAction::make(),
+                        ])
             ->bulkActions([]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListVehicles::route('/'),
+            'index' => Pages\ListVehicles::route('/'),
             'create' => Pages\CreateVehicle::route('/create'),
-            'edit'   => Pages\EditVehicle::route('/{record}/edit'),
+            'edit' => Pages\EditVehicle::route('/{record}/edit'),
         ];
     }
 }

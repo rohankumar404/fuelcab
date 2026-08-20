@@ -49,26 +49,26 @@ class UpdateCheckoutAddressAction
                         if ($vendor->service_radius_meters && $distance > $vendor->service_radius_meters) {
                             throw new \DomainException(
                                 "Selected delivery address is outside the vendor's service radius of "
-                                . ($vendor->service_radius_meters / 1000) . " KM."
+                                .($vendor->service_radius_meters / 1000).' KM.'
                             );
                         }
 
                         // Delivery Fee: Base + distance rate
                         $baseLogistics = 150.00;
-                        $ratePerKm     = 15.00;
-                        $distanceKm    = $distance / 1000.00;
-                        $deliveryFee   = round($baseLogistics + ($distanceKm * $ratePerKm), 2);
+                        $ratePerKm = 15.00;
+                        $distanceKm = $distance / 1000.00;
+                        $deliveryFee = round($baseLogistics + ($distanceKm * $ratePerKm), 2);
                     }
                 }
             }
 
             $checkout->update([
-                'address_id'   => $addressId,
+                'address_id' => $addressId,
                 'delivery_fee' => $deliveryFee,
             ]);
 
             // Re-calculate grand total
-            $checkout = (new CalculateCheckoutSummaryAction())->execute($userId, $checkoutId);
+            $checkout = (new CalculateCheckoutSummaryAction)->execute($userId, $checkoutId);
 
             return $checkout;
         });

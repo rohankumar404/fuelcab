@@ -6,18 +6,18 @@ namespace App\Enums;
 
 enum UnitOfMeasure: string
 {
-    case Litres       = 'litres';
-    case Kilograms    = 'kilograms';
+    case Litres = 'litres';
+    case Kilograms = 'kilograms';
     case MetricTonnes = 'metric_tonnes';
-    case Units        = 'units';
+    case Units = 'units';
 
     public function label(): string
     {
-        return match($this) {
-            self::Litres       => 'Litres',
-            self::Kilograms    => 'Kilograms',
+        return match ($this) {
+            self::Litres => 'Litres',
+            self::Kilograms => 'Kilograms',
             self::MetricTonnes => 'Metric Tonnes',
-            self::Units        => 'Units',
+            self::Units => 'Units',
         };
     }
 }

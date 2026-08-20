@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Modules\Notification\Http\Controllers\NotificationController;
 use App\Modules\Notification\Http\Controllers\PushTokenController;
 use App\Modules\Notification\Http\Controllers\QuoteController;
-use App\Modules\Notification\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,8 +21,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('notifications/push-token', [PushTokenController::class, 'store'])->name('notifications.push_token.store');
 
     // Database notifications CRUD
-    Route::get('notifications',             [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark_all_read');
-    Route::patch('notifications/{id}/read',   [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::delete('notifications/{id}',       [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });

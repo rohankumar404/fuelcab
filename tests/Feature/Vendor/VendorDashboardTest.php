@@ -15,6 +15,7 @@ use App\Modules\Vendor\Enums\DocumentStatus;
 use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorDocument;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -39,44 +40,47 @@ class VendorDashboardTest extends TestCase
     use RefreshDatabase;
 
     private Vendor $vendorA;
-    private User   $userA;
+
+    private User $userA;
 
     private Vendor $vendorB;
-    private User   $userB;
 
-    private User   $customer;
+    private User $userB;
+
+    private User $customer;
+
     private Address $address;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         $this->vendorA = $this->createApprovedVendor('A');
-        $this->userA   = $this->createVendorAdmin($this->vendorA);
+        $this->userA = $this->createVendorAdmin($this->vendorA);
 
         $this->vendorB = $this->createApprovedVendor('B');
-        $this->userB   = $this->createVendorAdmin($this->vendorB);
+        $this->userB = $this->createVendorAdmin($this->vendorB);
 
         // Shared customer + address for order creation
         $rand = Str::random(6);
         $this->customer = User::create([
-            'name'      => 'Customer ' . $rand,
-            'mobile'    => '6' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'     => 'customer_' . strtolower($rand) . '@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Customer '.$rand,
+            'mobile' => '6'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'customer_'.strtolower($rand).'@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::Customer,
         ]);
         $this->address = Address::create([
             'addressable_type' => User::class,
-            'addressable_id'   => $this->customer->id,
-            'address_line_1'   => '123 Main St',
-            'city'             => 'Mumbai',
-            'state'            => 'Maharashtra',
-            'pincode'          => '400001',
-            'postal_code'      => '400001',
-            'latitude'         => 19.0760,
-            'longitude'        => 72.8777,
+            'addressable_id' => $this->customer->id,
+            'address_line_1' => '123 Main St',
+            'city' => 'Mumbai',
+            'state' => 'Maharashtra',
+            'pincode' => '400001',
+            'postal_code' => '400001',
+            'latitude' => 19.0760,
+            'longitude' => 72.8777,
         ]);
     }
 
@@ -86,37 +90,38 @@ class VendorDashboardTest extends TestCase
     {
         $id = Str::uuid()->toString();
         DB::table('companies')->insert([
-            'id'         => $id,
-            'name'       => $name,
-            'status'     => 'active',
+            'id' => $id,
+            'name' => $name,
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
         return $id;
     }
 
     private function createApprovedVendor(string $suffix = ''): Vendor
     {
-        $rand      = Str::random(6);
-        $companyId = $this->makeCompany('Test Company ' . $rand . $suffix);
+        $rand = Str::random(6);
+        $companyId = $this->makeCompany('Test Company '.$rand.$suffix);
 
         return Vendor::create([
-            'company_id'          => $companyId,
-            'brand_name'          => 'Test Vendor ' . $rand,
-            'legal_name'          => 'Test Vendor ' . $rand . ' Pvt Ltd',
-            'vendor_code'         => 'VND-' . strtoupper($rand),
-            'gst_number'          => '27ABCDE' . $rand . '1Z5',
-            'pan'                 => 'ABCDE' . $rand,
-            'company_type'        => 'private_limited',
-            'contact_person'      => 'Admin ' . $rand,
-            'mobile'              => '9' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'               => 'vendor' . strtolower($rand) . '@test.com',
-            'registered_address'  => '123 Test Street',
+            'company_id' => $companyId,
+            'brand_name' => 'Test Vendor '.$rand,
+            'legal_name' => 'Test Vendor '.$rand.' Pvt Ltd',
+            'vendor_code' => 'VND-'.strtoupper($rand),
+            'gst_number' => '27ABCDE'.$rand.'1Z5',
+            'pan' => 'ABCDE'.$rand,
+            'company_type' => 'private_limited',
+            'contact_person' => 'Admin '.$rand,
+            'mobile' => '9'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'vendor'.strtolower($rand).'@test.com',
+            'registered_address' => '123 Test Street',
             'operational_address' => '123 Test Street',
-            'city'                => 'Surat',
-            'state'               => 'Gujarat',
-            'pincode'             => '395001',
-            'status'              => VendorStatus::Approved,
+            'city' => 'Surat',
+            'state' => 'Gujarat',
+            'pincode' => '395001',
+            'status' => VendorStatus::Approved,
         ]);
     }
 
@@ -124,14 +129,15 @@ class VendorDashboardTest extends TestCase
     {
         $rand = Str::random(6);
         $user = User::create([
-            'name'      => 'Vendor Admin ' . $rand,
-            'mobile'    => '8' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'     => 'admin_' . strtolower($rand) . '@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Vendor Admin '.$rand,
+            'mobile' => '8'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'admin_'.strtolower($rand).'@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::VendorAdmin,
             'vendor_id' => $vendor->id,
         ]);
         $user->syncRoles([UserRole::VendorAdmin->value]);
+
         return $user;
     }
 
@@ -139,13 +145,14 @@ class VendorDashboardTest extends TestCase
     {
         $rand = Str::random(6);
         $user = User::create([
-            'name'      => 'Super Admin ' . $rand,
-            'mobile'    => '7' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'     => 'super_' . strtolower($rand) . '@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Super Admin '.$rand,
+            'mobile' => '7'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'super_'.strtolower($rand).'@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::SuperAdmin,
         ]);
         $user->syncRoles([UserRole::SuperAdmin->value]);
+
         return $user;
     }
 
@@ -171,7 +178,7 @@ class VendorDashboardTest extends TestCase
         // return the authenticated user's own vendor only.
         Sanctum::actingAs($this->userA);
 
-        $response = $this->getJson('/api/v1/vendor/profile?vendor_id=' . $this->vendorB->id);
+        $response = $this->getJson('/api/v1/vendor/profile?vendor_id='.$this->vendorB->id);
 
         $response->assertOk()
             ->assertJsonPath('data.id', $this->vendorA->id);
@@ -185,10 +192,10 @@ class VendorDashboardTest extends TestCase
     {
         $rand = Str::random(6);
         $user = User::create([
-            'name'      => 'No Vendor ' . $rand,
-            'mobile'    => '6' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'     => 'novendor_' . strtolower($rand) . '@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'No Vendor '.$rand,
+            'mobile' => '6'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'novendor_'.strtolower($rand).'@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::Customer,
         ]);
 
@@ -206,7 +213,7 @@ class VendorDashboardTest extends TestCase
         Sanctum::actingAs($this->userA);
 
         $response = $this->putJson('/api/v1/vendor/profile', [
-            'brand_name'    => 'Updated Brand Name',
+            'brand_name' => 'Updated Brand Name',
             'contact_email' => 'updated@example.com',
         ]);
 
@@ -214,8 +221,8 @@ class VendorDashboardTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('vendors', [
-            'id'            => $this->vendorA->id,
-            'brand_name'    => 'Updated Brand Name',
+            'id' => $this->vendorA->id,
+            'brand_name' => 'Updated Brand Name',
         ]);
     }
 
@@ -227,12 +234,12 @@ class VendorDashboardTest extends TestCase
         // Status change via the profile update endpoint must be silently ignored
         $this->putJson('/api/v1/vendor/profile', [
             'brand_name' => 'Hacker Name',
-            'status'     => VendorStatus::Suspended->value,
+            'status' => VendorStatus::Suspended->value,
         ]);
 
         // Status must remain Approved
         $this->assertDatabaseHas('vendors', [
-            'id'     => $this->vendorA->id,
+            'id' => $this->vendorA->id,
             'status' => VendorStatus::Approved->value,
         ]);
     }
@@ -243,10 +250,10 @@ class VendorDashboardTest extends TestCase
     public function vendor_can_list_own_documents(): void
     {
         VendorDocument::create([
-            'vendor_id'     => $this->vendorA->id,
+            'vendor_id' => $this->vendorA->id,
             'document_type' => 'gst_certificate',
-            'file_path'     => 'vendor-documents/' . $this->vendorA->id . '/gst.pdf',
-            'status'        => DocumentStatus::Pending,
+            'file_path' => 'vendor-documents/'.$this->vendorA->id.'/gst.pdf',
+            'status' => DocumentStatus::Pending,
         ]);
 
         Sanctum::actingAs($this->userA);
@@ -263,10 +270,10 @@ class VendorDashboardTest extends TestCase
     {
         // Create a document for vendorB
         VendorDocument::create([
-            'vendor_id'     => $this->vendorB->id,
+            'vendor_id' => $this->vendorB->id,
             'document_type' => 'pan_card',
-            'file_path'     => 'vendor-documents/' . $this->vendorB->id . '/pan.pdf',
-            'status'        => DocumentStatus::Pending,
+            'file_path' => 'vendor-documents/'.$this->vendorB->id.'/pan.pdf',
+            'status' => DocumentStatus::Pending,
         ]);
 
         // userA requests their own documents — must see 0 (no docs for vendorA)
@@ -282,10 +289,10 @@ class VendorDashboardTest extends TestCase
     public function vendor_cannot_delete_other_vendors_document(): void
     {
         $docB = VendorDocument::create([
-            'vendor_id'     => $this->vendorB->id,
+            'vendor_id' => $this->vendorB->id,
             'document_type' => 'pan_card',
-            'file_path'     => 'vendor-documents/' . $this->vendorB->id . '/pan.pdf',
-            'status'        => DocumentStatus::Pending,
+            'file_path' => 'vendor-documents/'.$this->vendorB->id.'/pan.pdf',
+            'status' => DocumentStatus::Pending,
         ]);
 
         Sanctum::actingAs($this->userA);
@@ -304,26 +311,26 @@ class VendorDashboardTest extends TestCase
     /** @test */
     public function super_admin_can_approve_a_pending_vendor(): void
     {
-        $superAdmin   = $this->createSuperAdmin();
-        $rand         = Str::random(6);
+        $superAdmin = $this->createSuperAdmin();
+        $rand = Str::random(6);
         // Each pending vendor needs its own unique company_id
         $pendingVendor = Vendor::create([
-            'company_id'          => $this->makeCompany('Pending Co ' . $rand),
-            'brand_name'          => 'Pending Vendor ' . $rand,
-            'legal_name'          => 'Pending Vendor ' . $rand . ' Pvt Ltd',
-            'vendor_code'         => 'VND-PND-' . strtoupper($rand),
-            'gst_number'          => '27PNDXX' . $rand . '1Z5',
-            'pan'                 => 'PNDXX' . $rand,
-            'company_type'        => 'private_limited',
-            'contact_person'      => 'Admin ' . $rand,
-            'mobile'              => '9' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'               => 'pending_' . strtolower($rand) . '@test.com',
-            'registered_address'  => '123 Test Street',
+            'company_id' => $this->makeCompany('Pending Co '.$rand),
+            'brand_name' => 'Pending Vendor '.$rand,
+            'legal_name' => 'Pending Vendor '.$rand.' Pvt Ltd',
+            'vendor_code' => 'VND-PND-'.strtoupper($rand),
+            'gst_number' => '27PNDXX'.$rand.'1Z5',
+            'pan' => 'PNDXX'.$rand,
+            'company_type' => 'private_limited',
+            'contact_person' => 'Admin '.$rand,
+            'mobile' => '9'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'pending_'.strtolower($rand).'@test.com',
+            'registered_address' => '123 Test Street',
             'operational_address' => '123 Test Street',
-            'city'                => 'Surat',
-            'state'               => 'Gujarat',
-            'pincode'             => '395001',
-            'status'              => VendorStatus::Pending,
+            'city' => 'Surat',
+            'state' => 'Gujarat',
+            'pincode' => '395001',
+            'status' => VendorStatus::Pending,
         ]);
 
         Sanctum::actingAs($superAdmin);
@@ -334,7 +341,7 @@ class VendorDashboardTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('vendors', [
-            'id'     => $pendingVendor->id,
+            'id' => $pendingVendor->id,
             'status' => VendorStatus::Approved->value,
         ]);
     }
@@ -354,7 +361,7 @@ class VendorDashboardTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('vendors', [
-            'id'     => $this->vendorA->id,
+            'id' => $this->vendorA->id,
             'status' => VendorStatus::Suspended->value,
         ]);
     }
@@ -386,7 +393,7 @@ class VendorDashboardTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('vendors', [
-            'id'     => $this->vendorA->id,
+            'id' => $this->vendorA->id,
             'status' => VendorStatus::Approved->value,
         ]);
     }
@@ -409,19 +416,19 @@ class VendorDashboardTest extends TestCase
     {
         // Create settlements for both vendors
         Settlement::create([
-            'vendor_id'        => $this->vendorA->id,
-            'gross_amount'     => 50000.00,
-            'commission_amount'=> 2500.00,
-            'net_payable'      => 47500.00,
-            'status'           => 'pending',
+            'vendor_id' => $this->vendorA->id,
+            'gross_amount' => 50000.00,
+            'commission_amount' => 2500.00,
+            'net_payable' => 47500.00,
+            'status' => 'pending',
         ]);
 
         Settlement::create([
-            'vendor_id'        => $this->vendorB->id,
-            'gross_amount'     => 99000.00,
-            'commission_amount'=> 4950.00,
-            'net_payable'      => 94050.00,
-            'status'           => 'processed',
+            'vendor_id' => $this->vendorB->id,
+            'gross_amount' => 99000.00,
+            'commission_amount' => 4950.00,
+            'net_payable' => 94050.00,
+            'status' => 'processed',
         ]);
 
         // The Filament SettlementResource scopes by vendor_id — validate the Eloquent scope
@@ -442,31 +449,31 @@ class VendorDashboardTest extends TestCase
         // Orders for vendorA
         for ($i = 0; $i < 3; $i++) {
             Order::create([
-                'vendor_id'           => $this->vendorA->id,
-                'customer_id'         => $this->customer->id,
+                'vendor_id' => $this->vendorA->id,
+                'customer_id' => $this->customer->id,
                 'delivery_address_id' => $this->address->id,
-                'order_number'        => 'ORD-A-' . $i . '-' . Str::random(4),
-                'status'              => OrderStatus::Pending,
-                'total_amount'        => 1000.00 * ($i + 1),
-                'subtotal_amount'     => 1000.00 * ($i + 1),
-                'tax_amount'          => 0.00,
-                'delivery_fee'        => 0.00,
-                'channel'             => SalesChannel::Direct,
+                'order_number' => 'ORD-A-'.$i.'-'.Str::random(4),
+                'status' => OrderStatus::Pending,
+                'total_amount' => 1000.00 * ($i + 1),
+                'subtotal_amount' => 1000.00 * ($i + 1),
+                'tax_amount' => 0.00,
+                'delivery_fee' => 0.00,
+                'channel' => SalesChannel::Direct,
             ]);
         }
 
         // One order for vendorB
         Order::create([
-            'vendor_id'           => $this->vendorB->id,
-            'customer_id'         => $this->customer->id,
+            'vendor_id' => $this->vendorB->id,
+            'customer_id' => $this->customer->id,
             'delivery_address_id' => $this->address->id,
-            'order_number'        => 'ORD-B-1-' . Str::random(4),
-            'status'              => OrderStatus::Pending,
-            'total_amount'        => 5000.00,
-            'subtotal_amount'     => 5000.00,
-            'tax_amount'          => 0.00,
-            'delivery_fee'        => 0.00,
-            'channel'             => SalesChannel::Direct,
+            'order_number' => 'ORD-B-1-'.Str::random(4),
+            'status' => OrderStatus::Pending,
+            'total_amount' => 5000.00,
+            'subtotal_amount' => 5000.00,
+            'tax_amount' => 0.00,
+            'delivery_fee' => 0.00,
+            'channel' => SalesChannel::Direct,
         ]);
 
         // VendorA should see exactly 3 orders
@@ -493,7 +500,7 @@ class VendorDashboardTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('vendors', [
-            'id'             => $this->vendorA->id,
+            'id' => $this->vendorA->id,
             'internal_notes' => 'Vendor verified manually by operations team.',
         ]);
     }
@@ -522,7 +529,7 @@ class VendorDashboardTest extends TestCase
         $superAdmin = $this->createSuperAdmin();
         Sanctum::actingAs($superAdmin);
 
-        $response = $this->getJson('/api/v1/admin/vendors?status=' . VendorStatus::Suspended->value);
+        $response = $this->getJson('/api/v1/admin/vendors?status='.VendorStatus::Suspended->value);
 
         $response->assertOk();
 

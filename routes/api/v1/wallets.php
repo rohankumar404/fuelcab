@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth:sanctum')->prefix('wallets')->group(function (): void {
-    Route::get('/',            [WalletController::class, 'show'])->name('wallets.show');
-    Route::post('top-up',      [WalletController::class, 'topUp'])->name('wallets.top_up');
-    Route::post('deduct',      [WalletController::class, 'deduct'])->name('wallets.deduct');
+    Route::get('/', [WalletController::class, 'show'])->name('wallets.show');
+    Route::post('top-up', [WalletController::class, 'topUp'])->name('wallets.top_up');
+    Route::post('deduct', [WalletController::class, 'deduct'])->name('wallets.deduct');
 });

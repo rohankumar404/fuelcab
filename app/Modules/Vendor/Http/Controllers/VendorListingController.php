@@ -52,7 +52,7 @@ class VendorListingController extends Controller
      */
     public function publicShow(string $slug): JsonResponse
     {
-        $listing = Cache::remember('listing_details_' . $slug, 3600, function () use ($slug) {
+        $listing = Cache::remember('listing_details_'.$slug, 3600, function () use ($slug) {
             return VendorListing::with(['vendor', 'marketplaceProduct.category'])
                 ->public()
                 ->where('slug', $slug)
@@ -61,7 +61,7 @@ class VendorListingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => new VendorListingResource($listing),
+            'data' => new VendorListingResource($listing),
         ]);
     }
 
@@ -77,8 +77,8 @@ class VendorListingController extends Controller
 
         $listings = $this->service->getVendorListings(
             vendorId: $request->user()->vendor_id,
-            filters:  $request->only(['approval_status']),
-            perPage:  (int) $request->get('per_page', 20),
+            filters: $request->only(['approval_status']),
+            perPage: (int) $request->get('per_page', 20),
         );
 
         return new VendorListingCollection($listings);
@@ -93,30 +93,30 @@ class VendorListingController extends Controller
         $this->authorize('create', VendorListing::class);
 
         $validated = $request->validate([
-            'marketplace_product_id'   => 'required|uuid|exists:marketplace_products,id',
-            'listing_title'            => 'required|string|max:255',
-            'slug'                     => 'nullable|string|max:255',
-            'sku'                      => 'nullable|string|max:100',
-            'short_description'        => 'nullable|string|max:500',
-            'full_description'         => 'nullable|string',
-            'product_images'           => 'nullable|array',
-            'product_images.*'         => 'url',
-            'product_image'            => 'nullable|string',
-            'min_order_quantity'       => 'required|numeric|min:0.0001',
-            'max_order_quantity'       => 'nullable|numeric|gt:min_order_quantity',
-            'unit'                     => 'required|string|in:litres,kilograms,metric_tonnes,units',
-            'available_quantity'       => 'required|numeric|min:0',
-            'base_price'               => 'required|numeric|min:0.01',
-            'tax_rate'                 => 'nullable|numeric|min:0|max:100',
-            'tax_inclusive'            => 'nullable|boolean',
-            'dispatch_location'        => 'nullable|string|max:255',
-            'serviceable_locations'    => 'nullable|array',
-            'serviceable_locations.*'  => 'string',
+            'marketplace_product_id' => 'required|uuid|exists:marketplace_products,id',
+            'listing_title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255',
+            'sku' => 'nullable|string|max:100',
+            'short_description' => 'nullable|string|max:500',
+            'full_description' => 'nullable|string',
+            'product_images' => 'nullable|array',
+            'product_images.*' => 'url',
+            'product_image' => 'nullable|string',
+            'min_order_quantity' => 'required|numeric|min:0.0001',
+            'max_order_quantity' => 'nullable|numeric|gt:min_order_quantity',
+            'unit' => 'required|string|in:litres,kilograms,metric_tonnes,units',
+            'available_quantity' => 'required|numeric|min:0',
+            'base_price' => 'required|numeric|min:0.01',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'tax_inclusive' => 'nullable|boolean',
+            'dispatch_location' => 'nullable|string|max:255',
+            'serviceable_locations' => 'nullable|array',
+            'serviceable_locations.*' => 'string',
             'estimated_dispatch_hours' => 'nullable|integer|min:1',
-            'quality_specifications'   => 'nullable|array',
-            'certificate_documents'    => 'nullable|array',
-            'certificate_documents.*'  => 'url',
-            'is_active'                => 'nullable|boolean',
+            'quality_specifications' => 'nullable|array',
+            'certificate_documents' => 'nullable|array',
+            'certificate_documents.*' => 'url',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $listing = $this->service->create($validated, $request->user()->vendor_id);
@@ -124,7 +124,7 @@ class VendorListingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Listing draft created successfully.',
-            'data'    => new VendorListingResource($listing->load(['vendor', 'marketplaceProduct'])),
+            'data' => new VendorListingResource($listing->load(['vendor', 'marketplaceProduct'])),
         ], 201);
     }
 
@@ -138,7 +138,7 @@ class VendorListingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => new VendorListingResource($listing->load(['vendor', 'marketplaceProduct.category'])),
+            'data' => new VendorListingResource($listing->load(['vendor', 'marketplaceProduct.category'])),
         ]);
     }
 
@@ -151,29 +151,29 @@ class VendorListingController extends Controller
         $this->authorize('update', $listing);
 
         $validated = $request->validate([
-            'listing_title'            => 'sometimes|string|max:255',
-            'slug'                     => 'nullable|string|max:255',
-            'sku'                      => 'nullable|string|max:100',
-            'short_description'        => 'nullable|string|max:500',
-            'full_description'         => 'nullable|string',
-            'product_images'           => 'nullable|array',
-            'product_images.*'         => 'url',
-            'product_image'            => 'nullable|string',
-            'min_order_quantity'       => 'sometimes|numeric|min:0.0001',
-            'max_order_quantity'       => 'nullable|numeric',
-            'unit'                     => 'sometimes|string|in:litres,kilograms,metric_tonnes,units',
-            'available_quantity'       => 'sometimes|numeric|min:0',
-            'base_price'               => 'sometimes|numeric|min:0.01',
-            'tax_rate'                 => 'nullable|numeric|min:0|max:100',
-            'tax_inclusive'            => 'nullable|boolean',
-            'dispatch_location'        => 'nullable|string|max:255',
-            'serviceable_locations'    => 'nullable|array',
-            'serviceable_locations.*'  => 'string',
+            'listing_title' => 'sometimes|string|max:255',
+            'slug' => 'nullable|string|max:255',
+            'sku' => 'nullable|string|max:100',
+            'short_description' => 'nullable|string|max:500',
+            'full_description' => 'nullable|string',
+            'product_images' => 'nullable|array',
+            'product_images.*' => 'url',
+            'product_image' => 'nullable|string',
+            'min_order_quantity' => 'sometimes|numeric|min:0.0001',
+            'max_order_quantity' => 'nullable|numeric',
+            'unit' => 'sometimes|string|in:litres,kilograms,metric_tonnes,units',
+            'available_quantity' => 'sometimes|numeric|min:0',
+            'base_price' => 'sometimes|numeric|min:0.01',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'tax_inclusive' => 'nullable|boolean',
+            'dispatch_location' => 'nullable|string|max:255',
+            'serviceable_locations' => 'nullable|array',
+            'serviceable_locations.*' => 'string',
             'estimated_dispatch_hours' => 'nullable|integer|min:1',
-            'quality_specifications'   => 'nullable|array',
-            'certificate_documents'    => 'nullable|array',
-            'certificate_documents.*'  => 'url',
-            'is_active'                => 'nullable|boolean',
+            'quality_specifications' => 'nullable|array',
+            'certificate_documents' => 'nullable|array',
+            'certificate_documents.*' => 'url',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $updated = $this->service->update($listing, $validated);
@@ -181,7 +181,7 @@ class VendorListingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Listing updated successfully.',
-            'data'    => new VendorListingResource($updated->load(['vendor', 'marketplaceProduct'])),
+            'data' => new VendorListingResource($updated->load(['vendor', 'marketplaceProduct'])),
         ]);
     }
 
@@ -198,7 +198,7 @@ class VendorListingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Listing submitted for approval.',
-            'data'    => new VendorListingResource($submitted),
+            'data' => new VendorListingResource($submitted),
         ]);
     }
 
@@ -217,8 +217,8 @@ class VendorListingController extends Controller
         $updated = $this->service->updateInventory($listing, (float) $validated['available_quantity']);
 
         return response()->json([
-            'success'            => true,
-            'message'            => 'Inventory updated successfully.',
+            'success' => true,
+            'message' => 'Inventory updated successfully.',
             'available_quantity' => (float) $updated->available_quantity,
         ]);
     }
@@ -238,8 +238,8 @@ class VendorListingController extends Controller
         $updated = $this->service->updatePrice($listing, (float) $validated['base_price']);
 
         return response()->json([
-            'success'    => true,
-            'message'    => 'Price updated successfully.',
+            'success' => true,
+            'message' => 'Price updated successfully.',
             'base_price' => (float) $updated->base_price,
         ]);
     }
@@ -287,7 +287,7 @@ class VendorListingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => new VendorListingResource($listing->load(['vendor', 'marketplaceProduct.category', 'reviewer'])),
+            'data' => new VendorListingResource($listing->load(['vendor', 'marketplaceProduct.category', 'reviewer'])),
         ]);
     }
 
@@ -303,7 +303,7 @@ class VendorListingController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Listing '{$approved->listing_title}' approved.",
-            'data'    => new VendorListingResource($approved),
+            'data' => new VendorListingResource($approved),
         ]);
     }
 
@@ -323,7 +323,7 @@ class VendorListingController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Listing '{$rejected->listing_title}' rejected.",
-            'data'    => new VendorListingResource($rejected),
+            'data' => new VendorListingResource($rejected),
         ]);
     }
 
@@ -339,7 +339,7 @@ class VendorListingController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Listing '{$suspended->listing_title}' suspended.",
-            'data'    => new VendorListingResource($suspended),
+            'data' => new VendorListingResource($suspended),
         ]);
     }
 
@@ -351,11 +351,11 @@ class VendorListingController extends Controller
         $this->authorize('feature', $listing);
 
         $updated = $this->service->toggleFeatured($listing);
-        $state   = $updated->is_featured ? 'featured' : 'unfeatured';
+        $state = $updated->is_featured ? 'featured' : 'unfeatured';
 
         return response()->json([
-            'success'     => true,
-            'message'     => "Listing '{$updated->listing_title}' {$state}.",
+            'success' => true,
+            'message' => "Listing '{$updated->listing_title}' {$state}.",
             'is_featured' => $updated->is_featured,
         ]);
     }

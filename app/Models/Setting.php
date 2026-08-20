@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
-use App\Traits\Auditable;
 
 /**
  * Setting proxy model for Filament SuperAdmin panel.
@@ -15,8 +15,8 @@ use App\Traits\Auditable;
  */
 class Setting extends Model
 {
+    use Auditable, HasUuid;
     use SoftDeletes;
-    use HasUuid, Auditable;
 
     protected $table = 'settings';
 

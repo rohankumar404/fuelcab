@@ -16,7 +16,7 @@ class CheckoutScheduleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'checkout_id'           => ['required', 'uuid', 'exists:checkouts,id'],
+            'checkout_id' => ['required', 'uuid', 'exists:checkouts,id'],
             'scheduled_delivery_at' => ['required', 'date', 'after:now'],
         ];
     }

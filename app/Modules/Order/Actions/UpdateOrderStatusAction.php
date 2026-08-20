@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Actions;
 
-use App\Modules\Order\Models\Order;
 use App\Modules\Order\Enums\OrderStatus;
-use App\Modules\Order\Events\OrderDispatched;
-use App\Modules\Order\Events\OrderCompleted;
 use App\Modules\Order\Events\OrderCancelled;
+use App\Modules\Order\Events\OrderCompleted;
+use App\Modules\Order\Events\OrderDispatched;
+use App\Modules\Order\Models\Order;
 use Illuminate\Support\Facades\DB;
 
 class UpdateOrderStatusAction

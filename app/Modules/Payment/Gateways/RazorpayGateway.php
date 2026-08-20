@@ -24,7 +24,7 @@ class RazorpayGateway implements PaymentGatewayInterface
     public function initiate(array $payload): array
     {
         $orderId = (string) ($payload['order_id'] ?? '');
-        $amount  = (float) ($payload['amount'] ?? 0.0);
+        $amount = (float) ($payload['amount'] ?? 0.0);
 
         if (empty($orderId) || $amount <= 0.0) {
             throw new PaymentFailedException('Invalid order or amount for payment initiation.');
@@ -35,33 +35,33 @@ class RazorpayGateway implements PaymentGatewayInterface
             $response = Http::withBasicAuth($this->key, $this->secret)
                 ->retry(3, 100)
                 ->timeout(15)
-                ->post($this->endpoint . '/orders', [
-                    'amount'   => (int) round($amount * 100), // amount in paise
+                ->post($this->endpoint.'/orders', [
+                    'amount' => (int) round($amount * 100), // amount in paise
                     'currency' => 'INR',
-                    'receipt'  => $orderId,
+                    'receipt' => $orderId,
                 ]);
 
             if (! $response->successful()) {
                 Log::error('[RazorpayGateway] Order creation failed', [
-                    'status'   => $response->status(),
+                    'status' => $response->status(),
                     'response' => $response->body(),
                 ]);
-                throw new PaymentFailedException('Gateway returned an error: ' . $response->body());
+                throw new PaymentFailedException('Gateway returned an error: '.$response->body());
             }
 
             return [
-                'id'       => $response->json('id'),
-                'amount'   => $amount,
+                'id' => $response->json('id'),
+                'amount' => $amount,
                 'currency' => 'INR',
-                'receipt'  => $orderId,
+                'receipt' => $orderId,
             ];
 
         } catch (\Throwable $e) {
             Log::error('[RazorpayGateway] Exception initiating payment', [
                 'order_id' => $orderId,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
-            throw new PaymentFailedException('Failed to initiate payment with Razorpay: ' . $e->getMessage());
+            throw new PaymentFailedException('Failed to initiate payment with Razorpay: '.$e->getMessage());
         }
     }
 
@@ -70,22 +70,24 @@ class RazorpayGateway implements PaymentGatewayInterface
      */
     public function verify(array $payload): bool
     {
-        $orderId   = (string) ($payload['razorpay_order_id'] ?? '');
+        $orderId = (string) ($payload['razorpay_order_id'] ?? '');
         $paymentId = (string) ($payload['razorpay_payment_id'] ?? '');
         $signature = (string) ($payload['razorpay_signature'] ?? '');
 
         if (empty($orderId) || empty($paymentId) || empty($signature)) {
             Log::warning('[RazorpayGateway] Missing verification parameters.');
+
             return false;
         }
 
         // 1. Verify signature locally using HMAC-SHA256
-        $expected = hash_hmac('sha256', $orderId . '|' . $paymentId, $this->secret);
+        $expected = hash_hmac('sha256', $orderId.'|'.$paymentId, $this->secret);
         if (! hash_equals($expected, $signature)) {
             Log::warning('[RazorpayGateway] HMAC signature mismatch.', [
                 'expected' => $expected,
                 'received' => $signature,
             ]);
+
             return false;
         }
 
@@ -94,13 +96,14 @@ class RazorpayGateway implements PaymentGatewayInterface
             $response = Http::withBasicAuth($this->key, $this->secret)
                 ->retry(3, 100)
                 ->timeout(15)
-                ->get($this->endpoint . "/payments/{$paymentId}");
+                ->get($this->endpoint."/payments/{$paymentId}");
 
             if (! $response->successful()) {
                 Log::error('[RazorpayGateway] Failed to retrieve payment details', [
                     'payment_id' => $paymentId,
-                    'status'     => $response->status(),
+                    'status' => $response->status(),
                 ]);
+
                 return false;
             }
 
@@ -112,8 +115,8 @@ class RazorpayGateway implements PaymentGatewayInterface
                 $captureResponse = Http::withBasicAuth($this->key, $this->secret)
                     ->retry(3, 100)
                     ->timeout(15)
-                    ->post($this->endpoint . "/payments/{$paymentId}/capture", [
-                        'amount'   => $amount,
+                    ->post($this->endpoint."/payments/{$paymentId}/capture", [
+                        'amount' => $amount,
                         'currency' => 'INR',
                     ]);
 
@@ -121,13 +124,15 @@ class RazorpayGateway implements PaymentGatewayInterface
                     Log::info('[RazorpayGateway] Payment captured successfully via API capture call.', [
                         'payment_id' => $paymentId,
                     ]);
+
                     return true;
                 }
 
                 Log::error('[RazorpayGateway] Failed to capture authorized payment', [
                     'payment_id' => $paymentId,
-                    'response'   => $captureResponse->body(),
+                    'response' => $captureResponse->body(),
                 ]);
+
                 return false;
             }
 
@@ -136,8 +141,9 @@ class RazorpayGateway implements PaymentGatewayInterface
         } catch (\Throwable $e) {
             Log::error('[RazorpayGateway] Exception during payment verification details retrieval', [
                 'payment_id' => $paymentId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -148,7 +154,7 @@ class RazorpayGateway implements PaymentGatewayInterface
     public function refund(array $payload): array
     {
         $paymentId = (string) ($payload['payment_id'] ?? '');
-        $amount    = isset($payload['amount']) ? (float) $payload['amount'] : null;
+        $amount = isset($payload['amount']) ? (float) $payload['amount'] : null;
 
         if (empty($paymentId)) {
             throw new PaymentFailedException('Invalid payment ID for refund request.');
@@ -163,30 +169,30 @@ class RazorpayGateway implements PaymentGatewayInterface
             $response = Http::withBasicAuth($this->key, $this->secret)
                 ->retry(3, 100)
                 ->timeout(15)
-                ->post($this->endpoint . "/payments/{$paymentId}/refund", $body);
+                ->post($this->endpoint."/payments/{$paymentId}/refund", $body);
 
             if (! $response->successful()) {
                 Log::error('[RazorpayGateway] Refund execution failed', [
                     'payment_id' => $paymentId,
-                    'status'     => $response->status(),
-                    'response'   => $response->body(),
+                    'status' => $response->status(),
+                    'response' => $response->body(),
                 ]);
-                throw new PaymentFailedException('Gateway returned refund error: ' . $response->body());
+                throw new PaymentFailedException('Gateway returned refund error: '.$response->body());
             }
 
             return [
-                'id'         => $response->json('id'),
+                'id' => $response->json('id'),
                 'payment_id' => $paymentId,
-                'amount'     => $response->json('amount') / 100, // back to INR
-                'status'     => $response->json('status'),
+                'amount' => $response->json('amount') / 100, // back to INR
+                'status' => $response->json('status'),
             ];
 
         } catch (\Throwable $e) {
             Log::error('[RazorpayGateway] Exception processing refund', [
                 'payment_id' => $paymentId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
-            throw new PaymentFailedException('Failed to execute refund with Razorpay: ' . $e->getMessage());
+            throw new PaymentFailedException('Failed to execute refund with Razorpay: '.$e->getMessage());
         }
     }
 

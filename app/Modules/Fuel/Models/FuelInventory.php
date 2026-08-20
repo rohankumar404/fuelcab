@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Fuel\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HasUuid;
-use App\Traits\HasTenantScope;
 use App\Traits\Auditable;
+use App\Traits\HasTenantScope;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FuelInventory extends Model
 {
+    use Auditable, HasTenantScope, HasUuid;
     use SoftDeletes;
-    use HasUuid, HasTenantScope, Auditable;
 
     protected $table = 'inventories';
 

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\Location\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Address;
 use App\Modules\Driver\Actions\UpdateLocationAction;
 use App\Modules\Driver\DTOs\DriverLocationDTO;
 use App\Modules\Driver\Http\Requests\UpdateLocationRequest;
 use App\Modules\Driver\Models\DriverLocation;
 use App\Modules\Location\Actions\GeocodeAddressAction;
 use App\Modules\Location\Services\GoogleMapsService;
+use App\Modules\Order\Actions\UpdateTrackingLocationAction;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Models\OrderTracking;
 use App\Traits\ApiResponse;
@@ -30,7 +32,7 @@ class LocationController extends Controller
     public function autocomplete(Request $request, GoogleMapsService $maps): JsonResponse
     {
         $request->validate([
-            'q'             => ['required', 'string', 'min:2'],
+            'q' => ['required', 'string', 'min:2'],
             'session_token' => ['nullable', 'string'],
         ]);
 
@@ -53,13 +55,13 @@ class LocationController extends Controller
     public function geocode(Request $request, GeocodeAddressAction $action): JsonResponse
     {
         $request->validate([
-            'address'    => ['required', 'string'],
+            'address' => ['required', 'string'],
             'address_id' => ['nullable', 'uuid', 'exists:addresses,id'],
         ]);
 
         $addressModel = null;
         if ($request->filled('address_id')) {
-            $addressModel = \App\Models\Address::find($request->input('address_id'));
+            $addressModel = Address::find($request->input('address_id'));
         }
 
         $dto = $action->execute($request->input('address'), $addressModel);
@@ -78,8 +80,8 @@ class LocationController extends Controller
     public function eta(Request $request, GoogleMapsService $maps): JsonResponse
     {
         $request->validate([
-            'origin_lat'      => ['required', 'numeric', 'between:-90,90'],
-            'origin_lng'      => ['required', 'numeric', 'between:-180,180'],
+            'origin_lat' => ['required', 'numeric', 'between:-90,90'],
+            'origin_lng' => ['required', 'numeric', 'between:-180,180'],
             'destination_lat' => ['required', 'numeric', 'between:-90,90'],
             'destination_lng' => ['required', 'numeric', 'between:-180,180'],
         ]);
@@ -105,10 +107,10 @@ class LocationController extends Controller
     public function distance(Request $request, GoogleMapsService $maps): JsonResponse
     {
         $request->validate([
-            'origins'       => ['required', 'array'],
-            'origins.*'     => ['required', 'string'],
-            'destinations'  => ['required', 'array'],
-            'destinations.*'=> ['required', 'string'],
+            'origins' => ['required', 'array'],
+            'origins.*' => ['required', 'string'],
+            'destinations' => ['required', 'array'],
+            'destinations.*' => ['required', 'string'],
         ]);
 
         $results = $maps->distanceMatrix(
@@ -131,18 +133,18 @@ class LocationController extends Controller
     {
         $dto = DriverLocationDTO::fromArray([
             'driver_id' => $request->user()->id,
-            'latitude'  => (float) $request->input('latitude'),
+            'latitude' => (float) $request->input('latitude'),
             'longitude' => (float) $request->input('longitude'),
-            'speed'     => $request->input('speed'),
-            'heading'   => $request->input('heading'),
-            'order_id'  => $request->input('order_id'),
+            'speed' => $request->input('speed'),
+            'heading' => $request->input('heading'),
+            'order_id' => $request->input('order_id'),
         ]);
 
         $location = $action->execute($dto);
 
         // If an active order is being tracked, append to order tracking history
         if ($request->filled('order_id')) {
-            app(\App\Modules\Order\Actions\UpdateTrackingLocationAction::class)->execute(
+            app(UpdateTrackingLocationAction::class)->execute(
                 $request->input('order_id'),
                 $dto->latitude,
                 $dto->longitude
@@ -151,8 +153,8 @@ class LocationController extends Controller
 
         return $this->success(
             data: [
-                'latitude'    => $location->latitude,
-                'longitude'   => $location->longitude,
+                'latitude' => $location->latitude,
+                'longitude' => $location->longitude,
                 'recorded_at' => $location->recorded_at,
             ],
             message: 'Driver location updated successfully.'
@@ -196,11 +198,11 @@ class LocationController extends Controller
 
         return $this->success(
             data: [
-                'driver_id'   => $order->driver_id,
-                'latitude'    => (float) $location->latitude,
-                'longitude'   => (float) $location->longitude,
-                'heading'     => $location->heading ? (float) $location->heading : null,
-                'speed_kmh'   => $location->speed_kmh ? (float) $location->speed_kmh : null,
+                'driver_id' => $order->driver_id,
+                'latitude' => (float) $location->latitude,
+                'longitude' => (float) $location->longitude,
+                'heading' => $location->heading ? (float) $location->heading : null,
+                'speed_kmh' => $location->speed_kmh ? (float) $location->speed_kmh : null,
                 'recorded_at' => $location->recorded_at,
             ],
             message: 'Live driver location retrieved.'
@@ -234,10 +236,10 @@ class LocationController extends Controller
     public function optimizeRoute(Request $request, GoogleMapsService $maps): JsonResponse
     {
         $request->validate([
-            'waypoints'             => ['required', 'array', 'min:2'],
-            'waypoints.*.lat'       => ['required', 'numeric', 'between:-90,90'],
-            'waypoints.*.lng'       => ['required', 'numeric', 'between:-180,180'],
-            'waypoints.*.label'     => ['nullable', 'string'],
+            'waypoints' => ['required', 'array', 'min:2'],
+            'waypoints.*.lat' => ['required', 'numeric', 'between:-90,90'],
+            'waypoints.*.lng' => ['required', 'numeric', 'between:-180,180'],
+            'waypoints.*.label' => ['nullable', 'string'],
         ]);
 
         $optimized = $maps->optimizeRoute($request->input('waypoints'));

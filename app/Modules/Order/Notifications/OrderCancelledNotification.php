@@ -15,7 +15,7 @@ class OrderCancelledNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        public readonly Order   $order,
+        public readonly Order $order,
         public readonly ?string $reason = null
     ) {}
 
@@ -28,11 +28,11 @@ class OrderCancelledNotification extends Notification implements ShouldQueue
     {
         return [
             'title' => "Order Cancelled ❌ — #{$this->order->id}",
-            'body'  => "Your order #{$this->order->id} has been cancelled." . ($this->reason ? " Reason: {$this->reason}" : ''),
-            'data'  => [
-                'type'     => 'order_cancelled',
+            'body' => "Your order #{$this->order->id} has been cancelled.".($this->reason ? " Reason: {$this->reason}" : ''),
+            'data' => [
+                'type' => 'order_cancelled',
                 'order_id' => $this->order->id,
-                'reason'   => $this->reason,
+                'reason' => $this->reason,
             ],
         ];
     }
@@ -42,7 +42,7 @@ class OrderCancelledNotification extends Notification implements ShouldQueue
         $message = (new MailMessage)
             ->subject("Order Cancelled — #{$this->order->id}")
             ->greeting("Hello {$notifiable->name},")
-            ->line("Your fuel order has been **cancelled**.")
+            ->line('Your fuel order has been **cancelled**.')
             ->line("**Order ID:** {$this->order->id}");
 
         if ($this->reason) {
@@ -50,7 +50,7 @@ class OrderCancelledNotification extends Notification implements ShouldQueue
         }
 
         return $message
-            ->line("If this was unexpected, please contact our support team.")
+            ->line('If this was unexpected, please contact our support team.')
             ->action('Contact Support', url('/support'))
             ->line('We apologize for any inconvenience caused.');
     }
@@ -58,10 +58,10 @@ class OrderCancelledNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type'     => 'order_cancelled',
+            'type' => 'order_cancelled',
             'order_id' => $this->order->id,
-            'reason'   => $this->reason,
-            'message'  => "Your order #{$this->order->id} has been cancelled." . ($this->reason ? " Reason: {$this->reason}" : ''),
+            'reason' => $this->reason,
+            'message' => "Your order #{$this->order->id} has been cancelled.".($this->reason ? " Reason: {$this->reason}" : ''),
         ];
     }
 }

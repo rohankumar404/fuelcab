@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Listeners;
 
+use App\Enums\UserRole;
 use App\Modules\Auth\Events\UserRegistered;
 use App\Modules\Notification\Jobs\SendEmailJob;
 use App\Modules\Notification\Mail\WelcomeMail;
-use App\Enums\UserRole;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +16,7 @@ class SendWelcomeNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
 
     public function handle(UserRegistered $event): void
     {
@@ -30,7 +30,7 @@ class SendWelcomeNotification implements ShouldQueue
         } catch (\Throwable $e) {
             Log::error('[SendWelcomeNotification] Failed to queue welcome email', [
                 'user_id' => $event->user->id ?? null,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

@@ -12,7 +12,7 @@ class LocationServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Register GoogleMapsService as a singleton — one instance, zero duplication
-        $this->app->singleton(GoogleMapsService::class, fn () => new GoogleMapsService());
+        $this->app->singleton(GoogleMapsService::class, fn () => new GoogleMapsService);
     }
 
     public function boot(): void

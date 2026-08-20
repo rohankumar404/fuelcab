@@ -4,14 +4,32 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Http\Middleware\ApiVersionMiddleware;
-use App\Http\Middleware\RequestSignature;
-use App\Http\Middleware\RoleMiddleware;
-use App\Http\Middleware\VendorScope;
+use App\Enums\UserRole;
+use App\Models\BulkInquiry;
+use App\Models\PersonalAccessToken;
+use App\Models\Settlement;
+use App\Modules\Fuel\Models\MarketplaceProduct;
+use App\Modules\Fuel\Models\Product;
+use App\Modules\Fuel\Policies\MarketplaceProductPolicy;
+use App\Modules\Fuel\Policies\ProductPolicy;
+use App\Modules\Notification\Channels\CustomDatabaseChannel;
+use App\Modules\Order\Models\Order;
+use App\Modules\Order\Policies\OrderPolicy;
+use App\Modules\Vendor\Models\Vendor;
+use App\Modules\Vendor\Models\VendorDocument;
+use App\Modules\Vendor\Models\VendorListing;
+use App\Modules\Vendor\Policies\BulkInquiryPolicy;
+use App\Modules\Vendor\Policies\SettlementPolicy;
+use App\Modules\Vendor\Policies\VendorDocumentPolicy;
+use App\Modules\Vendor\Policies\VendorListingPolicy;
+use App\Modules\Vendor\Policies\VendorPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\ChannelManager;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,53 +50,53 @@ class AppServiceProvider extends ServiceProvider
         $this->registerRateLimiters();
 
         // Use custom UUID-based PersonalAccessToken model
-        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(
-            \App\Models\PersonalAccessToken::class
+        Sanctum::usePersonalAccessTokenModel(
+            PersonalAccessToken::class
         );
 
         // Register policies explicitly
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Modules\Order\Models\Order::class,
-            \App\Modules\Order\Policies\OrderPolicy::class
+        Gate::policy(
+            Order::class,
+            OrderPolicy::class
         );
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Modules\Fuel\Models\Product::class,
-            \App\Modules\Fuel\Policies\ProductPolicy::class
+        Gate::policy(
+            Product::class,
+            ProductPolicy::class
         );
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Modules\Fuel\Models\MarketplaceProduct::class,
-            \App\Modules\Fuel\Policies\MarketplaceProductPolicy::class
+        Gate::policy(
+            MarketplaceProduct::class,
+            MarketplaceProductPolicy::class
         );
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Modules\Vendor\Models\Vendor::class,
-            \App\Modules\Vendor\Policies\VendorPolicy::class
+        Gate::policy(
+            Vendor::class,
+            VendorPolicy::class
         );
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Modules\Vendor\Models\VendorDocument::class,
-            \App\Modules\Vendor\Policies\VendorDocumentPolicy::class
+        Gate::policy(
+            VendorDocument::class,
+            VendorDocumentPolicy::class
         );
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Modules\Vendor\Models\VendorListing::class,
-            \App\Modules\Vendor\Policies\VendorListingPolicy::class
+        Gate::policy(
+            VendorListing::class,
+            VendorListingPolicy::class
         );
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Models\BulkInquiry::class,
-            \App\Modules\Vendor\Policies\BulkInquiryPolicy::class
+        Gate::policy(
+            BulkInquiry::class,
+            BulkInquiryPolicy::class
         );
-        \Illuminate\Support\Facades\Gate::policy(
-            \App\Models\Settlement::class,
-            \App\Modules\Vendor\Policies\SettlementPolicy::class
+        Gate::policy(
+            Settlement::class,
+            SettlementPolicy::class
         );
 
         // Register custom notifications database channel
-        $this->app->make(\Illuminate\Notifications\ChannelManager::class)->extend('database', function ($app) {
-            return new \App\Modules\Notification\Channels\CustomDatabaseChannel();
+        $this->app->make(ChannelManager::class)->extend('database', function ($app) {
+            return new CustomDatabaseChannel;
         });
 
         // Implicitly grant "Super Admin" role all permissions
         // This is the Spatie standard practice for Laravel architectures
-        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-            return $user->hasRole(\App\Enums\UserRole::SuperAdmin->value) ? true : null;
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole(UserRole::SuperAdmin->value) ? true : null;
         });
     }
 

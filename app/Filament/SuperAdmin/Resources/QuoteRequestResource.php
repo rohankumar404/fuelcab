@@ -33,7 +33,7 @@ class QuoteRequestResource extends Resource
             Forms\Components\Section::make('Quote Request Details')->schema([
                 Forms\Components\Placeholder::make('customer')
                     ->label('Requested By')
-                    ->content(fn ($record) => $record?->user?->name . ' — ' . $record?->user?->email ?? '—'),
+                    ->content(fn ($record) => $record?->user?->name.' — '.$record?->user?->email ?? '—'),
 
                 Forms\Components\Placeholder::make('product')
                     ->label('Product')
@@ -54,9 +54,9 @@ class QuoteRequestResource extends Resource
 
                 Forms\Components\Select::make('status')
                     ->options([
-                        'pending'    => 'Pending',
-                        'responded'  => 'Responded',
-                        'closed'     => 'Closed',
+                        'pending' => 'Pending',
+                        'responded' => 'Responded',
+                        'closed' => 'Closed',
                     ])
                     ->required(),
             ])->columns(2),
@@ -90,62 +90,62 @@ class QuoteRequestResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'pending' => 'warning',
-            'responded' => 'success',
-            'closed' => 'gray',
-            default => 'gray',
-        }),
+                        'pending' => 'warning',
+                        'responded' => 'success',
+                        'closed' => 'gray',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Received')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending'   => 'Pending',
-                        'responded' => 'Responded',
-                        'closed'    => 'Closed',
-                    ]),
-                Tables\Filters\Filter::make('received_today')
-                    ->label('Received Today')
-                    ->query(fn ($query) => $query->whereDate('created_at', today())),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options([
+                                    'pending' => 'Pending',
+                                    'responded' => 'Responded',
+                                    'closed' => 'Closed',
+                                ]),
+                            Tables\Filters\Filter::make('received_today')
+                                ->label('Received Today')
+                                ->query(fn ($query) => $query->whereDate('created_at', today())),
+                        ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->label('Update Status'),
-                Tables\Actions\Action::make('mark_responded')
-                    ->label('Mark Responded')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn (BulkInquiry $record) => $record->status === 'pending')
-                    ->action(function (BulkInquiry $record): void {
-                        $record->update(['status' => 'responded']);
-                        Notification::make()->title('Quote marked as responded.')->success()->send();
-                    }),
-                Tables\Actions\Action::make('close')
-                    ->label('Close')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('gray')
-                    ->requiresConfirmation()
-                    ->visible(fn (BulkInquiry $record) => $record->status !== 'closed')
-                    ->action(function (BulkInquiry $record): void {
-                        $record->update(['status' => 'closed']);
-                        Notification::make()->title('Quote request closed.')->warning()->send();
-                    }),
-            ])
+                            Tables\Actions\ViewAction::make(),
+                            Tables\Actions\EditAction::make()
+                                ->label('Update Status'),
+                            Tables\Actions\Action::make('mark_responded')
+                                ->label('Mark Responded')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->visible(fn (BulkInquiry $record) => $record->status === 'pending')
+                                ->action(function (BulkInquiry $record): void {
+                                    $record->update(['status' => 'responded']);
+                                    Notification::make()->title('Quote marked as responded.')->success()->send();
+                                }),
+                            Tables\Actions\Action::make('close')
+                                ->label('Close')
+                                ->icon('heroicon-o-x-circle')
+                                ->color('gray')
+                                ->requiresConfirmation()
+                                ->visible(fn (BulkInquiry $record) => $record->status !== 'closed')
+                                ->action(function (BulkInquiry $record): void {
+                                    $record->update(['status' => 'closed']);
+                                    Notification::make()->title('Quote request closed.')->warning()->send();
+                                }),
+                        ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('mark_all_responded')
-                    ->label('Mark Selected as Responded')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function ($records): void {
-                        $records->each->update(['status' => 'responded']);
-                        Notification::make()->title('Selected quotes marked as responded.')->success()->send();
-                    }),
+                                ->label('Mark Selected as Responded')
+                                ->icon('heroicon-o-check-circle')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->action(function ($records): void {
+                                    $records->each->update(['status' => 'responded']);
+                                    Notification::make()->title('Selected quotes marked as responded.')->success()->send();
+                                }),
             ]);
     }
 
@@ -153,7 +153,7 @@ class QuoteRequestResource extends Resource
     {
         return [
             'index' => Pages\ListQuoteRequests::route('/'),
-            'edit'  => Pages\EditQuoteRequest::route('/{record}/edit'),
+            'edit' => Pages\EditQuoteRequest::route('/{record}/edit'),
         ];
     }
 }

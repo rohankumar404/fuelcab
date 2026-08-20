@@ -7,6 +7,7 @@ namespace App\Modules\User\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\SupportTicket;
+use App\Models\User;
 use App\Models\UserFavorite;
 use App\Modules\Order\Models\Order;
 use App\Modules\Wallet\Models\Wallet;
@@ -14,7 +15,6 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -32,9 +32,9 @@ class UserController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name'   => 'sometimes|required|string|max:255',
-            'email'  => 'sometimes|required|email|max:255|unique:users,email,' . $user->id,
-            'mobile' => 'sometimes|required|string|max:20|unique:users,mobile,' . $user->id,
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|email|max:255|unique:users,email,'.$user->id,
+            'mobile' => 'sometimes|required|string|max:20|unique:users,mobile,'.$user->id,
         ]);
 
         $user->update($validated);
@@ -56,16 +56,16 @@ class UserController extends Controller
         $validated = $request->validate([
             'address_line_1' => 'required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
-            'city'           => 'required|string|max:100',
-            'state'          => 'required|string|max:100',
-            'postal_code'    => 'required|string|max:20',
-            'latitude'       => 'required|numeric',
-            'longitude'      => 'required|numeric',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|max:100',
+            'postal_code' => 'required|string|max:20',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]);
 
         $address = Address::create(array_merge($validated, [
-            'addressable_type' => \App\Models\User::class,
-            'user_id'          => $request->user()->id,
+            'addressable_type' => User::class,
+            'user_id' => $request->user()->id,
         ]));
 
         return $this->success($address, 'Address created successfully.', 201);
@@ -78,11 +78,11 @@ class UserController extends Controller
         $validated = $request->validate([
             'address_line_1' => 'sometimes|required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
-            'city'           => 'sometimes|required|string|max:100',
-            'state'          => 'sometimes|required|string|max:100',
-            'postal_code'    => 'sometimes|required|string|max:20',
-            'latitude'       => 'sometimes|required|numeric',
-            'longitude'      => 'sometimes|required|numeric',
+            'city' => 'sometimes|required|string|max:100',
+            'state' => 'sometimes|required|string|max:100',
+            'postal_code' => 'sometimes|required|string|max:20',
+            'latitude' => 'sometimes|required|numeric',
+            'longitude' => 'sometimes|required|numeric',
         ]);
 
         $address->update($validated);
@@ -117,7 +117,7 @@ class UserController extends Controller
         ]);
 
         $favorite = UserFavorite::firstOrCreate([
-            'user_id'           => $request->user()->id,
+            'user_id' => $request->user()->id,
             'vendor_listing_id' => $validated['vendor_listing_id'],
         ]);
 
@@ -141,8 +141,8 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        $totalOrders   = Order::where('customer_id', $user->id)->count();
-        $totalSpend    = Order::where('customer_id', $user->id)->sum('total_amount');
+        $totalOrders = Order::where('customer_id', $user->id)->count();
+        $totalSpend = Order::where('customer_id', $user->id)->sum('total_amount');
         $walletBalance = Wallet::where('user_id', $user->id)->first()?->balance ?? 0.00;
 
         $activeSubscriptions = DB::table('order_subscriptions')
@@ -153,9 +153,9 @@ class UserController extends Controller
         $unreadNotifications = $user->unreadNotifications()->count();
 
         return $this->success([
-            'total_orders'         => $totalOrders,
-            'total_spend'          => (float)$totalSpend,
-            'wallet_balance'       => (float)$walletBalance,
+            'total_orders' => $totalOrders,
+            'total_spend' => (float) $totalSpend,
+            'wallet_balance' => (float) $walletBalance,
             'active_subscriptions' => $activeSubscriptions,
             'unread_notifications' => $unreadNotifications,
         ], 'Dashboard summary retrieved successfully.');
@@ -181,7 +181,7 @@ class UserController extends Controller
 
         $ticket = SupportTicket::create(array_merge($validated, [
             'user_id' => $request->user()->id,
-            'status'  => 'open',
+            'status' => 'open',
         ]));
 
         return $this->success($ticket, 'Support ticket submitted successfully.', 201);

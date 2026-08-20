@@ -6,8 +6,8 @@ namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\AddressResource\Pages;
 use App\Models\Address;
-use App\Models\User;
 use App\Models\Company;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -148,9 +148,9 @@ class AddressResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListAddresses::route('/'),
+            'index' => Pages\ListAddresses::route('/'),
             'create' => Pages\CreateAddress::route('/create'),
-            'edit'   => Pages\EditAddress::route('/{record}/edit'),
+            'edit' => Pages\EditAddress::route('/{record}/edit'),
         ];
     }
 }

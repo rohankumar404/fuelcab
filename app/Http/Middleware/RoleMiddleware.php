@@ -26,7 +26,7 @@ class RoleMiddleware
         $user = $request->user();
 
         if (! $user) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException;
         }
 
         // Check against role_type enum (primary source of truth)
@@ -48,4 +48,3 @@ class RoleMiddleware
         return $next($request);
     }
 }
-

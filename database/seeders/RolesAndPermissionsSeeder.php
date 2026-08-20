@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Enums\UserRole;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -17,7 +18,7 @@ class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // 1. Define Guard name (using Sanctum or web API standard)
         $guardName = 'api';
@@ -104,13 +105,13 @@ class RolesAndPermissionsSeeder extends Seeder
             foreach ($modulePerms as $perm) {
                 $dbPermissions[$perm] = Permission::firstOrCreate([
                     'name' => $perm,
-                    'guard_name' => $guardName
+                    'guard_name' => $guardName,
                 ]);
             }
         }
 
         // 4. Create roles and sync permissions based on role definitions
-        
+
         // Super Admin
         $superAdminRole = Role::firstOrCreate(['name' => UserRole::SuperAdmin->value, 'guard_name' => $guardName]);
         // Super admin inherits all permissions implicitly via Gate::before in AuthServiceProvider or AppServiceProvider,

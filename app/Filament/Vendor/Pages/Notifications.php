@@ -7,6 +7,7 @@ namespace App\Filament\Vendor\Pages;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
 
 class Notifications extends Page
@@ -21,7 +22,7 @@ class Notifications extends Page
 
     protected static string $view = 'filament.vendor.pages.notifications';
 
-    /** @var \Illuminate\Database\Eloquent\Collection<int, DatabaseNotification> */
+    /** @var Collection<int, DatabaseNotification> */
     public $notifications;
 
     public int $unreadCount = 0;

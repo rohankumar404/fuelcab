@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\GoogleProvider;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
 use Tests\TestCase;
@@ -18,7 +20,7 @@ class GoogleAuthTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
     }
 
     /**
@@ -26,7 +28,7 @@ class GoogleAuthTest extends TestCase
      */
     public function test_google_redirect_endpoint(): void
     {
-        $mockProvider = Mockery::mock(\Laravel\Socialite\Two\GoogleProvider::class);
+        $mockProvider = Mockery::mock(GoogleProvider::class);
         $mockProvider->shouldReceive('stateless')->andReturnSelf();
         $mockProvider->shouldReceive('redirect')->andReturnSelf();
         $mockProvider->shouldReceive('getTargetUrl')->andReturn('https://accounts.google.com/o/oauth2/auth?test=true');
@@ -40,8 +42,8 @@ class GoogleAuthTest extends TestCase
                 'success',
                 'message',
                 'data' => [
-                    'redirect_url'
-                ]
+                    'redirect_url',
+                ],
             ]);
     }
 
@@ -57,7 +59,7 @@ class GoogleAuthTest extends TestCase
         $socialiteUser->shouldReceive('getAvatar')->andReturn('https://avatar.url/image.jpg');
         $socialiteUser->token = 'mock-google-token';
 
-        $mockProvider = Mockery::mock(\Laravel\Socialite\Two\GoogleProvider::class);
+        $mockProvider = Mockery::mock(GoogleProvider::class);
         $mockProvider->shouldReceive('stateless')->andReturnSelf();
         $mockProvider->shouldReceive('user')->andReturn($socialiteUser);
 
@@ -78,8 +80,8 @@ class GoogleAuthTest extends TestCase
                         'google_avatar',
                     ],
                     'access_token',
-                    'token_type'
-                ]
+                    'token_type',
+                ],
             ]);
 
         $this->assertDatabaseHas('users', [
@@ -106,7 +108,7 @@ class GoogleAuthTest extends TestCase
         $socialiteUser->shouldReceive('getAvatar')->andReturn('https://avatar.url/image.jpg');
         $socialiteUser->token = 'mock-google-token-456';
 
-        $mockProvider = Mockery::mock(\Laravel\Socialite\Two\GoogleProvider::class);
+        $mockProvider = Mockery::mock(GoogleProvider::class);
         $mockProvider->shouldReceive('stateless')->andReturnSelf();
         $mockProvider->shouldReceive('user')->andReturn($socialiteUser);
 

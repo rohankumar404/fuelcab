@@ -6,24 +6,26 @@ namespace App\Filament\SuperAdmin\Pages;
 
 use App\Models\Settlement;
 use App\Models\User;
-use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
 use App\Modules\Payment\Models\Payment;
-use App\Enums\SalesChannel;
 use Filament\Pages\Page;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Reports extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+
     protected static ?string $navigationGroup = 'SYSTEM';
+
     protected static ?string $navigationLabel = 'Reports';
+
     protected static ?int $navigationSort = 3;
+
     protected static string $view = 'filament.super-admin.pages.reports';
 
     public ?string $from = null;
+
     public ?string $to = null;
 
     public array $summary = [];
@@ -40,22 +42,22 @@ class Reports extends Page
     {
         $orderQuery = Order::query()
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to));
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to));
 
         $paymentQuery = Payment::query()
             ->where('status', 'success')
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to));
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to));
 
         $settlementQuery = Settlement::query()
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to));
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to));
 
         $this->summary = [
-            'total_orders'       => $orderQuery->count(),
-            'total_revenue'      => $paymentQuery->sum('amount'),
-            'total_commission'   => $settlementQuery->sum('commission_amount'),
-            'settled_amount'     => $settlementQuery->where('status', 'processed')->sum('net_payable'),
+            'total_orders' => $orderQuery->count(),
+            'total_revenue' => $paymentQuery->sum('amount'),
+            'total_commission' => $settlementQuery->sum('commission_amount'),
+            'settled_amount' => $settlementQuery->where('status', 'processed')->sum('net_payable'),
         ];
     }
 
@@ -65,11 +67,11 @@ class Reports extends Page
             ->with(['customer', 'deliveryAddress'])
             ->whereNull('vendor_id')
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to))
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'direct_orders_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'direct_orders_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($orders) {
             $handle = fopen('php://output', 'w');
@@ -114,11 +116,11 @@ class Reports extends Page
             ->with(['customer', 'vendor', 'deliveryAddress'])
             ->whereNotNull('vendor_id')
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to))
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'marketplace_orders_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'marketplace_orders_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($orders) {
             $handle = fopen('php://output', 'w');
@@ -158,11 +160,11 @@ class Reports extends Page
         $settlements = Settlement::query()
             ->with('vendor')
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to))
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'settlements_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'settlements_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($settlements) {
             $handle = fopen('php://output', 'w');
@@ -197,11 +199,11 @@ class Reports extends Page
     {
         $users = User::query()
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
-            ->when($this->to,   fn ($q) => $q->whereDate('created_at', '<=', $this->to))
+            ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'users_list_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'users_list_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($users) {
             $handle = fopen('php://output', 'w');

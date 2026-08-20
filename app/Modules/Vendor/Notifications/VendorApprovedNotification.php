@@ -26,8 +26,8 @@ class VendorApprovedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Vendor Approved — Welcome to FuelCab!")
-            ->greeting("Hello " . ($notifiable->name ?? 'Partner') . "!")
+            ->subject('Vendor Approved — Welcome to FuelCab!')
+            ->greeting('Hello '.($notifiable->name ?? 'Partner').'!')
             ->line("Congratulations! Your registration request for '{$this->vendor->brand_name}' has been approved by the admin.")
             ->line("Your unique vendor code is: **{$this->vendor->vendor_code}**.")
             ->action('Login to Vendor Portal', url('/vendor/login'))
@@ -37,11 +37,11 @@ class VendorApprovedNotification extends Notification implements ShouldQueue
     public function toFcm(object $notifiable): array
     {
         return [
-            'title' => "Vendor Account Approved 🎉",
-            'body'  => "Your registration request for '{$this->vendor->brand_name}' has been approved! You can now access the vendor portal.",
-            'data'  => [
-                'type'        => 'vendor_approved',
-                'vendor_id'   => $this->vendor->id,
+            'title' => 'Vendor Account Approved 🎉',
+            'body' => "Your registration request for '{$this->vendor->brand_name}' has been approved! You can now access the vendor portal.",
+            'data' => [
+                'type' => 'vendor_approved',
+                'vendor_id' => $this->vendor->id,
                 'vendor_code' => $this->vendor->vendor_code,
             ],
         ];
@@ -50,10 +50,10 @@ class VendorApprovedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type'        => 'vendor_approved',
-            'vendor_id'   => $this->vendor->id,
+            'type' => 'vendor_approved',
+            'vendor_id' => $this->vendor->id,
             'vendor_code' => $this->vendor->vendor_code,
-            'message'     => "Your vendor registration for '{$this->vendor->brand_name}' has been approved.",
+            'message' => "Your vendor registration for '{$this->vendor->brand_name}' has been approved.",
         ];
     }
 }

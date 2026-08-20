@@ -6,8 +6,8 @@ namespace App\Filament\Vendor\Pages;
 
 use App\Enums\ListingStatus;
 use App\Models\Settlement;
-use App\Modules\Order\Models\Order;
 use App\Modules\Order\Enums\OrderStatus;
+use App\Modules\Order\Models\Order;
 use App\Modules\Vendor\Models\VendorListing;
 use Filament\Pages\Page;
 
@@ -43,9 +43,9 @@ class Analytics extends Page
         // Monthly revenue (last 6 months)
         $driver = config('database.default');
         $monthExpr = match ($driver) {
-            'pgsql'  => "TO_CHAR(created_at, 'YYYY-MM')",
-            'mysql'  => "DATE_FORMAT(created_at, '%Y-%m')",
-            default  => "strftime('%Y-%m', created_at)", // sqlite (tests)
+            'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
+            'mysql' => "DATE_FORMAT(created_at, '%Y-%m')",
+            default => "strftime('%Y-%m', created_at)", // sqlite (tests)
         };
 
         $monthlyRevenue = Order::where('vendor_id', $vendorId)
@@ -58,25 +58,25 @@ class Analytics extends Page
             ->toArray();
 
         // Listings summary
-        $totalListings    = VendorListing::where('vendor_id', $vendorId)->count();
+        $totalListings = VendorListing::where('vendor_id', $vendorId)->count();
         $approvedListings = VendorListing::where('vendor_id', $vendorId)
             ->where('approval_status', ListingStatus::Approved->value)->count();
-        $lowStock         = VendorListing::where('vendor_id', $vendorId)
+        $lowStock = VendorListing::where('vendor_id', $vendorId)
             ->where('available_quantity', '<', 100)->count();
 
         // Settlements
-        $totalGross     = Settlement::where('vendor_id', $vendorId)->sum('gross_amount');
-        $totalNet       = Settlement::where('vendor_id', $vendorId)->sum('net_payable');
+        $totalGross = Settlement::where('vendor_id', $vendorId)->sum('gross_amount');
+        $totalNet = Settlement::where('vendor_id', $vendorId)->sum('net_payable');
         $totalCommission = Settlement::where('vendor_id', $vendorId)->sum('commission_amount');
 
         $this->stats = [
             'orders_by_status' => $ordersByStatus,
-            'monthly_revenue'  => $monthlyRevenue,
-            'total_listings'   => $totalListings,
+            'monthly_revenue' => $monthlyRevenue,
+            'total_listings' => $totalListings,
             'approved_listings' => $approvedListings,
-            'low_stock'        => $lowStock,
-            'total_gross'      => $totalGross,
-            'total_net'        => $totalNet,
+            'low_stock' => $lowStock,
+            'total_gross' => $totalGross,
+            'total_net' => $totalNet,
             'total_commission' => $totalCommission,
         ];
     }

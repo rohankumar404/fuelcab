@@ -14,11 +14,11 @@ return [
 
     'gateways' => [
         'razorpay' => [
-            'key'    => env('RAZORPAY_KEY'),
+            'key' => env('RAZORPAY_KEY'),
             'secret' => env('RAZORPAY_SECRET'),
         ],
         'stripe' => [
-            'key'    => env('STRIPE_KEY'),
+            'key' => env('STRIPE_KEY'),
             'secret' => env('STRIPE_SECRET'),
         ],
     ],
@@ -30,7 +30,7 @@ return [
     */
 
     'retry' => [
-        'max_attempts'    => (int) env('PAYMENT_RETRY_ATTEMPTS', 3),
+        'max_attempts' => (int) env('PAYMENT_RETRY_ATTEMPTS', 3),
         'backoff_seconds' => (int) env('PAYMENT_RETRY_BACKOFF', 5),
     ],
 
@@ -41,7 +41,7 @@ return [
     */
 
     'webhook' => [
-        'secret'    => env('PAYMENT_WEBHOOK_SECRET'),
+        'secret' => env('PAYMENT_WEBHOOK_SECRET'),
         'tolerance' => (int) env('PAYMENT_WEBHOOK_TOLERANCE', 300), // seconds
     ],
 
@@ -52,7 +52,7 @@ return [
     */
 
     'wallet' => [
-        'min_topup'   => (float) env('WALLET_MIN_TOPUP', 100),
+        'min_topup' => (float) env('WALLET_MIN_TOPUP', 100),
         'max_balance' => (float) env('WALLET_MAX_BALANCE', 50000),
     ],
 

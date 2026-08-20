@@ -20,7 +20,7 @@ return [
         ? [
             'https://fuelcab.com',
             'https://www.fuelcab.com',
-          ]
+        ]
         : ['*'],
 
     'allowed_origins_patterns' => [],

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Payment\Events;
 
+use App\Modules\Payment\Models\Payment;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -13,7 +14,7 @@ class PaymentFailed
     use SerializesModels;
 
     public function __construct(
-        public readonly \App\Modules\Payment\Models\Payment $payment,
+        public readonly Payment $payment,
         public readonly ?string $errorMessage = null
     ) {}
 }

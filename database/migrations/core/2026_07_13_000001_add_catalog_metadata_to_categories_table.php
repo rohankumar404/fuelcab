@@ -11,19 +11,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('categories', function (Blueprint $table): void {
-            if (!Schema::hasColumn('categories', 'image_path')) {
+            if (! Schema::hasColumn('categories', 'image_path')) {
                 $table->string('image_path')->nullable();
             }
-            if (!Schema::hasColumn('categories', 'display_order')) {
+            if (! Schema::hasColumn('categories', 'display_order')) {
                 $table->integer('display_order')->default(0)->index();
             }
-            if (!Schema::hasColumn('categories', 'is_active')) {
+            if (! Schema::hasColumn('categories', 'is_active')) {
                 $table->boolean('is_active')->default(true)->index();
             }
-            if (!Schema::hasColumn('categories', 'seo_title')) {
+            if (! Schema::hasColumn('categories', 'seo_title')) {
                 $table->string('seo_title')->nullable();
             }
-            if (!Schema::hasColumn('categories', 'seo_description')) {
+            if (! Schema::hasColumn('categories', 'seo_description')) {
                 $table->text('seo_description')->nullable();
             }
         });
@@ -37,7 +37,7 @@ return new class extends Migration
                 'display_order',
                 'is_active',
                 'seo_title',
-                'seo_description'
+                'seo_description',
             ]);
         });
     }

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\Filterable;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
-use App\Traits\Auditable;
-use App\Traits\Filterable;
 
 class Blog extends Model
 {
-    use HasUuid, Auditable, Filterable, SoftDeletes;
+    use Auditable, Filterable, HasUuid, SoftDeletes;
 
     protected $table = 'blogs';
 

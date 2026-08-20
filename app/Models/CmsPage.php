@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
 use App\Traits\Auditable;
 use App\Traits\Filterable;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CmsPage extends Model
 {
-    use HasUuid, Auditable, Filterable, SoftDeletes;
+    use Auditable, Filterable, HasUuid, SoftDeletes;
 
     protected $table = 'cms_pages';
 

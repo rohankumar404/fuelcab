@@ -9,10 +9,12 @@ use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class MarketplaceOrderResource extends Resource
 {
@@ -76,14 +78,14 @@ class MarketplaceOrderResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'pending' => 'gray',
-            'accepted' => 'warning',
-            'assigned' => 'info',
-            'out_for_delivery' => 'primary',
-            'delivered' => 'success',
-            'cancelled' => 'danger',
-            default => 'gray',
-        })
+                        'pending' => 'gray',
+                        'accepted' => 'warning',
+                        'assigned' => 'info',
+                        'out_for_delivery' => 'primary',
+                        'delivered' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn ($state) => ucwords(str_replace('_', ' ', (string) ($state instanceof OrderStatus ? $state->value : $state)))),
                 Tables\Columns\TextColumn::make('total_amount')
                     ->money('INR')
@@ -98,44 +100,44 @@ class MarketplaceOrderResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))])),
-                Tables\Filters\Filter::make('created_today')
-                    ->label('Today')
-                    ->query(fn ($query) => $query->whereDate('created_at', today())),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))])),
+                            Tables\Filters\Filter::make('created_today')
+                                ->label('Today')
+                                ->query(fn ($query) => $query->whereDate('created_at', today())),
+                        ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                // No delete — marketplace orders are financial records
-            ])
+                            Tables\Actions\ViewAction::make(),
+                            Tables\Actions\EditAction::make(),
+                            // No delete — marketplace orders are financial records
+                        ])
             ->bulkActions([
-                Tables\Actions\BulkAction::make('updateStatus')
-                    ->label('Update Status')
-                    ->icon('heroicon-o-check-circle')
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Select::make('status')
-                            ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
-                            ->required(),
-                    ])
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
-                        foreach ($records as $record) {
-                            $record->update(['status' => $data['status']]);
-                        }
-                        \Filament\Notifications\Notification::make()
-                            ->title('Orders status updated successfully.')
-                            ->success()
-                            ->send();
-                    })
-            ]);
+                            Tables\Actions\BulkAction::make('updateStatus')
+                                ->label('Update Status')
+                                ->icon('heroicon-o-check-circle')
+                                ->requiresConfirmation()
+                                ->form([
+                                    Forms\Components\Select::make('status')
+                                        ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
+                                        ->required(),
+                                ])
+                                ->action(function (Collection $records, array $data): void {
+                                    foreach ($records as $record) {
+                                        $record->update(['status' => $data['status']]);
+                                    }
+                                    Notification::make()
+                                        ->title('Orders status updated successfully.')
+                                        ->success()
+                                        ->send();
+                                }),
+                        ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListMarketplaceOrders::route('/'),
-            'edit'  => Pages\EditMarketplaceOrder::route('/{record}/edit'),
+            'edit' => Pages\EditMarketplaceOrder::route('/{record}/edit'),
         ];
     }
 }

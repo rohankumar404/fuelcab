@@ -35,14 +35,14 @@ class CartController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $user       = $request->user();
+            $user = $request->user();
             $guestToken = $this->getGuestToken($request);
 
             $cart = $this->cartService->resolveCart($user, $guestToken);
 
             return response()->json([
                 'success' => true,
-                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+                'data' => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
             ]);
         } catch (\DomainException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 401);
@@ -56,7 +56,7 @@ class CartController extends Controller
     public function addItem(AddCartItemRequest $request): JsonResponse
     {
         try {
-            $user       = $request->user();
+            $user = $request->user();
             $guestToken = $this->getGuestToken($request);
 
             $item = $this->cartService->addItemForContext(
@@ -70,7 +70,7 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Item added to cart.',
-                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+                'data' => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
             ], 201);
         } catch (\DomainException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -84,7 +84,7 @@ class CartController extends Controller
     public function updateItem(UpdateCartItemRequest $request, string $itemId): JsonResponse
     {
         try {
-            $user       = $request->user();
+            $user = $request->user();
             $guestToken = $this->getGuestToken($request);
 
             $item = CartItem::findOrFail($itemId);
@@ -102,7 +102,7 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Cart item updated.',
-                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+                'data' => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
             ]);
         } catch (\DomainException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -115,7 +115,7 @@ class CartController extends Controller
      */
     public function removeItem(Request $request, string $itemId): JsonResponse
     {
-        $user       = $request->user();
+        $user = $request->user();
         $guestToken = $this->getGuestToken($request);
 
         $item = CartItem::findOrFail($itemId);
@@ -130,7 +130,7 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Item removed from cart.',
-            'data'    => new CartResource($cart->fresh(['items.product', 'items.vendorListing', 'items.vendor'])),
+            'data' => new CartResource($cart->fresh(['items.product', 'items.vendorListing', 'items.vendor'])),
         ]);
     }
 
@@ -140,7 +140,7 @@ class CartController extends Controller
      */
     public function clear(Request $request): JsonResponse
     {
-        $user       = $request->user();
+        $user = $request->user();
         $guestToken = $this->getGuestToken($request);
 
         $cart = $this->cartService->resolveCart($user, $guestToken);
@@ -170,7 +170,7 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Guest cart merged successfully.',
-            'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+            'data' => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
         ]);
     }
 
@@ -184,7 +184,7 @@ class CartController extends Controller
         ]);
 
         try {
-            $user       = $request->user();
+            $user = $request->user();
             $guestToken = $this->getGuestToken($request);
 
             $cart = $this->cartService->applyCoupon($user, $guestToken, $request->input('code'));
@@ -192,7 +192,7 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Coupon applied successfully.',
-                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+                'data' => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
             ]);
         } catch (\DomainException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -205,7 +205,7 @@ class CartController extends Controller
     public function removeCoupon(Request $request): JsonResponse
     {
         try {
-            $user       = $request->user();
+            $user = $request->user();
             $guestToken = $this->getGuestToken($request);
 
             $cart = $this->cartService->removeCoupon($user, $guestToken);
@@ -213,7 +213,7 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Coupon removed.',
-                'data'    => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
+                'data' => new CartResource($cart->load(['items.product', 'items.vendorListing', 'items.vendor'])),
             ]);
         } catch (\DomainException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);

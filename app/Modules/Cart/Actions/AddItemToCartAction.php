@@ -90,26 +90,26 @@ class AddItemToCartAction
         // Add or update line item
         if ($existing) {
             $existing->update([
-                'quantity'              => $targetQuantity,
-                'price_snapshot'        => (float) $listing->base_price,
+                'quantity' => $targetQuantity,
+                'price_snapshot' => (float) $listing->base_price,
                 'product_name_snapshot' => $listing->listing_title,
-                'product_sku_snapshot'  => $listing->sku,
-                'unit_snapshot'         => $unitStr,
+                'product_sku_snapshot' => $listing->sku,
+                'unit_snapshot' => $unitStr,
             ]);
             $item = $existing->fresh();
         } else {
             $item = CartItem::create([
-                'cart_id'               => $cart->id,
-                'product_id'            => null,   // marketplace items reference via vendor_listing_id
-                'vendor_listing_id'     => $listing->id,
-                'quantity'              => $dto->quantity,
-                'price_snapshot'        => (float) $listing->base_price,
-                'unit_of_measure'       => $unitStr,
-                'sales_channel'         => SalesChannel::Marketplace->value,
-                'vendor_id'             => $listing->vendor_id,
+                'cart_id' => $cart->id,
+                'product_id' => null,   // marketplace items reference via vendor_listing_id
+                'vendor_listing_id' => $listing->id,
+                'quantity' => $dto->quantity,
+                'price_snapshot' => (float) $listing->base_price,
+                'unit_of_measure' => $unitStr,
+                'sales_channel' => SalesChannel::Marketplace->value,
+                'vendor_id' => $listing->vendor_id,
                 'product_name_snapshot' => $listing->listing_title,
-                'product_sku_snapshot'  => $listing->sku,
-                'unit_snapshot'         => $unitStr,
+                'product_sku_snapshot' => $listing->sku,
+                'unit_snapshot' => $unitStr,
             ]);
         }
 
@@ -165,30 +165,30 @@ class AddItemToCartAction
         // IMPORTANT: always store vendor_id — even for first-party Direct products.
         // The checkout address action uses it to validate delivery radius.
         $isFirstParty = $product->vendor ? $product->vendor->is_first_party : true;
-        $channel      = $isFirstParty ? SalesChannel::Direct : SalesChannel::Marketplace;
-        $vendorId     = $product->vendor_id;  // always stored
+        $channel = $isFirstParty ? SalesChannel::Direct : SalesChannel::Marketplace;
+        $vendorId = $product->vendor_id;  // always stored
 
         if ($existing) {
             $existing->update([
-                'quantity'              => $targetQuantity,
-                'price_snapshot'        => (float) $product->price_per_unit,
+                'quantity' => $targetQuantity,
+                'price_snapshot' => (float) $product->price_per_unit,
                 'product_name_snapshot' => $product->name,
-                'product_sku_snapshot'  => $product->sku,
-                'unit_snapshot'         => $unitStr,
+                'product_sku_snapshot' => $product->sku,
+                'unit_snapshot' => $unitStr,
             ]);
             $item = $existing->fresh();
         } else {
             $item = CartItem::create([
-                'cart_id'               => $cart->id,
-                'product_id'            => $product->id,
-                'quantity'              => $dto->quantity,
-                'price_snapshot'        => (float) $product->price_per_unit,
-                'unit_of_measure'       => $unitStr,
-                'sales_channel'         => $channel->value,
-                'vendor_id'             => $vendorId,
+                'cart_id' => $cart->id,
+                'product_id' => $product->id,
+                'quantity' => $dto->quantity,
+                'price_snapshot' => (float) $product->price_per_unit,
+                'unit_of_measure' => $unitStr,
+                'sales_channel' => $channel->value,
+                'vendor_id' => $vendorId,
                 'product_name_snapshot' => $product->name,
-                'product_sku_snapshot'  => $product->sku,
-                'unit_snapshot'         => $unitStr,
+                'product_sku_snapshot' => $product->sku,
+                'unit_snapshot' => $unitStr,
             ]);
         }
 

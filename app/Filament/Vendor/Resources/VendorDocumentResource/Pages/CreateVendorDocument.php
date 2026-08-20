@@ -17,7 +17,8 @@ class CreateVendorDocument extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['vendor_id'] = auth()->user()->vendor_id;
-        $data['status']    = 'pending';
+        $data['status'] = 'pending';
+
         return $data;
     }
 

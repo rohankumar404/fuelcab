@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Notification\Channels;
 
+use App\Models\User;
 use App\Modules\Notification\Jobs\SendPushNotificationJob;
 use App\Modules\Notification\Models\PushToken;
 use Illuminate\Notifications\Notification;
@@ -19,6 +20,7 @@ class FcmChannel
         // Check if push notifications are enabled globally
         if (! config('fuelcab.notifications.channels.push', true)) {
             Log::debug('[FcmChannel] Push notifications are globally disabled in config.');
+
             return;
         }
 
@@ -26,9 +28,10 @@ class FcmChannel
         $tokens = $this->getTokens($notifiable);
         if (empty($tokens)) {
             Log::debug('[FcmChannel] No active push tokens found for notifiable.', [
-                'notifiable_id'   => method_exists($notifiable, 'getKey') ? $notifiable->getKey() : ($notifiable->id ?? null),
+                'notifiable_id' => method_exists($notifiable, 'getKey') ? $notifiable->getKey() : ($notifiable->id ?? null),
                 'notifiable_type' => get_class($notifiable),
             ]);
+
             return;
         }
 
@@ -40,8 +43,8 @@ class FcmChannel
             $data = $notification->toArray($notifiable);
             $payload = [
                 'title' => $data['title'] ?? 'New Notification',
-                'body'  => $data['message'] ?? $data['body'] ?? 'You have a new update.',
-                'data'  => $data,
+                'body' => $data['message'] ?? $data['body'] ?? 'You have a new update.',
+                'data' => $data,
             ];
         }
 
@@ -49,12 +52,13 @@ class FcmChannel
             Log::debug('[FcmChannel] Notification did not resolve FCM payload.', [
                 'notification' => get_class($notification),
             ]);
+
             return;
         }
 
         $title = $payload['title'] ?? 'Notification';
-        $body  = $payload['body'] ?? '';
-        $data  = $payload['data'] ?? [];
+        $body = $payload['body'] ?? '';
+        $data = $payload['data'] ?? [];
 
         // Dispatch SendPushNotificationJob to the queue to prevent blocking the current process
         SendPushNotificationJob::dispatch($tokens, $title, $body, $data);
@@ -68,7 +72,7 @@ class FcmChannel
         $userId = null;
 
         // If the notifiable is a User model directly
-        if ($notifiable instanceof \App\Models\User) {
+        if ($notifiable instanceof User) {
             $userId = $notifiable->id;
         } elseif (isset($notifiable->user_id)) {
             $userId = $notifiable->user_id;

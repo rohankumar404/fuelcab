@@ -29,8 +29,8 @@ class ApiVersionMiddleware
             return response()->json([
                 'success' => false,
                 'message' => "API version [{$version}] has been sunset. Please upgrade to a supported version.",
-                'data'    => null,
-                'errors'  => null,
+                'data' => null,
+                'errors' => null,
             ], 410);
         }
 

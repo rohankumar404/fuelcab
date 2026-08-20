@@ -20,9 +20,9 @@ class VendorListingService
     public function create(array $data, string $vendorId): VendorListing
     {
         return DB::transaction(function () use ($data, $vendorId) {
-            $data['vendor_id']       = $vendorId;
+            $data['vendor_id'] = $vendorId;
             $data['approval_status'] = ListingStatus::Draft->value;
-            $data['slug']            = $this->uniqueSlug($data['listing_title'], $data['slug'] ?? null);
+            $data['slug'] = $this->uniqueSlug($data['listing_title'], $data['slug'] ?? null);
 
             return VendorListing::create($data);
         });
@@ -38,9 +38,9 @@ class VendorListingService
             unset($data['vendor_id'], $data['approval_status'], $data['reviewed_by'], $data['reviewed_at'], $data['approved_at']);
 
             if (isset($data['listing_title']) || isset($data['slug'])) {
-                $title             = $data['listing_title'] ?? $listing->listing_title;
-                $slug              = $data['slug'] ?? null;
-                $data['slug']      = $this->uniqueSlug($title, $slug, $listing->id);
+                $title = $data['listing_title'] ?? $listing->listing_title;
+                $slug = $data['slug'] ?? null;
+                $data['slug'] = $this->uniqueSlug($title, $slug, $listing->id);
             }
 
             $listing->update($data);
@@ -69,10 +69,10 @@ class VendorListingService
     {
         $listing->update([
             'approval_status' => ListingStatus::Approved->value,
-            'reviewed_by'     => $reviewer->id,
-            'reviewed_at'     => now(),
-            'approved_at'     => now(),
-            'rejection_reason'=> null,
+            'reviewed_by' => $reviewer->id,
+            'reviewed_at' => now(),
+            'approved_at' => now(),
+            'rejection_reason' => null,
         ]);
 
         return $listing->fresh();
@@ -84,9 +84,9 @@ class VendorListingService
     public function reject(VendorListing $listing, User $reviewer, string $reason): VendorListing
     {
         $listing->update([
-            'approval_status'  => ListingStatus::Rejected->value,
-            'reviewed_by'      => $reviewer->id,
-            'reviewed_at'      => now(),
+            'approval_status' => ListingStatus::Rejected->value,
+            'reviewed_by' => $reviewer->id,
+            'reviewed_at' => now(),
             'rejection_reason' => $reason,
         ]);
 
@@ -111,6 +111,7 @@ class VendorListingService
     public function updateInventory(VendorListing $listing, float $quantity): VendorListing
     {
         $listing->update(['available_quantity' => $quantity]);
+
         return $listing->fresh();
     }
 
@@ -120,6 +121,7 @@ class VendorListingService
     public function updatePrice(VendorListing $listing, float $price): VendorListing
     {
         $listing->update(['base_price' => $price]);
+
         return $listing->fresh();
     }
 
@@ -129,6 +131,7 @@ class VendorListingService
     public function toggleFeatured(VendorListing $listing): VendorListing
     {
         $listing->update(['is_featured' => ! $listing->is_featured]);
+
         return $listing->fresh();
     }
 
@@ -167,7 +170,7 @@ class VendorListingService
         }
 
         if (! empty($filters['dispatch_location'])) {
-            $query->where('dispatch_location', 'ilike', '%' . $filters['dispatch_location'] . '%');
+            $query->where('dispatch_location', 'ilike', '%'.$filters['dispatch_location'].'%');
         }
 
         if (! empty($filters['featured'])) {
@@ -181,8 +184,8 @@ class VendorListingService
         if (! empty($filters['search'])) {
             $term = $filters['search'];
             $query->where(function ($q) use ($term) {
-                $q->where('listing_title', 'ilike', '%' . $term . '%')
-                  ->orWhere('short_description', 'ilike', '%' . $term . '%');
+                $q->where('listing_title', 'ilike', '%'.$term.'%')
+                    ->orWhere('short_description', 'ilike', '%'.$term.'%');
             });
         }
 
@@ -196,10 +199,10 @@ class VendorListingService
 
         $sortBy = $filters['sort_by'] ?? 'newest';
         match ($sortBy) {
-            'price_asc'  => $query->orderBy('base_price', 'asc'),
+            'price_asc' => $query->orderBy('base_price', 'asc'),
             'price_desc' => $query->orderBy('base_price', 'desc'),
-            'featured'   => $query->orderByDesc('is_featured')->orderByDesc('created_at'),
-            default      => $query->latest(), // newest
+            'featured' => $query->orderByDesc('is_featured')->orderByDesc('created_at'),
+            default => $query->latest(), // newest
         };
 
         return $query->paginate($perPage);
@@ -248,14 +251,14 @@ class VendorListingService
     {
         $base = Str::slug($proposed ?? $title);
         $slug = $base;
-        $i    = 1;
+        $i = 1;
 
         while (
             VendorListing::where('slug', $slug)
                 ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
                 ->exists()
         ) {
-            $slug = $base . '-' . $i++;
+            $slug = $base.'-'.$i++;
         }
 
         return $slug;

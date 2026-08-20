@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\PaymentResource\Pages;
-use App\Modules\Payment\Models\Payment;
 use App\Modules\Order\Models\Order;
+use App\Modules\Payment\Models\Payment;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,9 +16,13 @@ use Filament\Tables\Table;
 class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
     protected static ?string $navigationGroup = 'FINANCE';
+
     protected static ?string $navigationLabel = 'Payments';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -50,7 +54,7 @@ class PaymentResource extends Resource
                             'pending' => 'Pending',
                             'success' => 'Success',
                             'failed' => 'Failed',
-                            'refunded' => 'Refunded'
+                            'refunded' => 'Refunded',
                         ])
                         ->default('pending')
                         ->required(),
@@ -59,7 +63,7 @@ class PaymentResource extends Resource
                     Forms\Components\Textarea::make('error_message')
                         ->columnSpanFull()
                         ->nullable(),
-                ])->columns(2)
+                ])->columns(2),
         ]);
     }
 
@@ -84,12 +88,12 @@ class PaymentResource extends Resource
                     ->badge(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'pending' => 'warning',
-            'success' => 'success',
-            'failed' => 'danger',
-            'refunded' => 'gray',
-            default => 'gray',
-        })
+                        'pending' => 'warning',
+                        'success' => 'success',
+                        'failed' => 'danger',
+                        'refunded' => 'gray',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('paid_at')
                     ->dateTime()
@@ -100,22 +104,22 @@ class PaymentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'success' => 'Success',
-                        'failed' => 'Failed',
-                        'refunded' => 'Refunded',
-                    ]),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options([
+                                    'pending' => 'Pending',
+                                    'success' => 'Success',
+                                    'failed' => 'Failed',
+                                    'refunded' => 'Refunded',
+                                ]),
+                        ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                // No DeleteAction — payments are financial records
-            ])
+                            Tables\Actions\ViewAction::make(),
+                            Tables\Actions\EditAction::make(),
+                            // No DeleteAction — payments are financial records
+                        ])
             ->bulkActions([
-                // No DeleteBulkAction — payments are financial records
-            ]);
+                            // No DeleteBulkAction — payments are financial records
+                        ]);
     }
 
     public static function getPages(): array

@@ -23,10 +23,10 @@ class Coupon extends Model
     ];
 
     protected $casts = [
-        'discount_value'  => 'float',
+        'discount_value' => 'float',
         'min_cart_amount' => 'float',
-        'is_active'      => 'boolean',
-        'expires_at'      => 'datetime',
+        'is_active' => 'boolean',
+        'expires_at' => 'datetime',
     ];
 
     public function isValidForAmount(float $amount): bool

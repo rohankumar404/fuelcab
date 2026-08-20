@@ -4,19 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Location;
 
+use App\Enums\SalesChannel;
+use App\Enums\UserRole;
+use App\Exceptions\ApiException;
 use App\Models\Address;
 use App\Models\User;
 use App\Modules\Driver\Events\DriverLocationUpdated;
 use App\Modules\Driver\Models\DriverLocation;
-use App\Modules\Location\DTOs\CoordinatesDTO;
 use App\Modules\Location\Services\GoogleMapsService;
 use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Models\OrderTracking;
 use App\Modules\Vendor\Models\Vendor;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -25,90 +30,94 @@ class GoogleMapsTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private User $driverUser;
+
     private Vendor $vendor;
+
     private Address $address;
+
     private Order $order;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         // Configure mock API key
         config(['fuelcab.maps.api_key' => 'mock_maps_api_key_123']);
 
         // Create a customer
         $this->customer = User::create([
-            'name'      => 'Location Customer',
-            'email'     => 'loccust@test.com',
-            'phone'     => '+919999911111',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::Customer,
+            'name' => 'Location Customer',
+            'email' => 'loccust@test.com',
+            'phone' => '+919999911111',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::Customer,
         ]);
 
         // Create a driver user
         $this->driverUser = User::create([
-            'name'      => 'Location Driver',
-            'email'     => 'locdriver@test.com',
-            'phone'     => '+919999922222',
-            'password'  => bcrypt('password123'),
-            'role_type' => \App\Enums\UserRole::Driver,
+            'name' => 'Location Driver',
+            'email' => 'locdriver@test.com',
+            'phone' => '+919999922222',
+            'password' => bcrypt('password123'),
+            'role_type' => UserRole::Driver,
         ]);
 
         // Create driver record in drivers table
-        \Illuminate\Support\Facades\DB::table('drivers')->insert([
-            'id'             => \Illuminate\Support\Str::uuid()->toString(),
-            'user_id'        => $this->driverUser->id,
-            'license_number' => 'DL-' . uniqid(),
+        DB::table('drivers')->insert([
+            'id' => Str::uuid()->toString(),
+            'user_id' => $this->driverUser->id,
+            'license_number' => 'DL-'.uniqid(),
             'license_expiry' => '2030-12-31',
-            'status'         => 'offline',
-            'is_approved'    => true,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'status' => 'offline',
+            'is_approved' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // Create vendor
-        $companyId = \Illuminate\Support\Str::uuid()->toString();
-        \Illuminate\Support\Facades\DB::table('companies')->insert([
-            'id'         => $companyId,
-            'name'       => 'Maps Corp',
-            'status'     => 'active',
+        $companyId = Str::uuid()->toString();
+        DB::table('companies')->insert([
+            'id' => $companyId,
+            'name' => 'Maps Corp',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         $this->vendor = Vendor::create([
-            'company_id'      => $companyId,
-            'brand_name'      => 'Maps Fuels',
-            'status'          => 'approved',
+            'company_id' => $companyId,
+            'brand_name' => 'Maps Fuels',
+            'status' => 'approved',
             'commission_rate' => 4.00,
         ]);
 
         // Create Address without coordinates initially
         $this->address = Address::create([
-            'user_id'          => $this->customer->id,
+            'user_id' => $this->customer->id,
             'addressable_type' => 'App\Models\User',
-            'address_line_1'   => 'Gateway Towers, Sector 62',
-            'city'             => 'Noida',
-            'state'            => 'Uttar Pradesh',
-            'postal_code'      => '201301',
-            'latitude'         => 0.0,
-            'longitude'        => 0.0,
+            'address_line_1' => 'Gateway Towers, Sector 62',
+            'city' => 'Noida',
+            'state' => 'Uttar Pradesh',
+            'postal_code' => '201301',
+            'latitude' => 0.0,
+            'longitude' => 0.0,
         ]);
 
         // Create Order
         $this->order = Order::create([
-            'customer_id'         => $this->customer->id,
-            'driver_id'           => $this->driverUser->id, // assign driver
-            'vendor_id'           => $this->vendor->id,
+            'customer_id' => $this->customer->id,
+            'driver_id' => $this->driverUser->id, // assign driver
+            'vendor_id' => $this->vendor->id,
             'delivery_address_id' => $this->address->id,
-            'subtotal_amount'     => 500.00,
-            'delivery_fee'        => 30.00,
-            'tax_amount'          => 90.00,
-            'total_amount'        => 620.00,
-            'status'              => OrderStatus::Pending,
-            'channel'             => \App\Enums\SalesChannel::Direct,
+            'subtotal_amount' => 500.00,
+            'delivery_fee' => 30.00,
+            'tax_amount' => 90.00,
+            'total_amount' => 620.00,
+            'status' => OrderStatus::Pending,
+            'channel' => SalesChannel::Direct,
         ]);
     }
 
@@ -123,7 +132,7 @@ class GoogleMapsTest extends TestCase
                 'predictions' => [
                     [
                         'description' => 'Whitefield, Bengaluru, Karnataka, India',
-                        'place_id'    => 'ChIJc862u-oRrjsR3a3Sg1m7KGA',
+                        'place_id' => 'ChIJc862u-oRrjsR3a3Sg1m7KGA',
                     ],
                 ],
             ], 200),
@@ -152,8 +161,8 @@ class GoogleMapsTest extends TestCase
                 'results' => [
                     [
                         'formatted_address' => 'Gateway Towers, Noida, UP, India',
-                        'place_id'          => 'ChIJywe-999',
-                        'geometry'          => [
+                        'place_id' => 'ChIJywe-999',
+                        'geometry' => [
                             'location' => [
                                 'lat' => 28.6282,
                                 'lng' => 77.3789,
@@ -167,7 +176,7 @@ class GoogleMapsTest extends TestCase
         Sanctum::actingAs($this->customer, ['customer:*']);
 
         $response = $this->postJson(route('api.v1.locations.geocode'), [
-            'address'    => 'Gateway Towers, Sector 62',
+            'address' => 'Gateway Towers, Sector 62',
             'address_id' => $this->address->id,
         ]);
 
@@ -195,11 +204,11 @@ class GoogleMapsTest extends TestCase
                             [
                                 'status' => 'OK',
                                 'distance' => [
-                                    'text'  => '12.4 km',
+                                    'text' => '12.4 km',
                                     'value' => 12400,
                                 ],
                                 'duration' => [
-                                    'text'  => '24 mins',
+                                    'text' => '24 mins',
                                     'value' => 1440,
                                 ],
                             ],
@@ -212,8 +221,8 @@ class GoogleMapsTest extends TestCase
         Sanctum::actingAs($this->customer, ['customer:*']);
 
         $response = $this->getJson(route('api.v1.locations.eta', [
-            'origin_lat'      => 12.9716,
-            'origin_lng'      => 77.5946,
+            'origin_lat' => 12.9716,
+            'origin_lng' => 77.5946,
             'destination_lat' => 12.9279,
             'destination_lng' => 77.6271,
         ]));
@@ -241,15 +250,15 @@ class GoogleMapsTest extends TestCase
                         'legs' => [
                             [
                                 'start_address' => 'A',
-                                'end_address'   => 'C',
-                                'distance'      => ['value' => 5000, 'text' => '5.0 km'],
-                                'duration'      => ['value' => 600, 'text' => '10 mins'],
+                                'end_address' => 'C',
+                                'distance' => ['value' => 5000, 'text' => '5.0 km'],
+                                'duration' => ['value' => 600, 'text' => '10 mins'],
                             ],
                             [
                                 'start_address' => 'C',
-                                'end_address'   => 'B',
-                                'distance'      => ['value' => 3000, 'text' => '3.0 km'],
-                                'duration'      => ['value' => 360, 'text' => '6 mins'],
+                                'end_address' => 'B',
+                                'distance' => ['value' => 3000, 'text' => '3.0 km'],
+                                'duration' => ['value' => 360, 'text' => '6 mins'],
                             ],
                         ],
                     ],
@@ -285,11 +294,11 @@ class GoogleMapsTest extends TestCase
         Sanctum::actingAs($this->driverUser, ['driver:*']);
 
         $response = $this->postJson(route('api.v1.locations.driver.update'), [
-            'latitude'  => 13.0827,
+            'latitude' => 13.0827,
             'longitude' => 80.2707,
-            'speed'     => 45.5,
-            'heading'   => 180.0,
-            'order_id'  => $this->order->id,
+            'speed' => 45.5,
+            'heading' => 180.0,
+            'order_id' => $this->order->id,
         ]);
 
         $response->assertStatus(200)
@@ -298,23 +307,23 @@ class GoogleMapsTest extends TestCase
             ->assertJsonPath('data.longitude', 80.2707);
 
         // Verify driver location row upserted
-        $driverId = \Illuminate\Support\Facades\DB::table('drivers')
+        $driverId = DB::table('drivers')
             ->where('user_id', $this->driverUser->id)
             ->value('id');
 
         $this->assertDatabaseHas('driver_locations', [
             'driver_id' => $driverId,
-            'latitude'  => 13.0827,
+            'latitude' => 13.0827,
             'longitude' => 80.2707,
-            'heading'   => 180.0,
+            'heading' => 180.0,
             'speed_kmh' => 45.5,
         ]);
 
         // Verify order tracking breadcrumb created
         $this->assertDatabaseHas('order_tracking', [
-            'order_id'  => $this->order->id,
+            'order_id' => $this->order->id,
             'driver_id' => $driverId,
-            'latitude'  => 13.0827,
+            'latitude' => 13.0827,
             'longitude' => 80.2707,
         ]);
 
@@ -326,17 +335,17 @@ class GoogleMapsTest extends TestCase
      */
     public function test_customer_can_retrieve_live_driver_location(): void
     {
-        $driverId = \Illuminate\Support\Facades\DB::table('drivers')
+        $driverId = DB::table('drivers')
             ->where('user_id', $this->driverUser->id)
             ->value('id');
 
         // Seed driver location
         DriverLocation::create([
-            'driver_id'   => $driverId,
-            'latitude'    => 13.0827,
-            'longitude'   => 80.2707,
-            'heading'     => 90.0,
-            'speed_kmh'   => 30.0,
+            'driver_id' => $driverId,
+            'latitude' => 13.0827,
+            'longitude' => 80.2707,
+            'heading' => 90.0,
+            'speed_kmh' => 30.0,
             'recorded_at' => now(),
         ]);
 
@@ -357,26 +366,26 @@ class GoogleMapsTest extends TestCase
      */
     public function test_customer_can_retrieve_delivery_tracking_history(): void
     {
-        $driverId = \Illuminate\Support\Facades\DB::table('drivers')
+        $driverId = DB::table('drivers')
             ->where('user_id', $this->driverUser->id)
             ->value('id');
 
         // Create tracking breadcrumbs
         OrderTracking::create([
-            'order_id'    => $this->order->id,
-            'driver_id'   => $driverId,
-            'latitude'    => 12.9716,
-            'longitude'   => 77.5946,
-            'status'      => 'pending',
+            'order_id' => $this->order->id,
+            'driver_id' => $driverId,
+            'latitude' => 12.9716,
+            'longitude' => 77.5946,
+            'status' => 'pending',
             'recorded_at' => now()->subMinutes(10),
         ]);
 
         OrderTracking::create([
-            'order_id'    => $this->order->id,
-            'driver_id'   => $driverId,
-            'latitude'    => 12.9800,
-            'longitude'   => 77.6000,
-            'status'      => 'processing',
+            'order_id' => $this->order->id,
+            'driver_id' => $driverId,
+            'latitude' => 12.9800,
+            'longitude' => 77.6000,
+            'status' => 'processing',
             'recorded_at' => now(),
         ]);
 
@@ -398,15 +407,15 @@ class GoogleMapsTest extends TestCase
     {
         Http::fake([
             'https://maps.googleapis.com/*' => Http::response([
-                'status'        => 'REQUEST_DENIED',
+                'status' => 'REQUEST_DENIED',
                 'error_message' => 'The provided API key is invalid.',
             ], 200),
         ]);
 
-        $this->expectException(\App\Exceptions\ApiException::class);
+        $this->expectException(ApiException::class);
         $this->expectExceptionCode(403);
 
-        $service = new GoogleMapsService();
+        $service = new GoogleMapsService;
         $service->geocode('Any Address');
     }
 }

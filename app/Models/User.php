@@ -3,26 +3,27 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
+use App\Enums\UserRole;
+use App\Modules\Vendor\Enums\VendorStatus;
+use App\Modules\Vendor\Models\Vendor;
 use App\Traits\HasUuid;
-use Laravel\Sanctum\HasApiTokens;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
-use App\Enums\UserRole;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, HasUuid;
+    use HasApiTokens, HasFactory, HasRoles, HasUuid, Notifiable;
 
     /**
      * The guard name for Spatie permissions.
-     *
-     * @var string
      */
     protected string $guard_name = 'api';
 
@@ -66,18 +67,18 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role_type' => \App\Enums\UserRole::class,
+            'role_type' => UserRole::class,
         ];
     }
 
-    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function vendor(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Vendor\Models\Vendor::class);
+        return $this->belongsTo(Vendor::class);
     }
 
-    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function company(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Company::class);
+        return $this->belongsTo(Company::class);
     }
 
     /**
@@ -109,7 +110,8 @@ class User extends Authenticatable implements FilamentUser
 
             // Load vendor relation to check approval status
             $vendor = $this->vendor;
-            return $vendor && $vendor->status === \App\Modules\Vendor\Enums\VendorStatus::Approved;
+
+            return $vendor && $vendor->status === VendorStatus::Approved;
         }
 
         return false;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Fuel\Models;
 
-use App\Models\Category;
 use App\Enums\UnitOfMeasure;
+use App\Models\Category;
 use App\Traits\Auditable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MarketplaceProduct extends Model
 {
-    use HasUuid, Auditable, SoftDeletes;
+    use Auditable, HasUuid, SoftDeletes;
 
     protected $table = 'marketplace_products';
 
@@ -35,12 +35,12 @@ class MarketplaceProduct extends Model
     ];
 
     protected $casts = [
-        'is_active'             => 'boolean',
-        'is_coming_soon'        => 'boolean',
-        'ordering_enabled'      => 'boolean',
-        'display_order'         => 'integer',
+        'is_active' => 'boolean',
+        'is_coming_soon' => 'boolean',
+        'ordering_enabled' => 'boolean',
+        'display_order' => 'integer',
         'specifications_schema' => 'array',
-        'unit_of_measure'       => UnitOfMeasure::class,
+        'unit_of_measure' => UnitOfMeasure::class,
     ];
 
     public function category(): BelongsTo

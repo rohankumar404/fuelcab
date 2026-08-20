@@ -9,7 +9,6 @@ use App\Modules\Vendor\Enums\DocumentStatus;
 use App\Modules\Vendor\Models\VendorDocument;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -46,15 +45,15 @@ class VendorDocumentResource extends Resource
                 Forms\Components\Select::make('document_type')
                     ->label('Document Type')
                     ->options([
-                        'gst_certificate'    => 'GST Certificate',
-                        'pan_card'           => 'PAN Card',
-                        'trade_license'      => 'Trade License',
-                        'incorporation'      => 'Certificate of Incorporation',
-                        'quality_cert'       => 'Quality Certification (ISO, BIS, etc.)',
-                        'bank_statement'     => 'Bank Statement',
-                        'cancelled_cheque'   => 'Cancelled Cheque',
-                        'address_proof'      => 'Address Proof',
-                        'other'              => 'Other',
+                        'gst_certificate' => 'GST Certificate',
+                        'pan_card' => 'PAN Card',
+                        'trade_license' => 'Trade License',
+                        'incorporation' => 'Certificate of Incorporation',
+                        'quality_cert' => 'Quality Certification (ISO, BIS, etc.)',
+                        'bank_statement' => 'Bank Statement',
+                        'cancelled_cheque' => 'Cancelled Cheque',
+                        'address_proof' => 'Address Proof',
+                        'other' => 'Other',
                     ])
                     ->required()
                     ->searchable(),
@@ -75,20 +74,16 @@ class VendorDocumentResource extends Resource
             Forms\Components\Section::make('Verification Status')->schema([
                 Forms\Components\Placeholder::make('status_display')
                     ->label('Current Status')
-                    ->content(fn (?VendorDocument $record): string =>
-                        $record?->status?->label() ?? 'Pending Verification'),
+                    ->content(fn (?VendorDocument $record): string => $record?->status?->label() ?? 'Pending Verification'),
 
                 Forms\Components\Placeholder::make('verified_at_display')
                     ->label('Verified At')
-                    ->content(fn (?VendorDocument $record): string =>
-                        $record?->verified_at?->format('d M Y H:i') ?? '—'),
+                    ->content(fn (?VendorDocument $record): string => $record?->verified_at?->format('d M Y H:i') ?? '—'),
 
                 Forms\Components\Placeholder::make('rejection_reason_display')
                     ->label('Rejection Reason')
-                    ->content(fn (?VendorDocument $record): string =>
-                        $record?->rejection_reason ?? '—')
-                    ->visible(fn (?VendorDocument $record): bool =>
-                        $record?->status === DocumentStatus::Rejected),
+                    ->content(fn (?VendorDocument $record): string => $record?->rejection_reason ?? '—')
+                    ->visible(fn (?VendorDocument $record): bool => $record?->status === DocumentStatus::Rejected),
             ])->columns(3),
         ]);
     }
@@ -100,15 +95,15 @@ class VendorDocumentResource extends Resource
                 Tables\Columns\TextColumn::make('document_type')
                     ->label('Document Type')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'gst_certificate'  => 'GST Certificate',
-                        'pan_card'         => 'PAN Card',
-                        'trade_license'    => 'Trade License',
-                        'incorporation'    => 'Certificate of Incorporation',
-                        'quality_cert'     => 'Quality Certification',
-                        'bank_statement'   => 'Bank Statement',
+                        'gst_certificate' => 'GST Certificate',
+                        'pan_card' => 'PAN Card',
+                        'trade_license' => 'Trade License',
+                        'incorporation' => 'Certificate of Incorporation',
+                        'quality_cert' => 'Quality Certification',
+                        'bank_statement' => 'Bank Statement',
                         'cancelled_cheque' => 'Cancelled Cheque',
-                        'address_proof'    => 'Address Proof',
-                        default            => ucwords(str_replace('_', ' ', $state)),
+                        'address_proof' => 'Address Proof',
+                        default => ucwords(str_replace('_', ' ', $state)),
                     })
                     ->searchable()
                     ->sortable(),
@@ -134,8 +129,7 @@ class VendorDocumentResource extends Resource
                     ->label('Expires')
                     ->date()
                     ->placeholder('—')
-                    ->color(fn (?string $state): string =>
-                        $state && now()->gt($state) ? 'danger' : 'gray'),
+                    ->color(fn (?string $state): string => $state && now()->gt($state) ? 'danger' : 'gray'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Uploaded')
@@ -145,7 +139,7 @@ class VendorDocumentResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'pending'  => 'Pending',
+                        'pending' => 'Pending',
                         'verified' => 'Verified',
                         'rejected' => 'Rejected',
                     ]),
@@ -153,8 +147,7 @@ class VendorDocumentResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->label('Update')
-                    ->visible(fn (VendorDocument $record): bool =>
-                        $record->status !== DocumentStatus::Verified),
+                    ->visible(fn (VendorDocument $record): bool => $record->status !== DocumentStatus::Verified),
             ])
             ->bulkActions([])
             ->defaultSort('created_at', 'desc');
@@ -163,9 +156,9 @@ class VendorDocumentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListVendorDocuments::route('/'),
+            'index' => Pages\ListVendorDocuments::route('/'),
             'create' => Pages\CreateVendorDocument::route('/create'),
-            'edit'   => Pages\EditVendorDocument::route('/{record}/edit'),
+            'edit' => Pages\EditVendorDocument::route('/{record}/edit'),
         ];
     }
 }

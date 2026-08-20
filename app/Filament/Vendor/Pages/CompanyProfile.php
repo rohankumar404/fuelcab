@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Vendor\Pages;
 
-use App\Models\Company;
 use App\Modules\Vendor\Models\Vendor;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -38,17 +37,17 @@ class CompanyProfile extends Page implements HasForms
         }
 
         $this->form->fill([
-            'brand_name'         => $vendor->brand_name,
-            'contact_email'      => $vendor->contact_email,
-            'contact_phone'      => $vendor->contact_phone,
-            'website'            => $vendor->website,
-            'business_address'   => $vendor->business_address,
-            'city'               => $vendor->city,
-            'state'              => $vendor->state,
-            'pincode'            => $vendor->pincode,
-            'description'        => $vendor->description,
-            'gst_number'         => $vendor->gst_number,
-            'pan_number'         => $vendor->pan_number,
+            'brand_name' => $vendor->brand_name,
+            'contact_email' => $vendor->contact_email,
+            'contact_phone' => $vendor->contact_phone,
+            'website' => $vendor->website,
+            'business_address' => $vendor->business_address,
+            'city' => $vendor->city,
+            'state' => $vendor->state,
+            'pincode' => $vendor->pincode,
+            'description' => $vendor->description,
+            'gst_number' => $vendor->gst_number,
+            'pan_number' => $vendor->pan_number,
         ]);
     }
 
@@ -126,6 +125,7 @@ class CompanyProfile extends Page implements HasForms
 
         if (! $vendor) {
             Notification::make()->title('Vendor profile not found.')->danger()->send();
+
             return;
         }
 

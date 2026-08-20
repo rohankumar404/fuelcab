@@ -20,7 +20,7 @@ class ApproveDriverAction
             'is_approved' => true,
             'approved_at' => now(),
             'approved_by' => $approvedByUserId,
-            'status'      => 'offline',
+            'status' => 'offline',
         ]);
 
         event(new DriverApproved($driver));

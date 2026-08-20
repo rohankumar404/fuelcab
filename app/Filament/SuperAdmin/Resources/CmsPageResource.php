@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class CmsPageResource extends Resource
 {
@@ -36,8 +37,7 @@ class CmsPageResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => 
-                                $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null
+                            ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null
                             ),
                         Forms\Components\TextInput::make('slug')
                             ->required()
@@ -47,7 +47,7 @@ class CmsPageResource extends Resource
                             ->required()
                             ->columnSpanFull(),
                     ])->columns(2),
-                
+
                 Forms\Components\Section::make('SEO & Settings')
                     ->schema([
                         Forms\Components\TextInput::make('meta_title')
@@ -71,7 +71,7 @@ class CmsPageResource extends Resource
                             ])
                             ->default('default')
                             ->required(),
-                    ])->columns(2)
+                    ])->columns(2),
             ]);
     }
 
@@ -88,10 +88,10 @@ class CmsPageResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'draft' => 'warning',
-            'published' => 'success',
-            default => 'gray',
-        })
+                        'draft' => 'warning',
+                        'published' => 'success',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('template')
                     ->sortable(),
@@ -100,21 +100,21 @@ class CmsPageResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                    ]),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options([
+                                    'draft' => 'Draft',
+                                    'published' => 'Published',
+                                ]),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
+                            Tables\Actions\EditAction::make(),
+                            Tables\Actions\DeleteAction::make(),
+                        ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                            Tables\Actions\BulkActionGroup::make([
+                                Tables\Actions\DeleteBulkAction::make(),
+                            ]),
+                        ]);
     }
 
     public static function getRelations(): array

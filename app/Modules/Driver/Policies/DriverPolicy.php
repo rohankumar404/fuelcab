@@ -25,7 +25,7 @@ class DriverPolicy
      */
     public function view(User $user, Driver $driver): bool
     {
-        if (!$user->can('view_drivers')) {
+        if (! $user->can('view_drivers')) {
             return false;
         }
 
@@ -55,7 +55,7 @@ class DriverPolicy
      */
     public function track(User $user, Driver $driver): bool
     {
-        if (!$user->can('track_drivers')) {
+        if (! $user->can('track_drivers')) {
             return false;
         }
 

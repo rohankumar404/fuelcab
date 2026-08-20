@@ -4,87 +4,72 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-
-// Order Events
-use App\Modules\Order\Events\OrderCreated;
-use App\Modules\Order\Events\OrderAccepted;
-use App\Modules\Order\Events\OrderAssigned;
-use App\Modules\Order\Events\OrderDispatched;
-use App\Modules\Order\Events\OrderCompleted;
-use App\Modules\Order\Events\OrderCancelled;
-
-// Order Listeners
-use App\Modules\Order\Listeners\NotifyNearbyDrivers;
-use App\Modules\Order\Listeners\SendOrderConfirmationToCustomer;
-use App\Modules\Order\Listeners\LogOrderActivity;
-use App\Modules\Order\Listeners\NotifyDriverOfNewOrder;
-use App\Modules\Order\Listeners\NotifyCustomerOfDriverAssignment;
-use App\Modules\Order\Listeners\UpdateDriverEarnings;
-use App\Modules\Order\Listeners\DeductFuelInventory;
-use App\Modules\Order\Listeners\TriggerPaymentSettlement;
-use App\Modules\Order\Listeners\GenerateInvoice;
-use App\Modules\Order\Listeners\RefundPaymentIfApplicable;
-use App\Modules\Order\Listeners\ReleaseDriver;
-use App\Modules\Order\Listeners\NotifyCustomerOfOrderAcceptance;
-use App\Modules\Order\Listeners\LogOrderStatusChange;
-use App\Modules\Order\Listeners\SendOrderCancellationNotification;
-use App\Modules\Order\Listeners\SendDeliveryCompletedNotification;
-
-// Payment Events
-use App\Modules\Payment\Events\PaymentVerified;
-use App\Modules\Payment\Events\PaymentInitiated;
-use App\Modules\Payment\Events\PaymentFailed;
-
-// Payment Listeners
-use App\Modules\Payment\Listeners\UpdateWalletBalance;
-use App\Modules\Payment\Listeners\SendPaymentReceipt;
-
-// Driver Events
-use App\Modules\Driver\Events\DriverLocationUpdated;
-use App\Modules\Driver\Events\DriverApproved;
-
-// Driver Listeners
-use App\Modules\Driver\Listeners\BroadcastLocationToCustomer;
-use App\Modules\Driver\Listeners\UpdateRedisDriverCache;
-use App\Modules\Driver\Listeners\SendDriverApprovalNotification;
-
-// Vendor Events
-use App\Modules\Vendor\Events\VendorApproved;
-use App\Modules\Vendor\Events\VendorRejected;
-use App\Modules\Vendor\Events\VendorSuspended;
-
-// Vendor Listeners
-use App\Modules\Vendor\Listeners\SendVendorApprovalNotification;
-use App\Modules\Vendor\Listeners\SendVendorRejectionNotification;
-
-// Auth Events
-use App\Modules\Auth\Events\UserRegistered;
 use App\Modules\Auth\Events\OtpRequested;
-
-// Auth Listeners
-use App\Modules\Auth\Listeners\SendWelcomeNotification;
+// Order Events
+use App\Modules\Auth\Events\UserRegistered;
 use App\Modules\Auth\Listeners\SendOtpViaSms;
-
-// Wallet Events
-use App\Modules\Wallet\Events\WalletToppedUp;
-
-// Fuel / Product Events
-use App\Modules\Fuel\Events\ProductStatusChanged;
-use App\Modules\Fuel\Events\InventorySynced;
-
-// Fuel / Product Listeners
-use App\Modules\Fuel\Listeners\LogInventoryChange;
-use App\Modules\Fuel\Listeners\NotifyLowStock;
-
-// Cart Events
+use App\Modules\Auth\Listeners\SendWelcomeNotification;
+use App\Modules\Cart\Events\CartCleared;
 use App\Modules\Cart\Events\CartItemAdded;
 use App\Modules\Cart\Events\CartItemRemoved;
-use App\Modules\Cart\Events\CartCleared;
+// Order Listeners
 use App\Modules\Cart\Events\GuestCartMerged;
-
-// Cart Listeners
 use App\Modules\Cart\Listeners\RevalidateCartPrices;
+use App\Modules\Driver\Events\DriverApproved;
+use App\Modules\Driver\Events\DriverLocationUpdated;
+use App\Modules\Driver\Listeners\BroadcastLocationToCustomer;
+use App\Modules\Driver\Listeners\SendDriverApprovalNotification;
+use App\Modules\Driver\Listeners\UpdateRedisDriverCache;
+use App\Modules\Fuel\Events\InventorySynced;
+use App\Modules\Fuel\Events\ProductStatusChanged;
+use App\Modules\Fuel\Listeners\LogInventoryChange;
+use App\Modules\Fuel\Listeners\NotifyLowStock;
+use App\Modules\Order\Events\OrderAccepted;
+use App\Modules\Order\Events\OrderAssigned;
+use App\Modules\Order\Events\OrderCancelled;
+use App\Modules\Order\Events\OrderCompleted;
+// Payment Events
+use App\Modules\Order\Events\OrderCreated;
+use App\Modules\Order\Events\OrderDispatched;
+use App\Modules\Order\Listeners\DeductFuelInventory;
+// Payment Listeners
+use App\Modules\Order\Listeners\GenerateInvoice;
+use App\Modules\Order\Listeners\LogOrderActivity;
+// Driver Events
+use App\Modules\Order\Listeners\LogOrderStatusChange;
+use App\Modules\Order\Listeners\NotifyCustomerOfDriverAssignment;
+// Driver Listeners
+use App\Modules\Order\Listeners\NotifyCustomerOfOrderAcceptance;
+use App\Modules\Order\Listeners\NotifyDriverOfNewOrder;
+use App\Modules\Order\Listeners\NotifyNearbyDrivers;
+// Vendor Events
+use App\Modules\Order\Listeners\RefundPaymentIfApplicable;
+use App\Modules\Order\Listeners\ReleaseDriver;
+use App\Modules\Order\Listeners\SendDeliveryCompletedNotification;
+// Vendor Listeners
+use App\Modules\Order\Listeners\SendOrderCancellationNotification;
+use App\Modules\Order\Listeners\SendOrderConfirmationToCustomer;
+// Auth Events
+use App\Modules\Order\Listeners\TriggerPaymentSettlement;
+use App\Modules\Order\Listeners\UpdateDriverEarnings;
+// Auth Listeners
+use App\Modules\Payment\Events\PaymentFailed;
+use App\Modules\Payment\Events\PaymentInitiated;
+// Wallet Events
+use App\Modules\Payment\Events\PaymentVerified;
+// Fuel / Product Events
+use App\Modules\Payment\Listeners\SendPaymentReceipt;
+use App\Modules\Payment\Listeners\UpdateWalletBalance;
+// Fuel / Product Listeners
+use App\Modules\Vendor\Events\VendorApproved;
+use App\Modules\Vendor\Events\VendorRejected;
+// Cart Events
+use App\Modules\Vendor\Events\VendorSuspended;
+use App\Modules\Vendor\Listeners\SendVendorApprovalNotification;
+use App\Modules\Vendor\Listeners\SendVendorRejectionNotification;
+use App\Modules\Wallet\Events\WalletToppedUp;
+// Cart Listeners
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -134,7 +119,7 @@ class EventServiceProvider extends ServiceProvider
             SendPaymentReceipt::class,
         ],
         PaymentInitiated::class => [],
-        PaymentFailed::class    => [],
+        PaymentFailed::class => [],
 
         // ─── Driver ──────────────────────────────────────────────────────
         DriverLocationUpdated::class => [
@@ -177,7 +162,7 @@ class EventServiceProvider extends ServiceProvider
             RevalidateCartPrices::class,
         ],
         CartItemRemoved::class => [],
-        CartCleared::class     => [],
+        CartCleared::class => [],
         GuestCartMerged::class => [],
     ];
 }

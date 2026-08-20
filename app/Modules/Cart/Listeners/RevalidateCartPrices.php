@@ -17,7 +17,7 @@ class RevalidateCartPrices
             return;
         }
 
-        $livePrice     = (float) $item->product->price_per_unit;
+        $livePrice = (float) $item->product->price_per_unit;
         $snapshotPrice = $item->price_snapshot;
 
         if ($livePrice !== $snapshotPrice) {
@@ -25,10 +25,10 @@ class RevalidateCartPrices
             $item->update(['price_snapshot' => $livePrice]);
 
             Log::info('CartService: Price snapshot updated on add', [
-                'cart_item_id'   => $item->id,
-                'product_id'     => $item->product_id,
-                'snapshot_was'   => $snapshotPrice,
-                'snapshot_now'   => $livePrice,
+                'cart_item_id' => $item->id,
+                'product_id' => $item->product_id,
+                'snapshot_was' => $snapshotPrice,
+                'snapshot_now' => $livePrice,
             ]);
         }
     }

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Checkout\Actions;
 
-use App\Models\Address;
 use App\Modules\Checkout\Models\Checkout;
-use App\Modules\Vendor\Models\Vendor;
 use Illuminate\Support\Facades\DB;
 
 class CalculateCheckoutSummaryAction
@@ -28,8 +26,8 @@ class CalculateCheckoutSummaryAction
 
             $checkout->update([
                 'subtotal_amount' => round($subtotal, 2),
-                'tax_amount'      => round($taxAmount, 2),
-                'total_amount'    => round($totalAmount, 2),
+                'tax_amount' => round($taxAmount, 2),
+                'total_amount' => round($totalAmount, 2),
             ]);
 
             return $checkout;

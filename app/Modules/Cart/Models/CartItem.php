@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\Cart\Models;
 
 use App\Enums\SalesChannel;
-use App\Enums\UnitOfMeasure;
 use App\Modules\Fuel\Models\Product;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorListing;
@@ -40,9 +39,9 @@ class CartItem extends Model
     protected function casts(): array
     {
         return [
-            'quantity'       => 'float',
+            'quantity' => 'float',
             'price_snapshot' => 'float',
-            'sales_channel'  => SalesChannel::class,
+            'sales_channel' => SalesChannel::class,
         ];
     }
 
@@ -84,7 +83,7 @@ class CartItem extends Model
     public function getLineTax(): float
     {
         $quantity = (float) $this->quantity;
-        $price    = (float) $this->price_snapshot;
+        $price = (float) $this->price_snapshot;
         $subtotal = $quantity * $price;
 
         if ($this->vendorListing) {

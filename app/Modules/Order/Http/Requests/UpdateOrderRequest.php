@@ -16,9 +16,9 @@ class UpdateOrderRequest extends ApiRequest
     public function rules(): array
     {
         return [
-            'status'            => ['nullable', 'string', 'in:placed,accepted,preparing,out_for_delivery,delivered,completed,cancelled'],
-            'payment_status'    => ['nullable', 'string', 'in:pending,paid,failed,refunded'],
-            'delivery_notes'    => ['nullable', 'string', 'max:1000'],
+            'status' => ['nullable', 'string', 'in:placed,accepted,preparing,out_for_delivery,delivered,completed,cancelled'],
+            'payment_status' => ['nullable', 'string', 'in:pending,paid,failed,refunded'],
+            'delivery_notes' => ['nullable', 'string', 'max:1000'],
             'dispatch_location' => ['nullable', 'string', 'max:255'],
         ];
     }
@@ -26,7 +26,7 @@ class UpdateOrderRequest extends ApiRequest
     public function messages(): array
     {
         return [
-            'status.in'         => 'The specified status is invalid.',
+            'status.in' => 'The specified status is invalid.',
             'payment_status.in' => 'The specified payment status is invalid.',
             'delivery_notes.max' => 'Delivery notes cannot exceed 1000 characters.',
         ];

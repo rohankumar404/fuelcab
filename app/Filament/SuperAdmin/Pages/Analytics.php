@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace App\Filament\SuperAdmin\Pages;
 
-use App\Models\Settlement;
+use App\Modules\Fuel\Models\Product;
+use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Models\OrderItem;
-use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Vendor\Models\Vendor;
-use App\Modules\Fuel\Models\Product;
 use Filament\Pages\Page;
-use Illuminate\Support\Facades\DB;
 
 class Analytics extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
+
     protected static ?string $navigationGroup = 'SYSTEM';
+
     protected static ?string $navigationLabel = 'Analytics';
+
     protected static ?int $navigationSort = 4;
+
     protected static string $view = 'filament.super-admin.pages.analytics';
 
     public array $stats = [];
@@ -42,17 +44,17 @@ class Analytics extends Page
             ->get()
             ->mapWithKeys(fn ($item) => [
                 (is_string($item->channel) ? $item->channel : $item->channel->value) => [
-                    'revenue' => (float)$item->revenue,
-                    'count'   => (int)$item->count,
-                ]
+                    'revenue' => (float) $item->revenue,
+                    'count' => (int) $item->count,
+                ],
             ])->toArray();
 
         // 3. Monthly Sales (last 6 months) - driver aware
         $driver = config('database.default');
         $monthExpr = match ($driver) {
-            'pgsql'  => "TO_CHAR(created_at, 'YYYY-MM')",
-            'mysql'  => "DATE_FORMAT(created_at, '%Y-%m')",
-            default  => "strftime('%Y-%m', created_at)", // sqlite
+            'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
+            'mysql' => "DATE_FORMAT(created_at, '%Y-%m')",
+            default => "strftime('%Y-%m', created_at)", // sqlite
         };
 
         $monthlyRevenue = Order::whereIn('status', [OrderStatus::Delivered->value, 'completed', 'delivered'])
@@ -73,10 +75,11 @@ class Analytics extends Page
             ->get()
             ->map(function ($item) {
                 $vendor = Vendor::find($item->vendor_id);
+
                 return [
-                    'brand_name'   => $vendor?->brand_name ?? 'Unknown Vendor',
-                    'total_sales'  => (float)$item->total_sales,
-                    'total_orders' => (int)$item->total_orders,
+                    'brand_name' => $vendor?->brand_name ?? 'Unknown Vendor',
+                    'total_sales' => (float) $item->total_sales,
+                    'total_orders' => (int) $item->total_orders,
                 ];
             })->toArray();
 
@@ -88,19 +91,20 @@ class Analytics extends Page
             ->get()
             ->map(function ($item) {
                 $product = Product::find($item->product_id);
+
                 return [
-                    'name'          => $product?->name ?? 'Unknown Product',
-                    'quantity_sold' => (float)$item->quantity_sold,
-                    'total_revenue' => (float)$item->total_revenue,
+                    'name' => $product?->name ?? 'Unknown Product',
+                    'quantity_sold' => (float) $item->quantity_sold,
+                    'total_revenue' => (float) $item->total_revenue,
                 ];
             })->toArray();
 
         $this->stats = [
             'orders_by_status' => $ordersByStatus,
-            'channel_stats'    => $channelStats,
-            'monthly_revenue'  => $monthlyRevenue,
-            'top_vendors'      => $topVendors,
-            'top_products'     => $topProducts,
+            'channel_stats' => $channelStats,
+            'monthly_revenue' => $monthlyRevenue,
+            'top_vendors' => $topVendors,
+            'top_products' => $topProducts,
         ];
     }
 }

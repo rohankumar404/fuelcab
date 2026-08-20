@@ -102,23 +102,23 @@ class RoleResource extends Resource
                 Tables\Columns\TextColumn::make('role_type')
                     ->label('Role')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            UserRole::SuperAdmin->value => 'danger',
-            UserRole::OperationsTeam->value => 'info',
-            UserRole::VendorAdmin->value => 'success',
-            UserRole::VendorStaff->value => 'warning',
-            UserRole::Driver->value => 'gray',
-            UserRole::Customer->value => 'primary',
-            default => 'gray',
-        })
+                        UserRole::SuperAdmin->value => 'danger',
+                        UserRole::OperationsTeam->value => 'info',
+                        UserRole::VendorAdmin->value => 'success',
+                        UserRole::VendorStaff->value => 'warning',
+                        UserRole::Driver->value => 'gray',
+                        UserRole::Customer->value => 'primary',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'active' => 'success',
-            'inactive' => 'warning',
-            'suspended' => 'danger',
-            default => 'gray',
-        }),
+                        'active' => 'success',
+                        'inactive' => 'warning',
+                        'suspended' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -126,25 +126,25 @@ class RoleResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role_type')
-                    ->label('Role')
-                    ->options(collect(UserRole::cases())->mapWithKeys(fn ($r) => [$r->value => $r->label()])),
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
-            ])
+                            Tables\Filters\SelectFilter::make('role_type')
+                                ->label('Role')
+                                ->options(collect(UserRole::cases())->mapWithKeys(fn ($r) => [$r->value => $r->label()])),
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('Change Role'),
-            ])
+                            Tables\Actions\EditAction::make()->label('Change Role'),
+                        ])
             ->bulkActions([
-                // No bulk delete for users in this context
-            ]);
+                            // No bulk delete for users in this context
+                        ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListRoles::route('/'),
-            'edit'  => Pages\EditRole::route('/{record}/edit'),
+            'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
     }
 }

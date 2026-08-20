@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Models;
 
+use App\Models\User;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HasUuid;
-use App\Models\User;
 
 class OrderTracking extends Model
 {

@@ -18,13 +18,13 @@ class UpdateCheckoutScheduleAction
             $dateTime = Carbon::parse($scheduledAt);
 
             if ($dateTime->isPast()) {
-                throw new \DomainException("Scheduled delivery time must be in the future.");
+                throw new \DomainException('Scheduled delivery time must be in the future.');
             }
 
             // Ensure scheduled slot is within reasonable operating hours (e.g. 7 AM to 10 PM)
             $hour = $dateTime->hour;
             if ($hour < 7 || $hour > 22) {
-                throw new \DomainException("Delivery slots are only available between 07:00 AM and 10:00 PM.");
+                throw new \DomainException('Delivery slots are only available between 07:00 AM and 10:00 PM.');
             }
 
             $checkout->update([

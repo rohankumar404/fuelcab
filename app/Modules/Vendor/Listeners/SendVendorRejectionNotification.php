@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Vendor\Listeners;
 
-use App\Modules\Vendor\Events\VendorRejected;
 use App\Modules\Notification\Jobs\SendEmailJob;
 use App\Modules\Notification\Mail\VendorRejectedMail;
+use App\Modules\Vendor\Events\VendorRejected;
+use App\Modules\Vendor\Notifications\VendorRejectedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +16,7 @@ class SendVendorRejectionNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
 
     public function handle(VendorRejected $event): void
     {
@@ -32,12 +33,12 @@ class SendVendorRejectionNotification implements ShouldQueue
             // Notify all vendor users (database + FCM)
             $vendor->loadMissing('users');
             foreach ($vendor->users as $user) {
-                $user->notify(new \App\Modules\Vendor\Notifications\VendorRejectedNotification($vendor, $event->reason));
+                $user->notify(new VendorRejectedNotification($vendor, $event->reason));
             }
         } catch (\Throwable $e) {
             Log::error('[SendVendorRejectionNotification] Failed to queue vendor rejection email', [
                 'vendor_id' => $event->vendor->id ?? null,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

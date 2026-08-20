@@ -6,14 +6,14 @@ namespace App\Modules\Vendor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Modules\Order\Models\Order;
 use App\Models\UserFavorite;
 use App\Models\UserRecentlyViewed;
 use App\Models\VendorRating;
 use App\Modules\Fuel\Models\MarketplaceProduct;
+use App\Modules\Order\Models\Order;
+use App\Modules\Vendor\Http\Resources\VendorListingResource;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorListing;
-use App\Modules\Vendor\Http\Resources\VendorListingResource;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,6 +35,7 @@ class MarketplaceController extends Controller
         $categories = Cache::remember('marketplace_categories', 3600, function () {
             return Category::with('children')->whereNull('parent_id')->get();
         });
+
         return $this->success($categories, 'Marketplace categories retrieved successfully.');
     }
 
@@ -69,45 +70,45 @@ class MarketplaceController extends Controller
             ->firstOrFail();
 
         $validated = $request->validate([
-            'quantity'            => 'required|numeric|min:' . (float) $listing->min_order_quantity,
+            'quantity' => 'required|numeric|min:'.(float) $listing->min_order_quantity,
             'delivery_address_id' => 'required|uuid|exists:addresses,id',
-            'notes'               => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
-        $quantity  = (float) $validated['quantity'];
+        $quantity = (float) $validated['quantity'];
         $basePrice = (float) $listing->base_price;
-        $subtotal  = round($basePrice * $quantity, 2);
+        $subtotal = round($basePrice * $quantity, 2);
 
         if ($listing->tax_inclusive) {
-            $total             = $subtotal;
-            $tax               = round($total - ($total / (1 + ((float) $listing->tax_rate / 100))), 2);
+            $total = $subtotal;
+            $tax = round($total - ($total / (1 + ((float) $listing->tax_rate / 100))), 2);
             $subtotalBeforeTax = round($total - $tax, 2);
         } else {
-            $tax               = round($subtotal * ((float) $listing->tax_rate / 100), 2);
-            $total             = round($subtotal + $tax, 2);
+            $tax = round($subtotal * ((float) $listing->tax_rate / 100), 2);
+            $total = round($subtotal + $tax, 2);
             $subtotalBeforeTax = $subtotal;
         }
 
         $order = DB::transaction(function () use ($request, $listing, $validated, $subtotalBeforeTax, $tax, $total) {
             return Order::create([
-                'customer_id'         => $request->user()->id,
-                'vendor_id'           => $listing->vendor_id,
-                'channel'             => 'marketplace',
-                'status'              => 'pending',
-                'subtotal_amount'     => $subtotalBeforeTax,
-                'tax_amount'          => $tax,
-                'total_amount'        => $total,
+                'customer_id' => $request->user()->id,
+                'vendor_id' => $listing->vendor_id,
+                'channel' => 'marketplace',
+                'status' => 'pending',
+                'subtotal_amount' => $subtotalBeforeTax,
+                'tax_amount' => $tax,
+                'total_amount' => $total,
                 'delivery_address_id' => $validated['delivery_address_id'],
-                'notes'               => $validated['notes'] ?? null,
+                'notes' => $validated['notes'] ?? null,
             ]);
         });
 
         return $this->success([
-            'order_id'     => $order->id,
+            'order_id' => $order->id,
             'listing_slug' => $listing->slug,
-            'quantity'     => $quantity,
+            'quantity' => $quantity,
             'total_amount' => $total,
-            'status'       => $order->status,
+            'status' => $order->status,
         ], 'Direct order placed successfully.', 201);
     }
 
@@ -135,7 +136,7 @@ class MarketplaceController extends Controller
         ]);
 
         $favorite = UserFavorite::firstOrCreate([
-            'user_id'           => $request->user()->id,
+            'user_id' => $request->user()->id,
             'vendor_listing_id' => $validated['vendor_listing_id'],
         ]);
 
@@ -165,7 +166,7 @@ class MarketplaceController extends Controller
     public function compare(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'listing_ids'   => 'required|array|min:1|max:4',
+            'listing_ids' => 'required|array|min:1|max:4',
             'listing_ids.*' => 'required|uuid|exists:vendor_listings,id',
         ]);
 
@@ -203,7 +204,7 @@ class MarketplaceController extends Controller
 
         $record = UserRecentlyViewed::updateOrCreate(
             [
-                'user_id'           => $request->user()->id,
+                'user_id' => $request->user()->id,
                 'vendor_listing_id' => $validated['vendor_listing_id'],
             ],
             ['updated_at' => now()]
@@ -227,16 +228,16 @@ class MarketplaceController extends Controller
             ->public()
             ->get();
 
-        $avgRating    = VendorRating::where('vendor_id', $vendorId)->avg('rating') ?? 0.0;
+        $avgRating = VendorRating::where('vendor_id', $vendorId)->avg('rating') ?? 0.0;
         $totalRatings = VendorRating::where('vendor_id', $vendorId)->count();
 
         return $this->success([
             'vendor' => [
-                'id'            => $vendor->id,
-                'brand_name'    => $vendor->brand_name,
-                'city'          => $vendor->city,
-                'state'         => $vendor->state,
-                'rating_avg'    => round((float) $avgRating, 2),
+                'id' => $vendor->id,
+                'brand_name' => $vendor->brand_name,
+                'city' => $vendor->city,
+                'state' => $vendor->state,
+                'rating_avg' => round((float) $avgRating, 2),
                 'ratings_count' => $totalRatings,
             ],
             'listings' => VendorListingResource::collection($listings),
@@ -260,7 +261,7 @@ class MarketplaceController extends Controller
 
         $rating = VendorRating::updateOrCreate(
             [
-                'user_id'   => $request->user()->id,
+                'user_id' => $request->user()->id,
                 'vendor_id' => $vendor->id,
             ],
             [

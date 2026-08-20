@@ -17,7 +17,7 @@ class CheckoutAddressRequest extends FormRequest
     {
         return [
             'checkout_id' => ['required', 'uuid', 'exists:checkouts,id'],
-            'address_id'  => ['required', 'uuid', 'exists:addresses,id'],
+            'address_id' => ['required', 'uuid', 'exists:addresses,id'],
         ];
     }
 }

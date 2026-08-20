@@ -13,7 +13,7 @@ class NotifyCustomerOfOrderAcceptance implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'notifications';
+    public $queue = 'notifications';
 
     public function handle(OrderAccepted $event): void
     {

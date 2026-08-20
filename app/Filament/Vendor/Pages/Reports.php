@@ -5,15 +5,11 @@ declare(strict_types=1);
 namespace App\Filament\Vendor\Pages;
 
 use App\Models\Settlement;
-use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
-use Filament\Actions\Action;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Reports extends Page
 {
@@ -28,25 +24,30 @@ class Reports extends Page
     protected static string $view = 'filament.vendor.pages.reports';
 
     // ── Order report filters ─────────────────────────────────────────────────
-    public ?string $orderFrom   = null;
-    public ?string $orderTo     = null;
+    public ?string $orderFrom = null;
+
+    public ?string $orderTo = null;
+
     public ?string $orderStatus = null;
 
     // ── Settlement report filters ────────────────────────────────────────────
-    public ?string $settlementFrom   = null;
-    public ?string $settlementTo     = null;
+    public ?string $settlementFrom = null;
+
+    public ?string $settlementTo = null;
+
     public ?string $settlementStatus = null;
 
     // ── Summary stats ────────────────────────────────────────────────────────
-    public array $orderSummary      = [];
+    public array $orderSummary = [];
+
     public array $settlementSummary = [];
 
     public function mount(): void
     {
-        $this->orderFrom       = now()->startOfMonth()->toDateString();
-        $this->orderTo         = now()->toDateString();
-        $this->settlementFrom  = now()->subMonths(3)->startOfMonth()->toDateString();
-        $this->settlementTo    = now()->toDateString();
+        $this->orderFrom = now()->startOfMonth()->toDateString();
+        $this->orderTo = now()->toDateString();
+        $this->settlementFrom = now()->subMonths(3)->startOfMonth()->toDateString();
+        $this->settlementTo = now()->toDateString();
 
         $this->refreshSummaries();
     }
@@ -65,25 +66,25 @@ class Reports extends Page
         // Order summary
         $orderQuery = Order::where('vendor_id', $vendorId)
             ->when($this->orderFrom, fn ($q) => $q->whereDate('created_at', '>=', $this->orderFrom))
-            ->when($this->orderTo,   fn ($q) => $q->whereDate('created_at', '<=', $this->orderTo))
+            ->when($this->orderTo, fn ($q) => $q->whereDate('created_at', '<=', $this->orderTo))
             ->when($this->orderStatus, fn ($q) => $q->where('status', $this->orderStatus));
 
         $this->orderSummary = [
-            'total'   => $orderQuery->count(),
+            'total' => $orderQuery->count(),
             'revenue' => $orderQuery->sum('total_amount'),
         ];
 
         // Settlement summary
         $settlementQuery = Settlement::where('vendor_id', $vendorId)
             ->when($this->settlementFrom, fn ($q) => $q->whereDate('created_at', '>=', $this->settlementFrom))
-            ->when($this->settlementTo,   fn ($q) => $q->whereDate('created_at', '<=', $this->settlementTo))
+            ->when($this->settlementTo, fn ($q) => $q->whereDate('created_at', '<=', $this->settlementTo))
             ->when($this->settlementStatus, fn ($q) => $q->where('status', $this->settlementStatus));
 
         $this->settlementSummary = [
-            'count'      => $settlementQuery->count(),
-            'gross'      => $settlementQuery->sum('gross_amount'),
+            'count' => $settlementQuery->count(),
+            'gross' => $settlementQuery->sum('gross_amount'),
             'commission' => $settlementQuery->sum('commission_amount'),
-            'net'        => $settlementQuery->sum('net_payable'),
+            'net' => $settlementQuery->sum('net_payable'),
         ];
     }
 
@@ -93,7 +94,7 @@ class Reports extends Page
      * Export orders as CSV, scoped to the authenticated vendor and current filters.
      * SECURITY: vendor_id is always resolved server-side from the authenticated user.
      */
-    public function exportOrders(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportOrders(): StreamedResponse
     {
         $vendorId = auth()->user()?->vendor_id;
 
@@ -103,13 +104,13 @@ class Reports extends Page
 
         $orders = Order::with(['customer', 'deliveryAddress'])
             ->where('vendor_id', $vendorId)
-            ->when($this->orderFrom,   fn ($q) => $q->whereDate('created_at', '>=', $this->orderFrom))
-            ->when($this->orderTo,     fn ($q) => $q->whereDate('created_at', '<=', $this->orderTo))
+            ->when($this->orderFrom, fn ($q) => $q->whereDate('created_at', '>=', $this->orderFrom))
+            ->when($this->orderTo, fn ($q) => $q->whereDate('created_at', '<=', $this->orderTo))
             ->when($this->orderStatus, fn ($q) => $q->where('status', $this->orderStatus))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'orders_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'orders_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($orders) {
             $handle = fopen('php://output', 'w');
@@ -148,7 +149,7 @@ class Reports extends Page
     /**
      * Export settlements as CSV, scoped to the authenticated vendor.
      */
-    public function exportSettlements(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportSettlements(): StreamedResponse
     {
         $vendorId = auth()->user()?->vendor_id;
 
@@ -157,13 +158,13 @@ class Reports extends Page
         }
 
         $settlements = Settlement::where('vendor_id', $vendorId)
-            ->when($this->settlementFrom,   fn ($q) => $q->whereDate('created_at', '>=', $this->settlementFrom))
-            ->when($this->settlementTo,     fn ($q) => $q->whereDate('created_at', '<=', $this->settlementTo))
+            ->when($this->settlementFrom, fn ($q) => $q->whereDate('created_at', '>=', $this->settlementFrom))
+            ->when($this->settlementTo, fn ($q) => $q->whereDate('created_at', '<=', $this->settlementTo))
             ->when($this->settlementStatus, fn ($q) => $q->where('status', $this->settlementStatus))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'settlements_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'settlements_'.now()->format('Ymd_His').'.csv';
 
         return Response::streamDownload(function () use ($settlements) {
             $handle = fopen('php://output', 'w');

@@ -8,7 +8,6 @@ use App\Filament\Operations\Resources\InventoryResource\Pages;
 use App\Modules\Fuel\Models\FuelInventory;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -85,9 +84,9 @@ class InventoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListInventories::route('/'),
+            'index' => Pages\ListInventories::route('/'),
             'create' => Pages\CreateInventory::route('/create'),
-            'edit'   => Pages\EditInventory::route('/{record}/edit'),
+            'edit' => Pages\EditInventory::route('/{record}/edit'),
         ];
     }
 }

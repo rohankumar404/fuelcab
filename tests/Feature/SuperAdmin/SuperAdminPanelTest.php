@@ -6,24 +6,21 @@ namespace Tests\Feature\SuperAdmin;
 
 use App\Enums\SalesChannel;
 use App\Enums\UserRole;
+use App\Filament\SuperAdmin\Resources\SettingResource;
 use App\Models\Address;
-use App\Models\Category;
 use App\Models\Company;
 use App\Models\Setting;
 use App\Models\Settlement;
 use App\Models\User;
-use App\Models\AuditLog;
 use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
 use App\Modules\Vendor\Models\Vendor;
-use App\Filament\SuperAdmin\Resources\SettingResource;
-use App\Filament\SuperAdmin\Resources\OrderResource;
-use App\Filament\SuperAdmin\Resources\MarketplaceOrderResource;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Filament\Facades\Filament;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class SuperAdminPanelTest extends TestCase
@@ -31,43 +28,47 @@ class SuperAdminPanelTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private User $customer;
+
     private Vendor $vendor;
+
     private Company $company;
+
     private Address $address;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         // Create Super Admin User
         $this->superAdmin = User::create([
-            'name'      => 'Super Admin',
-            'email'     => 'superadmin@fuelcab.com',
-            'password'  => bcrypt('password123'),
+            'name' => 'Super Admin',
+            'email' => 'superadmin@fuelcab.com',
+            'password' => bcrypt('password123'),
             'role_type' => UserRole::SuperAdmin,
-            'status'    => 'active',
+            'status' => 'active',
         ]);
         $this->superAdmin->assignRole(UserRole::SuperAdmin->value);
 
         // Create Customer User
         $this->customer = User::create([
-            'name'      => 'Customer User',
-            'email'     => 'customer@example.com',
-            'phone'     => '+919876543210',
-            'password'  => bcrypt('password123'),
+            'name' => 'Customer User',
+            'email' => 'customer@example.com',
+            'phone' => '+919876543210',
+            'password' => bcrypt('password123'),
             'role_type' => UserRole::Customer,
-            'status'    => 'active',
+            'status' => 'active',
         ]);
 
         // Company
         $companyId = Str::uuid()->toString();
         DB::table('companies')->insert([
-            'id'         => $companyId,
-            'name'       => 'Test Company',
-            'status'     => 'active',
+            'id' => $companyId,
+            'name' => 'Test Company',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -77,20 +78,20 @@ class SuperAdminPanelTest extends TestCase
         $this->vendor = Vendor::create([
             'company_id' => $companyId,
             'brand_name' => 'Test Vendor',
-            'status'     => 'approved',
+            'status' => 'approved',
         ]);
 
         // Address
         $this->address = Address::create([
-            'user_id'          => $this->customer->id,
+            'user_id' => $this->customer->id,
             'addressable_type' => User::class,
-            'address_line_1'   => '123 Main St',
-            'city'             => 'Mumbai',
-            'state'            => 'Maharashtra',
-            'pincode'          => '400001',
-            'postal_code'      => '400001',
-            'latitude'         => 19.0760,
-            'longitude'        => 72.8777,
+            'address_line_1' => '123 Main St',
+            'city' => 'Mumbai',
+            'state' => 'Maharashtra',
+            'pincode' => '400001',
+            'postal_code' => '400001',
+            'latitude' => 19.0760,
+            'longitude' => 72.8777,
         ]);
     }
 
@@ -117,13 +118,13 @@ class SuperAdminPanelTest extends TestCase
         // Create Setting
         $setting = Setting::create([
             'company_id' => $this->company->id,
-            'key'        => 'tax_rate',
-            'value'      => '18.00',
-            'cast_type'  => 'float',
+            'key' => 'tax_rate',
+            'value' => '18.00',
+            'cast_type' => 'float',
         ]);
 
         $this->assertDatabaseHas('settings', [
-            'key'        => 'tax_rate',
+            'key' => 'tax_rate',
             'company_id' => $this->company->id,
         ]);
 
@@ -140,18 +141,18 @@ class SuperAdminPanelTest extends TestCase
         // First Setting
         Setting::create([
             'company_id' => $this->company->id,
-            'key'        => 'commission_rate',
-            'value'      => '10.00',
-            'cast_type'  => 'float',
+            'key' => 'commission_rate',
+            'value' => '10.00',
+            'cast_type' => 'float',
         ]);
 
         // Duplicate Setting (should fail unique DB constraint)
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         Setting::create([
             'company_id' => $this->company->id,
-            'key'        => 'commission_rate',
-            'value'      => '12.00',
-            'cast_type'  => 'float',
+            'key' => 'commission_rate',
+            'value' => '12.00',
+            'cast_type' => 'float',
         ]);
     }
 
@@ -161,29 +162,29 @@ class SuperAdminPanelTest extends TestCase
         $this->actingAs($this->superAdmin);
 
         $order1 = Order::create([
-            'vendor_id'           => $this->vendor->id,
-            'customer_id'         => $this->customer->id,
+            'vendor_id' => $this->vendor->id,
+            'customer_id' => $this->customer->id,
             'delivery_address_id' => $this->address->id,
-            'order_number'        => 'ORD-001',
-            'status'              => OrderStatus::Pending,
-            'subtotal_amount'     => 1000.00,
-            'tax_amount'          => 180.00,
-            'delivery_fee'        => 50.00,
-            'total_amount'        => 1230.00,
-            'channel'             => SalesChannel::Direct,
+            'order_number' => 'ORD-001',
+            'status' => OrderStatus::Pending,
+            'subtotal_amount' => 1000.00,
+            'tax_amount' => 180.00,
+            'delivery_fee' => 50.00,
+            'total_amount' => 1230.00,
+            'channel' => SalesChannel::Direct,
         ]);
 
         $order2 = Order::create([
-            'vendor_id'           => $this->vendor->id,
-            'customer_id'         => $this->customer->id,
+            'vendor_id' => $this->vendor->id,
+            'customer_id' => $this->customer->id,
             'delivery_address_id' => $this->address->id,
-            'order_number'        => 'ORD-002',
-            'status'              => OrderStatus::Pending,
-            'subtotal_amount'     => 2000.00,
-            'tax_amount'          => 360.00,
-            'delivery_fee'        => 50.00,
-            'total_amount'        => 2410.00,
-            'channel'             => SalesChannel::Direct,
+            'order_number' => 'ORD-002',
+            'status' => OrderStatus::Pending,
+            'subtotal_amount' => 2000.00,
+            'tax_amount' => 360.00,
+            'delivery_fee' => 50.00,
+            'total_amount' => 2410.00,
+            'channel' => SalesChannel::Direct,
         ]);
 
         // Verify direct update to test bulk modification logic
@@ -201,24 +202,24 @@ class SuperAdminPanelTest extends TestCase
 
         // Seed some orders and settlements
         Order::create([
-            'vendor_id'           => $this->vendor->id,
-            'customer_id'         => $this->customer->id,
+            'vendor_id' => $this->vendor->id,
+            'customer_id' => $this->customer->id,
             'delivery_address_id' => $this->address->id,
-            'order_number'        => 'ORD-REP-1001',
-            'status'              => OrderStatus::Delivered,
-            'subtotal_amount'     => 1000.00,
-            'tax_amount'          => 180.00,
-            'delivery_fee'        => 50.00,
-            'total_amount'        => 1230.00,
-            'channel'             => SalesChannel::Direct,
+            'order_number' => 'ORD-REP-1001',
+            'status' => OrderStatus::Delivered,
+            'subtotal_amount' => 1000.00,
+            'tax_amount' => 180.00,
+            'delivery_fee' => 50.00,
+            'total_amount' => 1230.00,
+            'channel' => SalesChannel::Direct,
         ]);
 
         Settlement::create([
-            'vendor_id'         => $this->vendor->id,
-            'gross_amount'      => 1000.00,
+            'vendor_id' => $this->vendor->id,
+            'gross_amount' => 1000.00,
             'commission_amount' => 100.00,
-            'net_payable'       => 900.00,
-            'status'            => 'processed',
+            'net_payable' => 900.00,
+            'status' => 'processed',
         ]);
 
         $response = $this->get('/admin/reports');

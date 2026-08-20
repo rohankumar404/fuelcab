@@ -10,14 +10,15 @@ use App\Models\User;
 use App\Modules\Fuel\Models\MarketplaceProduct;
 use App\Traits\Auditable;
 use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 class VendorListing extends Model
 {
-    use HasUuid, Auditable, SoftDeletes;
+    use Auditable, HasUuid, SoftDeletes;
 
     protected $table = 'vendor_listings';
 
@@ -55,22 +56,22 @@ class VendorListing extends Model
     ];
 
     protected $casts = [
-        'product_images'          => 'array',
-        'serviceable_locations'   => 'array',
-        'quality_specifications'  => 'array',
-        'certificate_documents'   => 'array',
-        'unit'                    => UnitOfMeasure::class,
-        'approval_status'         => ListingStatus::class,
-        'tax_inclusive'           => 'boolean',
-        'is_active'               => 'boolean',
-        'is_featured'             => 'boolean',
-        'min_order_quantity'      => 'decimal:4',
-        'max_order_quantity'      => 'decimal:4',
-        'available_quantity'      => 'decimal:4',
-        'base_price'              => 'decimal:4',
-        'tax_rate'                => 'decimal:2',
-        'reviewed_at'             => 'datetime',
-        'approved_at'             => 'datetime',
+        'product_images' => 'array',
+        'serviceable_locations' => 'array',
+        'quality_specifications' => 'array',
+        'certificate_documents' => 'array',
+        'unit' => UnitOfMeasure::class,
+        'approval_status' => ListingStatus::class,
+        'tax_inclusive' => 'boolean',
+        'is_active' => 'boolean',
+        'is_featured' => 'boolean',
+        'min_order_quantity' => 'decimal:4',
+        'max_order_quantity' => 'decimal:4',
+        'available_quantity' => 'decimal:4',
+        'base_price' => 'decimal:4',
+        'tax_rate' => 'decimal:2',
+        'reviewed_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     // ── Relationships ────────────────────────────────────────────────────────
@@ -147,20 +148,21 @@ class VendorListing extends Model
         if ($this->tax_inclusive) {
             return $price;
         }
+
         return round($price + ($price * ((float) $this->tax_rate / 100)), 4);
     }
 
     protected static function booted(): void
     {
         static::saved(function (VendorListing $listing) {
-            \Illuminate\Support\Facades\Cache::forget('listing_details_' . $listing->slug);
+            Cache::forget('listing_details_'.$listing->slug);
             if ($listing->wasChanged('slug')) {
-                \Illuminate\Support\Facades\Cache::forget('listing_details_' . $listing->getOriginal('slug'));
+                Cache::forget('listing_details_'.$listing->getOriginal('slug'));
             }
         });
 
         static::deleted(function (VendorListing $listing) {
-            \Illuminate\Support\Facades\Cache::forget('listing_details_' . $listing->slug);
+            Cache::forget('listing_details_'.$listing->slug);
         });
     }
 }

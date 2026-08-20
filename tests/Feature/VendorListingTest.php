@@ -13,6 +13,7 @@ use App\Modules\Fuel\Models\MarketplaceProduct;
 use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorListing;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -27,7 +28,7 @@ class VendorListingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         $this->category = Category::create([
             'name' => 'Test Biofuels',
@@ -41,37 +42,38 @@ class VendorListingTest extends TestCase
     {
         $id = Str::uuid()->toString();
         DB::table('companies')->insert([
-            'id'         => $id,
-            'name'       => $name,
-            'status'     => 'active',
+            'id' => $id,
+            'name' => $name,
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
         return $id;
     }
 
     private function createApprovedVendor(string $suffix = ''): Vendor
     {
-        $rand      = Str::random(6);
-        $companyId = $this->makeCompany('Test Vendor Company ' . $rand . $suffix);
+        $rand = Str::random(6);
+        $companyId = $this->makeCompany('Test Vendor Company '.$rand.$suffix);
 
         return Vendor::create([
-            'company_id'          => $companyId,
-            'brand_name'          => 'Test Fuel Supplier ' . $rand,
-            'legal_name'          => 'Test Fuel Supplier ' . $rand . ' Pvt Ltd',
-            'vendor_code'         => 'VND-' . strtoupper($rand),
-            'gst_number'          => '27ABCDE' . $rand . '1Z5',
-            'pan'                 => 'ABCDE' . $rand,
-            'company_type'        => 'private_limited',
-            'contact_person'      => 'Test Admin ' . $rand,
-            'mobile'              => '9' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'               => 'vendor' . strtolower($rand) . '@test.com',
-            'registered_address'  => '123 Test Street',
+            'company_id' => $companyId,
+            'brand_name' => 'Test Fuel Supplier '.$rand,
+            'legal_name' => 'Test Fuel Supplier '.$rand.' Pvt Ltd',
+            'vendor_code' => 'VND-'.strtoupper($rand),
+            'gst_number' => '27ABCDE'.$rand.'1Z5',
+            'pan' => 'ABCDE'.$rand,
+            'company_type' => 'private_limited',
+            'contact_person' => 'Test Admin '.$rand,
+            'mobile' => '9'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'vendor'.strtolower($rand).'@test.com',
+            'registered_address' => '123 Test Street',
             'operational_address' => '123 Test Street',
-            'city'                => 'Surat',
-            'state'               => 'Gujarat',
-            'pincode'             => '395001',
-            'status'              => VendorStatus::Approved,
+            'city' => 'Surat',
+            'state' => 'Gujarat',
+            'pincode' => '395001',
+            'status' => VendorStatus::Approved,
         ]);
     }
 
@@ -79,14 +81,15 @@ class VendorListingTest extends TestCase
     {
         $rand = Str::random(6);
         $user = User::create([
-            'name'      => 'Vendor Admin ' . $rand,
-            'mobile'    => '8' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'     => 'vendor_admin_' . strtolower($rand) . '@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Vendor Admin '.$rand,
+            'mobile' => '8'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'vendor_admin_'.strtolower($rand).'@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::VendorAdmin,
             'vendor_id' => $vendor->id,
         ]);
         $user->syncRoles([UserRole::VendorAdmin->value]);
+
         return $user;
     }
 
@@ -94,26 +97,27 @@ class VendorListingTest extends TestCase
     {
         $rand = Str::random(6);
         $user = User::create([
-            'name'      => 'Super Admin ' . $rand,
-            'mobile'    => '7' . substr(preg_replace('/[^0-9]/', '', $rand . '000000000'), 0, 9),
-            'email'     => 'super_' . strtolower($rand) . '@test.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Super Admin '.$rand,
+            'mobile' => '7'.substr(preg_replace('/[^0-9]/', '', $rand.'000000000'), 0, 9),
+            'email' => 'super_'.strtolower($rand).'@test.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::SuperAdmin,
         ]);
         $user->syncRoles([UserRole::SuperAdmin->value]);
+
         return $user;
     }
 
     private function createMarketplaceProduct(): MarketplaceProduct
     {
         return MarketplaceProduct::create([
-            'category_id'      => $this->category->id,
-            'name'             => 'RDF (Refuse Derived Fuel)',
-            'slug'             => 'rdf-refuse-derived-fuel',
-            'unit_of_measure'  => UnitOfMeasure::MetricTonnes,
-            'is_active'        => true,
+            'category_id' => $this->category->id,
+            'name' => 'RDF (Refuse Derived Fuel)',
+            'slug' => 'rdf-refuse-derived-fuel',
+            'unit_of_measure' => UnitOfMeasure::MetricTonnes,
+            'is_active' => true,
             'ordering_enabled' => true,
-            'display_order'    => 1,
+            'display_order' => 1,
         ]);
     }
 
@@ -121,13 +125,13 @@ class VendorListingTest extends TestCase
     {
         return [
             'marketplace_product_id' => $product->id,
-            'listing_title'          => 'Premium Industrial RDF - 3500+ GCV',
-            'unit'                   => 'metric_tonnes',
-            'available_quantity'     => 500,
-            'base_price'             => 4500,
-            'min_order_quantity'     => 10,
-            'tax_rate'               => 18,
-            'is_active'              => true,
+            'listing_title' => 'Premium Industrial RDF - 3500+ GCV',
+            'unit' => 'metric_tonnes',
+            'available_quantity' => 500,
+            'base_price' => 4500,
+            'min_order_quantity' => 10,
+            'tax_rate' => 18,
+            'is_active' => true,
         ];
     }
 
@@ -136,7 +140,7 @@ class VendorListingTest extends TestCase
     public function test_approved_vendor_can_create_draft_listing(): void
     {
         $vendor = $this->createApprovedVendor();
-        $user   = $this->createVendorAdmin($vendor);
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $response = $this->actingAs($user, 'sanctum')
@@ -149,11 +153,11 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_cannot_inject_vendor_id_from_payload(): void
     {
-        $vendor  = $this->createApprovedVendor();
+        $vendor = $this->createApprovedVendor();
         $vendor2 = $this->createApprovedVendor();
         $vendor2->update(['mobile' => '9000000002', 'email' => 'other@vendor.com', 'vendor_code' => 'VND-TEST002']);
 
-        $user    = $this->createVendorAdmin($vendor);
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $data = $this->draftListingData($product);
@@ -167,11 +171,11 @@ class VendorListingTest extends TestCase
         // Listing must be scoped to the authenticated vendor — not the injected one
         $this->assertDatabaseHas('vendor_listings', [
             'listing_title' => 'Premium Industrial RDF - 3500+ GCV',
-            'vendor_id'     => $vendor->id,  // ← must be auth vendor
+            'vendor_id' => $vendor->id,  // ← must be auth vendor
         ]);
         $this->assertDatabaseMissing('vendor_listings', [
             'listing_title' => 'Premium Industrial RDF - 3500+ GCV',
-            'vendor_id'     => $vendor2->id,  // ← never the injected one
+            'vendor_id' => $vendor2->id,  // ← never the injected one
         ]);
     }
 
@@ -179,7 +183,7 @@ class VendorListingTest extends TestCase
     {
         $vendor = $this->createApprovedVendor();
         $vendor->update(['status' => VendorStatus::Pending]);
-        $user    = $this->createVendorAdmin($vendor);
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $response = $this->actingAs($user, 'sanctum')
@@ -190,13 +194,13 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_can_edit_draft_listing(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'premium-rdf-3500-gcv',
+            'vendor_id' => $vendor->id,
+            'slug' => 'premium-rdf-3500-gcv',
             'approval_status' => ListingStatus::Draft->value,
         ]));
 
@@ -211,13 +215,13 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_cannot_edit_approved_listing(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'premium-rdf-approved',
+            'vendor_id' => $vendor->id,
+            'slug' => 'premium-rdf-approved',
             'approval_status' => ListingStatus::Approved->value,
         ]));
 
@@ -231,13 +235,13 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_can_submit_draft_for_approval(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'rdf-submit-test',
+            'vendor_id' => $vendor->id,
+            'slug' => 'rdf-submit-test',
             'approval_status' => ListingStatus::Draft->value,
         ]));
 
@@ -250,13 +254,13 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_cannot_submit_already_pending_listing(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'rdf-pending-test',
+            'vendor_id' => $vendor->id,
+            'slug' => 'rdf-pending-test',
             'approval_status' => ListingStatus::PendingApproval->value,
         ]));
 
@@ -268,31 +272,31 @@ class VendorListingTest extends TestCase
 
     public function test_public_api_returns_only_approved_active_listings(): void
     {
-        $vendor  = $this->createApprovedVendor();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         // Approved + active (should appear)
         VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'approved-listing',
+            'vendor_id' => $vendor->id,
+            'slug' => 'approved-listing',
             'approval_status' => ListingStatus::Approved->value,
-            'is_active'       => true,
+            'is_active' => true,
         ]));
 
         // Draft (must not appear)
         VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'draft-listing',
+            'vendor_id' => $vendor->id,
+            'slug' => 'draft-listing',
             'approval_status' => ListingStatus::Draft->value,
-            'is_active'       => true,
+            'is_active' => true,
         ]));
 
         // Rejected (must not appear)
         VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'rejected-listing',
+            'vendor_id' => $vendor->id,
+            'slug' => 'rejected-listing',
             'approval_status' => ListingStatus::Rejected->value,
-            'is_active'       => true,
+            'is_active' => true,
         ]));
 
         $response = $this->getJson('/api/v1/marketplace/listings');
@@ -305,14 +309,14 @@ class VendorListingTest extends TestCase
 
     public function test_public_api_single_listing_by_slug(): void
     {
-        $vendor  = $this->createApprovedVendor();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'rdf-3500-gcv-surat',
+            'vendor_id' => $vendor->id,
+            'slug' => 'rdf-3500-gcv-surat',
             'approval_status' => ListingStatus::Approved->value,
-            'is_active'       => true,
+            'is_active' => true,
         ]));
 
         $response = $this->getJson('/api/v1/marketplace/listings/rdf-3500-gcv-surat');
@@ -322,14 +326,14 @@ class VendorListingTest extends TestCase
 
     public function test_public_api_does_not_expose_draft_by_slug(): void
     {
-        $vendor  = $this->createApprovedVendor();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'secret-draft-slug',
+            'vendor_id' => $vendor->id,
+            'slug' => 'secret-draft-slug',
             'approval_status' => ListingStatus::Draft->value,
-            'is_active'       => true,
+            'is_active' => true,
         ]));
 
         $response = $this->getJson('/api/v1/marketplace/listings/secret-draft-slug');
@@ -338,13 +342,13 @@ class VendorListingTest extends TestCase
 
     public function test_super_admin_can_approve_listing(): void
     {
-        $admin   = $this->createSuperAdmin();
-        $vendor  = $this->createApprovedVendor();
+        $admin = $this->createSuperAdmin();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'pending-approval-slug',
+            'vendor_id' => $vendor->id,
+            'slug' => 'pending-approval-slug',
             'approval_status' => ListingStatus::PendingApproval->value,
         ]));
 
@@ -359,13 +363,13 @@ class VendorListingTest extends TestCase
 
     public function test_super_admin_can_reject_listing_with_reason(): void
     {
-        $admin   = $this->createSuperAdmin();
-        $vendor  = $this->createApprovedVendor();
+        $admin = $this->createSuperAdmin();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'reject-test-slug',
+            'vendor_id' => $vendor->id,
+            'slug' => 'reject-test-slug',
             'approval_status' => ListingStatus::PendingApproval->value,
         ]));
 
@@ -378,21 +382,21 @@ class VendorListingTest extends TestCase
             ->assertJsonPath('data.approval_status', 'REJECTED');
 
         $this->assertDatabaseHas('vendor_listings', [
-            'id'               => $listing->id,
+            'id' => $listing->id,
             'rejection_reason' => 'Quality specifications are insufficient. Please add GCV value.',
         ]);
     }
 
     public function test_vendor_can_read_rejection_reason_on_own_listing(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'        => $vendor->id,
-            'slug'             => 'rejection-readable',
-            'approval_status'  => ListingStatus::Rejected->value,
+            'vendor_id' => $vendor->id,
+            'slug' => 'rejection-readable',
+            'approval_status' => ListingStatus::Rejected->value,
             'rejection_reason' => 'Please provide GCV value.',
         ]));
 
@@ -405,15 +409,15 @@ class VendorListingTest extends TestCase
 
     public function test_rejection_reason_not_exposed_in_public_api(): void
     {
-        $vendor  = $this->createApprovedVendor();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         // Even if somehow approval_status is APPROVED but we want to verify rejection_reason hidden
         VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'        => $vendor->id,
-            'slug'             => 'public-listing-no-rejection',
-            'approval_status'  => ListingStatus::Approved->value,
-            'is_active'        => true,
+            'vendor_id' => $vendor->id,
+            'slug' => 'public-listing-no-rejection',
+            'approval_status' => ListingStatus::Approved->value,
+            'is_active' => true,
             'rejection_reason' => 'Internal note — should not appear.',
         ]));
 
@@ -426,13 +430,13 @@ class VendorListingTest extends TestCase
 
     public function test_super_admin_can_suspend_approved_listing(): void
     {
-        $admin   = $this->createSuperAdmin();
-        $vendor  = $this->createApprovedVendor();
+        $admin = $this->createSuperAdmin();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'approved-to-suspend',
+            'vendor_id' => $vendor->id,
+            'slug' => 'approved-to-suspend',
             'approval_status' => ListingStatus::Approved->value,
         ]));
 
@@ -445,15 +449,15 @@ class VendorListingTest extends TestCase
 
     public function test_super_admin_can_toggle_featured(): void
     {
-        $admin   = $this->createSuperAdmin();
-        $vendor  = $this->createApprovedVendor();
+        $admin = $this->createSuperAdmin();
+        $vendor = $this->createApprovedVendor();
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'feature-toggle-test',
+            'vendor_id' => $vendor->id,
+            'slug' => 'feature-toggle-test',
             'approval_status' => ListingStatus::Approved->value,
-            'is_featured'     => false,
+            'is_featured' => false,
         ]));
 
         $this->actingAs($admin, 'sanctum')
@@ -470,13 +474,13 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_can_update_inventory(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'inventory-update-test',
+            'vendor_id' => $vendor->id,
+            'slug' => 'inventory-update-test',
             'approval_status' => ListingStatus::Approved->value,
         ]));
 
@@ -491,13 +495,13 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_can_update_price(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor->id,
-            'slug'            => 'price-update-test',
+            'vendor_id' => $vendor->id,
+            'slug' => 'price-update-test',
             'approval_status' => ListingStatus::Approved->value,
         ]));
 
@@ -513,11 +517,11 @@ class VendorListingTest extends TestCase
     public function test_customer_cannot_access_vendor_listing_endpoints(): void
     {
         $customer = User::create([
-            'name'     => 'Customer',
-            'mobile'   => '9111111111',
-            'email'    => 'customer@test.com',
+            'name' => 'Customer',
+            'mobile' => '9111111111',
+            'email' => 'customer@test.com',
             'password' => bcrypt('password'),
-            'role_type'=> UserRole::Customer,
+            'role_type' => UserRole::Customer,
         ]);
         $customer->syncRoles(['customer']);
 
@@ -529,15 +533,15 @@ class VendorListingTest extends TestCase
 
     public function test_vendor_cannot_access_another_vendors_listing(): void
     {
-        $vendor1  = $this->createApprovedVendor();
-        $vendor2  = $this->createApprovedVendor('other');
+        $vendor1 = $this->createApprovedVendor();
+        $vendor2 = $this->createApprovedVendor('other');
 
-        $user1   = $this->createVendorAdmin($vendor1);
+        $user1 = $this->createVendorAdmin($vendor1);
         $product = $this->createMarketplaceProduct();
 
         $listing = VendorListing::create(array_merge($this->draftListingData($product), [
-            'vendor_id'       => $vendor2->id, // belongs to vendor2
-            'slug'            => 'vendor2-listing',
+            'vendor_id' => $vendor2->id, // belongs to vendor2
+            'slug' => 'vendor2-listing',
             'approval_status' => ListingStatus::Draft->value,
         ]));
 
@@ -550,16 +554,16 @@ class VendorListingTest extends TestCase
 
     public function test_quality_specifications_stored_as_jsonb(): void
     {
-        $vendor  = $this->createApprovedVendor();
-        $user    = $this->createVendorAdmin($vendor);
+        $vendor = $this->createApprovedVendor();
+        $user = $this->createVendorAdmin($vendor);
         $product = $this->createMarketplaceProduct();
 
         $specs = [
-            'GCV'           => '3500 kcal/kg minimum',
-            'Moisture'       => 'Max 15%',
-            'Ash Content'    => 'Max 20%',
-            'Sulphur'        => 'Max 1%',
-            'Density'        => '650 kg/m3',
+            'GCV' => '3500 kcal/kg minimum',
+            'Moisture' => 'Max 15%',
+            'Ash Content' => 'Max 20%',
+            'Sulphur' => 'Max 1%',
+            'Density' => '650 kg/m3',
         ];
 
         $data = array_merge($this->draftListingData($product), [

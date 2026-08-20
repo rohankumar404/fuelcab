@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Modules\Order\Models;
 
 use App\Enums\SalesChannel;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HasUuid;
-use App\Traits\Auditable;
+use App\Modules\Fuel\Models\Product;
 use App\Modules\Vendor\Models\Vendor;
+use App\Traits\Auditable;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderItem extends Model
 {
-    use SoftDeletes, HasUuid, Auditable;
+    use Auditable, HasUuid, SoftDeletes;
 
     protected $table = 'order_items';
 
@@ -23,10 +24,10 @@ class OrderItem extends Model
     protected function casts(): array
     {
         return [
-            'quantity'       => 'float',
+            'quantity' => 'float',
             'price_per_unit' => 'float',
-            'total_price'    => 'float',
-            'sales_channel'  => SalesChannel::class,
+            'total_price' => 'float',
+            'sales_channel' => SalesChannel::class,
         ];
     }
 
@@ -38,7 +39,7 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         // Correct module path
-        return $this->belongsTo(\App\Modules\Fuel\Models\Product::class, 'product_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function vendor(): BelongsTo

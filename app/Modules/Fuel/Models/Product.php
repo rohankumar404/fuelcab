@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace App\Modules\Fuel\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Traits\HasTenantScope;
-use App\Traits\HasUuid;
-use App\Traits\Auditable;
+use App\Enums\UnitOfMeasure;
 use App\Models\Category;
 use App\Modules\Vendor\Models\Vendor;
+use App\Traits\Auditable;
+use App\Traits\HasTenantScope;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasUuid, Auditable, SoftDeletes, HasTenantScope;
+    use Auditable, HasTenantScope, HasUuid, SoftDeletes;
 
     protected $table = 'products';
 
@@ -53,7 +54,7 @@ class Product extends Model
         'min_order_quantity' => 'decimal:4',
         'max_order_quantity' => 'decimal:4',
         'price_per_unit' => 'decimal:4',
-        'unit_of_measure' => \App\Enums\UnitOfMeasure::class,
+        'unit_of_measure' => UnitOfMeasure::class,
         'display_order' => 'integer',
     ];
 

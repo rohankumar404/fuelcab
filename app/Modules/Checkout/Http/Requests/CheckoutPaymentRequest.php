@@ -16,7 +16,7 @@ class CheckoutPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'checkout_id'    => ['required', 'uuid', 'exists:checkouts,id'],
+            'checkout_id' => ['required', 'uuid', 'exists:checkouts,id'],
             'payment_method' => ['required', 'string', 'in:stripe,razorpay,wallet'],
         ];
     }

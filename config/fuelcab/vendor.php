@@ -10,9 +10,9 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'commission_percent'   => (float) env('VENDOR_COMMISSION_PCT', 10.0),
-    'settlement_days'      => (int) env('VENDOR_SETTLEMENT_DAYS', 7),
-    'max_service_radius_km'=> (float) env('VENDOR_MAX_RADIUS_KM', 50.0),
+    'commission_percent' => (float) env('VENDOR_COMMISSION_PCT', 10.0),
+    'settlement_days' => (int) env('VENDOR_SETTLEMENT_DAYS', 7),
+    'max_service_radius_km' => (float) env('VENDOR_MAX_RADIUS_KM', 50.0),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,10 +34,10 @@ return [
     */
 
     'features' => [
-        'wallet_enabled'       => true,
-        'surge_pricing'        => false,
-        'scheduled_orders'     => true,
-        'subscription_plans'   => false,
+        'wallet_enabled' => true,
+        'surge_pricing' => false,
+        'scheduled_orders' => true,
+        'subscription_plans' => false,
     ],
 
 ];

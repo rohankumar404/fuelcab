@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Vendor\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Enums\UserRole;
-use App\Modules\Vendor\Models\Vendor;
-use App\Modules\Vendor\Models\VendorDocument;
-use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Enums\DocumentStatus;
-use App\Modules\Vendor\Http\Resources\VendorResource;
-use App\Modules\Vendor\Http\Requests\UpdateVendorProfileRequest;
+use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Events\VendorApproved;
 use App\Modules\Vendor\Events\VendorRejected;
+use App\Modules\Vendor\Http\Requests\UpdateVendorProfileRequest;
+use App\Modules\Vendor\Http\Resources\VendorResource;
+use App\Modules\Vendor\Models\Vendor;
+use App\Modules\Vendor\Models\VendorDocument;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,33 +31,33 @@ class VendorController extends Controller
     {
         $validated = $request->validate([
             // Step 1: Business Details
-            'brand_name'            => 'required|string|max:255',
-            'company_type'          => 'required|string|max:100',
+            'brand_name' => 'required|string|max:255',
+            'company_type' => 'required|string|max:100',
             // Step 2: Contact Details
-            'contact_person'        => 'required|string|max:255',
-            'mobile'                => 'required|string|max:50',
-            'email'                 => 'required|email|max:150',
+            'contact_person' => 'required|string|max:255',
+            'mobile' => 'required|string|max:50',
+            'email' => 'required|email|max:150',
             // Step 3: Address
-            'registered_address'    => 'required|string',
-            'operational_address'   => 'required|string',
-            'city'                  => 'required|string|max:100',
-            'state'                 => 'required|string|max:100',
-            'pincode'               => 'required|string|max:20',
-            'latitude'              => 'nullable|numeric|between:-90,90',
-            'longitude'             => 'nullable|numeric|between:-180,180',
+            'registered_address' => 'required|string',
+            'operational_address' => 'required|string',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|max:100',
+            'pincode' => 'required|string|max:20',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             // Step 4: GST and PAN
-            'gst_number'            => 'required|string|max:50',
-            'pan'                   => 'required|string|max:50',
+            'gst_number' => 'required|string|max:50',
+            'pan' => 'required|string|max:50',
             // Step 5: Document Upload (passed as files)
-            'gst_certificate'       => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'pan_card'              => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'gst_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'pan_card' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'business_registration' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'cancelled_cheque'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'fuel_license'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'pollution_compliance'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'cancelled_cheque' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'fuel_license' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'pollution_compliance' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             // Step 6: Product Interests
-            'product_ids'           => 'required|array',
-            'product_ids.*'         => 'uuid|exists:marketplace_products,id',
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'uuid|exists:marketplace_products,id',
         ]);
 
         $user = $request->user();
@@ -73,34 +73,34 @@ class VendorController extends Controller
             // Create Company
             $companyId = Str::uuid()->toString();
             DB::table('companies')->insert([
-                'id'         => $companyId,
-                'name'       => $validated['brand_name'] . ' Company',
-                'status'     => 'active',
+                'id' => $companyId,
+                'name' => $validated['brand_name'].' Company',
+                'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
             // Create Vendor
             $vendor = Vendor::create([
-                'company_id'            => $companyId,
-                'brand_name'            => $validated['brand_name'],
-                'legal_name'            => $validated['brand_name'] . ' Pvt Ltd',
-                'vendor_code'           => 'VND-' . strtoupper(Str::random(8)),
-                'gst_number'            => $validated['gst_number'],
-                'pan'                   => $validated['pan'],
-                'company_type'          => $validated['company_type'],
-                'contact_person'        => $validated['contact_person'],
-                'mobile'                => $validated['mobile'],
-                'email'                 => $validated['email'],
-                'registered_address'    => $validated['registered_address'],
-                'operational_address'   => $validated['operational_address'],
-                'city'                  => $validated['city'],
-                'state'                 => $validated['state'],
-                'pincode'               => $validated['pincode'],
-                'latitude'              => $validated['latitude'] ?? null,
-                'longitude'             => $validated['longitude'] ?? null,
-                'status'                => VendorStatus::Pending,
-                'verification_status'   => DocumentStatus::Pending,
+                'company_id' => $companyId,
+                'brand_name' => $validated['brand_name'],
+                'legal_name' => $validated['brand_name'].' Pvt Ltd',
+                'vendor_code' => 'VND-'.strtoupper(Str::random(8)),
+                'gst_number' => $validated['gst_number'],
+                'pan' => $validated['pan'],
+                'company_type' => $validated['company_type'],
+                'contact_person' => $validated['contact_person'],
+                'mobile' => $validated['mobile'],
+                'email' => $validated['email'],
+                'registered_address' => $validated['registered_address'],
+                'operational_address' => $validated['operational_address'],
+                'city' => $validated['city'],
+                'state' => $validated['state'],
+                'pincode' => $validated['pincode'],
+                'latitude' => $validated['latitude'] ?? null,
+                'longitude' => $validated['longitude'] ?? null,
+                'status' => VendorStatus::Pending,
+                'verification_status' => DocumentStatus::Pending,
             ]);
 
             // Link user to Vendor
@@ -115,10 +115,10 @@ class VendorController extends Controller
                 if ($request->hasFile($docType)) {
                     $path = $request->file($docType)->store("vendor-documents/{$vendor->id}", 'local');
                     VendorDocument::create([
-                        'vendor_id'     => $vendor->id,
+                        'vendor_id' => $vendor->id,
                         'document_type' => $docType,
-                        'file_path'     => $path,
-                        'status'        => DocumentStatus::Pending,
+                        'file_path' => $path,
+                        'status' => DocumentStatus::Pending,
                     ]);
                 }
             }
@@ -128,7 +128,7 @@ class VendorController extends Controller
                 'message' => 'Vendor Application Submitted successfully.',
                 'data' => [
                     'vendor_id' => $vendor->id,
-                    'status'    => $vendor->status->value,
+                    'status' => $vendor->status->value,
                 ],
             ], 201);
         });
@@ -157,7 +157,7 @@ class VendorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => new VendorResource($vendor),
+            'data' => new VendorResource($vendor),
         ]);
     }
 
@@ -185,7 +185,7 @@ class VendorController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Vendor profile updated successfully.',
-            'data'    => new VendorResource($vendor->fresh()),
+            'data' => new VendorResource($vendor->fresh()),
         ]);
     }
 
@@ -206,11 +206,11 @@ class VendorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => VendorResource::collection($vendors),
-            'meta'    => [
+            'data' => VendorResource::collection($vendors),
+            'meta' => [
                 'current_page' => $vendors->currentPage(),
-                'last_page'    => $vendors->lastPage(),
-                'total'        => $vendors->total(),
+                'last_page' => $vendors->lastPage(),
+                'total' => $vendors->total(),
             ],
         ]);
     }
@@ -224,7 +224,7 @@ class VendorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => new VendorResource($vendor->load('documents')),
+            'data' => new VendorResource($vendor->load('documents')),
         ]);
     }
 
@@ -237,7 +237,7 @@ class VendorController extends Controller
 
         return DB::transaction(function () use ($vendor) {
             $vendor->update([
-                'status'              => VendorStatus::Approved,
+                'status' => VendorStatus::Approved,
                 'verification_status' => DocumentStatus::Verified,
             ]);
 
@@ -256,7 +256,7 @@ class VendorController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Vendor '{$vendor->brand_name}' has been approved.",
-                'data'    => new VendorResource($vendor->fresh()),
+                'data' => new VendorResource($vendor->fresh()),
             ]);
         });
     }
@@ -273,7 +273,7 @@ class VendorController extends Controller
         ]);
 
         $vendor->update([
-            'status'         => VendorStatus::Rejected,
+            'status' => VendorStatus::Rejected,
             'internal_notes' => $request->reason,
         ]);
 
@@ -283,7 +283,7 @@ class VendorController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Vendor '{$vendor->brand_name}' has been rejected.",
-            'data'    => new VendorResource($vendor->fresh()),
+            'data' => new VendorResource($vendor->fresh()),
         ]);
     }
 
@@ -299,14 +299,14 @@ class VendorController extends Controller
         ]);
 
         $vendor->update([
-            'status'         => VendorStatus::Suspended,
+            'status' => VendorStatus::Suspended,
             'internal_notes' => $request->reason,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => "Vendor '{$vendor->brand_name}' has been suspended.",
-            'data'    => new VendorResource($vendor->fresh()),
+            'data' => new VendorResource($vendor->fresh()),
         ]);
     }
 
@@ -322,7 +322,7 @@ class VendorController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Vendor '{$vendor->brand_name}' has been reactivated.",
-            'data'    => new VendorResource($vendor->fresh()),
+            'data' => new VendorResource($vendor->fresh()),
         ]);
     }
 

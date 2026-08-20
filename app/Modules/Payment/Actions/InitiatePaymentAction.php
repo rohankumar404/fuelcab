@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Payment\Actions;
 
 use App\Exceptions\PaymentFailedException;
+use App\Modules\Order\Models\Order;
 use App\Modules\Payment\DTOs\InitiatePaymentDTO;
 use App\Modules\Payment\Events\PaymentInitiated;
 use App\Modules\Payment\Gateways\PaymentGatewayFactory;
 use App\Modules\Payment\Models\Payment;
-use App\Modules\Order\Models\Order;
 
 class InitiatePaymentAction
 {
@@ -32,18 +32,18 @@ class InitiatePaymentAction
 
         // Create a local payment record in pending state
         $payment = Payment::create([
-            'order_id'        => $orderId,
+            'order_id' => $orderId,
             'payment_gateway' => $gatewayName,
-            'amount'          => $amount,
-            'currency'        => $currency ?? 'INR',
-            'status'          => 'pending',
+            'amount' => $amount,
+            'currency' => $currency ?? 'INR',
+            'status' => 'pending',
         ]);
 
         try {
             $gateway = $this->gatewayFactory->make($gatewayName);
             $gatewayData = $gateway->initiate([
                 'order_id' => $orderId,
-                'amount'   => $amount,
+                'amount' => $amount,
             ]);
 
             // Save the gateway order ID to our local payment record
@@ -54,20 +54,20 @@ class InitiatePaymentAction
             event(new PaymentInitiated($payment));
 
             return InitiatePaymentDTO::fromArray([
-                'payment_id'       => $payment->id,
+                'payment_id' => $payment->id,
                 'gateway_order_id' => $gatewayData['id'],
-                'amount'           => $amount,
-                'currency'         => $currency ?? 'INR',
-                'gateway'          => $gatewayName,
+                'amount' => $amount,
+                'currency' => $currency ?? 'INR',
+                'gateway' => $gatewayName,
             ]);
 
         } catch (\Throwable $e) {
             $payment->update([
-                'status'        => 'failed',
+                'status' => 'failed',
                 'error_message' => $e->getMessage(),
             ]);
 
-            throw new PaymentFailedException('Payment initiation failed: ' . $e->getMessage());
+            throw new PaymentFailedException('Payment initiation failed: '.$e->getMessage());
         }
     }
 }

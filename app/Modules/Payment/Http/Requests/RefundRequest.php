@@ -18,8 +18,8 @@ class RefundRequest extends ApiRequest
     {
         return [
             'payment_id' => ['required', 'uuid', 'exists:payments,id'],
-            'amount'     => ['required', 'numeric', 'gt:0'],
-            'reason'     => ['nullable', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'reason' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -27,8 +27,8 @@ class RefundRequest extends ApiRequest
     {
         return [
             'payment_id.exists' => 'The associated payment transaction was not found.',
-            'amount.gt'         => 'The refund amount must be greater than zero.',
-            'reason.max'        => 'Refund reason cannot exceed 255 characters.',
+            'amount.gt' => 'The refund amount must be greater than zero.',
+            'reason.max' => 'Refund reason cannot exceed 255 characters.',
         ];
     }
 }

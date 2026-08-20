@@ -5,25 +5,25 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\ListingStatus;
-use App\Enums\SalesChannel;
 use App\Enums\UnitOfMeasure;
 use App\Enums\UserRole;
 use App\Models\Category;
-use App\Models\User;
 use App\Models\Coupon;
-use App\Modules\Cart\Models\Cart;
-use App\Modules\Cart\Models\CartItem;
+use App\Models\User;
 use App\Modules\Cart\Actions\AddItemToCartAction;
 use App\Modules\Cart\DTOs\AddCartItemDTO;
-use App\Modules\Cart\Services\CartService;
+use App\Modules\Cart\Models\Cart;
+use App\Modules\Cart\Models\CartItem;
 use App\Modules\Fuel\Models\MarketplaceProduct;
 use App\Modules\Fuel\Models\Product;
 use App\Modules\Vendor\Enums\VendorStatus;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorListing;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -32,25 +32,33 @@ class CartModuleTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private Vendor $directVendor;
+
     private Vendor $vendorA;
+
     private Product $diesel;
+
     private Product $biomass;
+
     private MarketplaceProduct $marketplaceProduct;
+
     private VendorListing $listing;
+
     private Category $category;
+
     private Cart $cart;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         // Customer
         $this->customer = User::create([
-            'name'      => 'Cart Test Customer',
-            'email'     => 'cart-test@fuelcab.com',
-            'password'  => bcrypt('password'),
+            'name' => 'Cart Test Customer',
+            'email' => 'cart-test@fuelcab.com',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::Customer,
         ]);
         $this->customer->assignRole(UserRole::Customer->value);
@@ -58,85 +66,85 @@ class CartModuleTest extends TestCase
         $this->category = Category::create(['name' => 'Fuels', 'slug' => 'fuels-cart-test']);
 
         // Direct Vendor (first-party)
-        $companyDirect = \Illuminate\Support\Facades\DB::table('companies')->insertGetId([
-            'id'         => $directId = \Illuminate\Support\Str::uuid()->toString(),
-            'name'       => 'FuelCab Direct Depot',
-            'status'     => 'active',
+        $companyDirect = DB::table('companies')->insertGetId([
+            'id' => $directId = Str::uuid()->toString(),
+            'name' => 'FuelCab Direct Depot',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $this->directVendor = Vendor::create([
-            'company_id'            => $directId,
-            'brand_name'            => 'FuelCab Direct',
-            'status'                => VendorStatus::Approved,
-            'is_first_party'        => true,
+            'company_id' => $directId,
+            'brand_name' => 'FuelCab Direct',
+            'status' => VendorStatus::Approved,
+            'is_first_party' => true,
             'service_radius_meters' => 50000,
         ]);
 
         // Marketplace Vendor A
-        $companyA = \Illuminate\Support\Facades\DB::table('companies')->insertGetId([
-            'id'         => $vendorAId = \Illuminate\Support\Str::uuid()->toString(),
-            'name'       => 'Vendor A Corp',
-            'status'     => 'active',
+        $companyA = DB::table('companies')->insertGetId([
+            'id' => $vendorAId = Str::uuid()->toString(),
+            'name' => 'Vendor A Corp',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $this->vendorA = Vendor::create([
-            'company_id'            => $vendorAId,
-            'brand_name'            => 'Vendor A Fuels',
-            'status'                => VendorStatus::Approved,
-            'is_first_party'        => false,
+            'company_id' => $vendorAId,
+            'brand_name' => 'Vendor A Fuels',
+            'status' => VendorStatus::Approved,
+            'is_first_party' => false,
             'service_radius_meters' => 50000,
         ]);
 
         // Products
         $this->diesel = Product::create([
-            'category_id'        => $this->category->id,
-            'vendor_id'          => $this->directVendor->id,
-            'name'               => 'High Speed Diesel',
-            'slug'               => 'high-speed-diesel',
-            'sku'                => 'HSD-001',
-            'price_per_unit'     => 90.00,
-            'unit_of_measure'    => UnitOfMeasure::Litres,
-            'is_active'          => true,
-            'ordering_enabled'   => true,
+            'category_id' => $this->category->id,
+            'vendor_id' => $this->directVendor->id,
+            'name' => 'High Speed Diesel',
+            'slug' => 'high-speed-diesel',
+            'sku' => 'HSD-001',
+            'price_per_unit' => 90.00,
+            'unit_of_measure' => UnitOfMeasure::Litres,
+            'is_active' => true,
+            'ordering_enabled' => true,
             'min_order_quantity' => 100.0,
         ]);
 
         $this->biomass = Product::create([
-            'category_id'        => $this->category->id,
-            'vendor_id'          => $this->vendorA->id,
-            'name'               => 'Biomass Briquettes',
-            'slug'               => 'biomass-briquettes-ct',
-            'sku'                => 'BIO-001',
-            'price_per_unit'     => 12000.00,
-            'unit_of_measure'    => UnitOfMeasure::MetricTonnes,
-            'is_active'          => true,
-            'ordering_enabled'   => true,
+            'category_id' => $this->category->id,
+            'vendor_id' => $this->vendorA->id,
+            'name' => 'Biomass Briquettes',
+            'slug' => 'biomass-briquettes-ct',
+            'sku' => 'BIO-001',
+            'price_per_unit' => 12000.00,
+            'unit_of_measure' => UnitOfMeasure::MetricTonnes,
+            'is_active' => true,
+            'ordering_enabled' => true,
             'min_order_quantity' => 1.0,
         ]);
 
         // Marketplace Product & Listing
         $this->marketplaceProduct = MarketplaceProduct::create([
             'category_id' => $this->category->id,
-            'name'        => 'Rice Husk',
-            'slug'        => 'rice-husk-ct',
-            'unit'        => UnitOfMeasure::MetricTonnes,
-            'is_active'   => true,
+            'name' => 'Rice Husk',
+            'slug' => 'rice-husk-ct',
+            'unit' => UnitOfMeasure::MetricTonnes,
+            'is_active' => true,
         ]);
 
         $this->listing = VendorListing::create([
-            'vendor_id'              => $this->vendorA->id,
+            'vendor_id' => $this->vendorA->id,
             'marketplace_product_id' => $this->marketplaceProduct->id,
-            'listing_title'          => 'Rice Husk Premium',
-            'slug'                   => 'rice-husk-premium-ct',
-            'unit'                   => UnitOfMeasure::MetricTonnes,
-            'base_price'             => 3500.00,
-            'available_quantity'     => 100,
-            'min_order_quantity'     => 5,
-            'max_order_quantity'     => 50,
-            'approval_status'        => ListingStatus::Approved,
-            'is_active'              => true,
+            'listing_title' => 'Rice Husk Premium',
+            'slug' => 'rice-husk-premium-ct',
+            'unit' => UnitOfMeasure::MetricTonnes,
+            'base_price' => 3500.00,
+            'available_quantity' => 100,
+            'min_order_quantity' => 5,
+            'max_order_quantity' => 50,
+            'approval_status' => ListingStatus::Approved,
+            'is_active' => true,
         ]);
 
         $this->cart = Cart::create(['user_id' => $this->customer->id]);
@@ -342,13 +350,13 @@ class CartModuleTest extends TestCase
 
         $response = $this->getJson('/api/v1/cart');
         $response->assertOk()
-                 ->assertJsonStructure([
-                     'success',
-                     'data' => [
-                         'id', 'items', 'seller_groups',
-                         'item_count', 'total', 'has_multiple_sellers', 'is_empty',
-                     ],
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id', 'items', 'seller_groups',
+                    'item_count', 'total', 'has_multiple_sellers', 'is_empty',
+                ],
+            ]);
     }
 
     /** @test */
@@ -358,13 +366,13 @@ class CartModuleTest extends TestCase
 
         $response = $this->postJson('/api/v1/cart/items', [
             'product_id' => $this->diesel->id,
-            'quantity'   => 500,
+            'quantity' => 500,
         ]);
 
         $response->assertStatus(201)
-                 ->assertJson(['success' => true])
-                 ->assertJsonPath('data.item_count', 1)
-                 ->assertJsonPath('data.total', 53250);
+            ->assertJson(['success' => true])
+            ->assertJsonPath('data.item_count', 1)
+            ->assertJsonPath('data.total', 53250);
     }
 
     /** @test */
@@ -374,12 +382,12 @@ class CartModuleTest extends TestCase
 
         $response = $this->postJson('/api/v1/cart/items', [
             'vendor_listing_id' => $this->listing->id,
-            'quantity'          => 10,
+            'quantity' => 10,
         ]);
 
         $response->assertStatus(201)
-                 ->assertJson(['success' => true])
-                 ->assertJsonPath('data.seller_groups.0.sales_channel', 'marketplace');
+            ->assertJson(['success' => true])
+            ->assertJsonPath('data.seller_groups.0.sales_channel', 'marketplace');
     }
 
     /** @test */
@@ -389,12 +397,12 @@ class CartModuleTest extends TestCase
 
         $response = $this->postJson('/api/v1/cart/items', [
             'product_id' => $this->diesel->id,
-            'quantity'   => 10, // below 100L MOQ
+            'quantity' => 10, // below 100L MOQ
         ]);
 
         $response->assertStatus(422)
-                 ->assertJson(['success' => false])
-                 ->assertJsonFragment(['message' => 'Minimum order quantity for \'High Speed Diesel\' is 100 litres.']);
+            ->assertJson(['success' => false])
+            ->assertJsonFragment(['message' => 'Minimum order quantity for \'High Speed Diesel\' is 100 litres.']);
     }
 
     /** @test */
@@ -403,13 +411,13 @@ class CartModuleTest extends TestCase
         Sanctum::actingAs($this->customer);
 
         $item = CartItem::create([
-            'cart_id'               => $this->cart->id,
-            'product_id'            => $this->diesel->id,
-            'quantity'              => 200.0,
-            'price_snapshot'        => 90.00,
-            'unit_of_measure'       => 'litres',
-            'sales_channel'         => 'direct',
-            'vendor_id'             => $this->directVendor->id,
+            'cart_id' => $this->cart->id,
+            'product_id' => $this->diesel->id,
+            'quantity' => 200.0,
+            'price_snapshot' => 90.00,
+            'unit_of_measure' => 'litres',
+            'sales_channel' => 'direct',
+            'vendor_id' => $this->directVendor->id,
             'product_name_snapshot' => 'High Speed Diesel',
         ]);
 
@@ -423,13 +431,13 @@ class CartModuleTest extends TestCase
         Sanctum::actingAs($this->customer);
 
         $item = CartItem::create([
-            'cart_id'               => $this->cart->id,
-            'product_id'            => $this->diesel->id,
-            'quantity'              => 200.0,
-            'price_snapshot'        => 90.00,
-            'unit_of_measure'       => 'litres',
-            'sales_channel'         => 'direct',
-            'vendor_id'             => $this->directVendor->id,
+            'cart_id' => $this->cart->id,
+            'product_id' => $this->diesel->id,
+            'quantity' => 200.0,
+            'price_snapshot' => 90.00,
+            'unit_of_measure' => 'litres',
+            'sales_channel' => 'direct',
+            'vendor_id' => $this->directVendor->id,
             'product_name_snapshot' => 'High Speed Diesel',
         ]);
 
@@ -445,13 +453,13 @@ class CartModuleTest extends TestCase
         Sanctum::actingAs($this->customer);
 
         CartItem::create([
-            'cart_id'               => $this->cart->id,
-            'product_id'            => $this->diesel->id,
-            'quantity'              => 200.0,
-            'price_snapshot'        => 90.00,
-            'unit_of_measure'       => 'litres',
-            'sales_channel'         => 'direct',
-            'vendor_id'             => $this->directVendor->id,
+            'cart_id' => $this->cart->id,
+            'product_id' => $this->diesel->id,
+            'quantity' => 200.0,
+            'price_snapshot' => 90.00,
+            'unit_of_measure' => 'litres',
+            'sales_channel' => 'direct',
+            'vendor_id' => $this->directVendor->id,
             'product_name_snapshot' => 'High Speed Diesel',
         ]);
 
@@ -549,10 +557,10 @@ class CartModuleTest extends TestCase
     {
         // Simulate two concurrent adds of the same direct product
         // Uses DB transaction isolation to prevent duplicate rows
-        $cartId    = $this->cart->id;
+        $cartId = $this->cart->id;
         $productId = $this->diesel->id;
 
-        DB::transaction(function () use ($cartId, $productId) {
+        DB::transaction(function () use ($productId) {
             app(AddItemToCartAction::class)->execute(
                 $this->cart,
                 new AddCartItemDTO($productId, 200.0)
@@ -581,13 +589,13 @@ class CartModuleTest extends TestCase
     public function test_concurrent_quantity_update_does_not_corrupt(): void
     {
         $item = CartItem::create([
-            'cart_id'               => $this->cart->id,
-            'product_id'            => $this->diesel->id,
-            'quantity'              => 200.0,
-            'price_snapshot'        => 90.00,
-            'unit_of_measure'       => 'litres',
-            'sales_channel'         => 'direct',
-            'vendor_id'             => $this->directVendor->id,
+            'cart_id' => $this->cart->id,
+            'product_id' => $this->diesel->id,
+            'quantity' => 200.0,
+            'price_snapshot' => 90.00,
+            'unit_of_measure' => 'litres',
+            'sales_channel' => 'direct',
+            'vendor_id' => $this->directVendor->id,
             'product_name_snapshot' => 'High Speed Diesel',
         ]);
 
@@ -634,10 +642,10 @@ class CartModuleTest extends TestCase
 
         // GET cart via guest endpoint with X-Guest-Token header (no auth required)
         $response = $this->withHeaders(['X-Guest-Token' => $guestToken])
-                         ->getJson('/api/v1/cart/guest');
+            ->getJson('/api/v1/cart/guest');
 
         $response->assertOk()
-                 ->assertJsonPath('data.is_empty', true);
+            ->assertJsonPath('data.is_empty', true);
     }
 
     /** @test */
@@ -647,10 +655,10 @@ class CartModuleTest extends TestCase
 
         // Add item via guest endpoint (no auth)
         $this->withHeaders(['X-Guest-Token' => $guestToken])
-             ->postJson('/api/v1/cart/guest/items', [
-                 'product_id' => $this->diesel->id,
-                 'quantity'   => 200,
-             ]);
+            ->postJson('/api/v1/cart/guest/items', [
+                'product_id' => $this->diesel->id,
+                'quantity' => 200,
+            ]);
 
         // Login and merge guest cart into user cart
         Sanctum::actingAs($this->customer);
@@ -660,7 +668,7 @@ class CartModuleTest extends TestCase
         ]);
 
         $response->assertOk()
-                 ->assertJson(['success' => true]);
+            ->assertJson(['success' => true]);
     }
 
     /** @test */
@@ -670,17 +678,17 @@ class CartModuleTest extends TestCase
 
         // Create coupon
         $coupon = Coupon::create([
-            'code'            => 'DISCOUNT20',
-            'discount_type'   => 'percentage',
-            'discount_value'  => 20.00,
+            'code' => 'DISCOUNT20',
+            'discount_type' => 'percentage',
+            'discount_value' => 20.00,
             'min_cart_amount' => 5000.00,
-            'is_active'       => true,
+            'is_active' => true,
         ]);
 
         // Add item to cart
         $this->postJson('/api/v1/cart/items', [
             'product_id' => $this->diesel->id,
-            'quantity'   => 100, // 100 * 90 = 9000 subtotal
+            'quantity' => 100, // 100 * 90 = 9000 subtotal
         ])->assertStatus(201);
 
         // Apply coupon
@@ -688,14 +696,14 @@ class CartModuleTest extends TestCase
             'code' => 'DISCOUNT20',
         ]);
         $response->assertOk()
-                 ->assertJsonPath('data.applied_coupon_code', 'DISCOUNT20')
-                 ->assertJsonPath('data.coupon_discount', 1800); // 20% of 9000
+            ->assertJsonPath('data.applied_coupon_code', 'DISCOUNT20')
+            ->assertJsonPath('data.coupon_discount', 1800); // 20% of 9000
 
         // Remove coupon
         $this->deleteJson('/api/v1/cart/coupon')
-             ->assertOk()
-             ->assertJsonPath('data.applied_coupon_code', null)
-             ->assertJsonPath('data.coupon_discount', 0);
+            ->assertOk()
+            ->assertJsonPath('data.applied_coupon_code', null)
+            ->assertJsonPath('data.coupon_discount', 0);
     }
 
     /** @test */
@@ -704,23 +712,23 @@ class CartModuleTest extends TestCase
         Sanctum::actingAs($this->customer);
 
         Coupon::create([
-            'code'            => 'HIGHVALUE',
-            'discount_type'   => 'fixed',
-            'discount_value'  => 1000.00,
+            'code' => 'HIGHVALUE',
+            'discount_type' => 'fixed',
+            'discount_value' => 1000.00,
             'min_cart_amount' => 50000.00,
-            'is_active'       => true,
+            'is_active' => true,
         ]);
 
         $this->postJson('/api/v1/cart/items', [
             'product_id' => $this->diesel->id,
-            'quantity'   => 100, // 9000 subtotal
+            'quantity' => 100, // 9000 subtotal
         ])->assertStatus(201);
 
         $response = $this->postJson('/api/v1/cart/coupon', [
             'code' => 'HIGHVALUE',
         ]);
         $response->assertStatus(422)
-                 ->assertJsonFragment(['message' => 'Minimum order value of ₹50000 required to apply this coupon.']);
+            ->assertJsonFragment(['message' => 'Minimum order value of ₹50000 required to apply this coupon.']);
     }
 
     /** @test */
@@ -730,17 +738,17 @@ class CartModuleTest extends TestCase
 
         // Create coupon
         Coupon::create([
-            'code'            => 'FLAT500',
-            'discount_type'   => 'fixed',
-            'discount_value'  => 500.00,
+            'code' => 'FLAT500',
+            'discount_type' => 'fixed',
+            'discount_value' => 500.00,
             'min_cart_amount' => 1000.00,
-            'is_active'       => true,
+            'is_active' => true,
         ]);
 
         // Add 100L Diesel (100 * 90 = 9000 subtotal, 1620 tax direct)
         $this->postJson('/api/v1/cart/items', [
             'product_id' => $this->diesel->id,
-            'quantity'   => 100,
+            'quantity' => 100,
         ])->assertStatus(201);
 
         // Apply coupon
@@ -750,19 +758,19 @@ class CartModuleTest extends TestCase
 
         $response = $this->getJson('/api/v1/cart');
         $response->assertOk()
-                 ->assertJsonStructure([
-                     'data' => [
-                         'subtotal',
-                         'coupon_discount',
-                         'delivery_charges',
-                         'tax_amount',
-                         'grand_total',
-                     ]
-                 ])
-                 ->assertJsonPath('data.subtotal', 9000)
-                 ->assertJsonPath('data.coupon_discount', 500)
-                 ->assertJsonPath('data.delivery_charges', 150) // Direct product delivery fee
-                 ->assertJsonPath('data.tax_amount', 1620) // 18% of 9000 = 1620
-                 ->assertJsonPath('data.grand_total', 10270); // 9000 + 150 + 1620 - 500 = 10270
+            ->assertJsonStructure([
+                'data' => [
+                    'subtotal',
+                    'coupon_discount',
+                    'delivery_charges',
+                    'tax_amount',
+                    'grand_total',
+                ],
+            ])
+            ->assertJsonPath('data.subtotal', 9000)
+            ->assertJsonPath('data.coupon_discount', 500)
+            ->assertJsonPath('data.delivery_charges', 150) // Direct product delivery fee
+            ->assertJsonPath('data.tax_amount', 1620) // 18% of 9000 = 1620
+            ->assertJsonPath('data.grand_total', 10270); // 9000 + 150 + 1620 - 500 = 10270
     }
 }

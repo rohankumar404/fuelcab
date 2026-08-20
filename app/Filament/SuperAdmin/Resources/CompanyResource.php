@@ -15,10 +15,15 @@ use Filament\Tables\Table;
 class CompanyResource extends Resource
 {
     protected static ?string $model = Company::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+
     protected static ?string $navigationGroup = 'CUSTOMERS';
+
     protected static ?string $navigationLabel = 'Companies';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
@@ -45,19 +50,19 @@ class CompanyResource extends Resource
                 Tables\Columns\TextColumn::make('tax_number')->label('Tax No.')->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'active' => 'success',
-            'inactive' => 'warning',
-            'suspended' => 'danger',
-            default => 'gray',
-        }),
+                        'active' => 'success',
+                        'inactive' => 'warning',
+                        'suspended' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('vendors_count')->label('Vendors')
                     ->counts('vendors')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
+                        ])
             ->actions([Tables\Actions\EditAction::make(), Tables\Actions\DeleteAction::make()])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
@@ -70,9 +75,9 @@ class CompanyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCompanies::route('/'),
+            'index' => Pages\ListCompanies::route('/'),
             'create' => Pages\CreateCompany::route('/create'),
-            'edit'   => Pages\EditCompany::route('/{record}/edit'),
+            'edit' => Pages\EditCompany::route('/{record}/edit'),
         ];
     }
 }

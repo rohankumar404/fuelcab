@@ -13,7 +13,7 @@ class NotifyCustomerOfDriverAssignment implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'notifications';
+    public $queue = 'notifications';
 
     public function handle(OrderAssigned $event): void
     {

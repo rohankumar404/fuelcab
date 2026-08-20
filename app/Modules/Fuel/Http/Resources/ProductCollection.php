@@ -16,10 +16,10 @@ class ProductCollection extends ResourceCollection
         return [
             'data' => $this->collection,
             'meta' => [
-                'total'        => $this->total(),
-                'per_page'     => $this->perPage(),
+                'total' => $this->total(),
+                'per_page' => $this->perPage(),
                 'current_page' => $this->currentPage(),
-                'last_page'    => $this->lastPage(),
+                'last_page' => $this->lastPage(),
             ],
         ];
     }

@@ -24,11 +24,11 @@ class UpdateTrackingLocationAction
             }
 
             return OrderTracking::create([
-                'order_id'    => $order->id,
-                'driver_id'   => $driverId,
-                'latitude'    => $latitude,
-                'longitude'   => $longitude,
-                'status'      => $order->status->value,
+                'order_id' => $order->id,
+                'driver_id' => $driverId,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'status' => $order->status->value,
                 'recorded_at' => now(),
             ]);
         });

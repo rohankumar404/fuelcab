@@ -7,6 +7,7 @@ namespace App\Filament\Vendor\Resources;
 use App\Filament\Vendor\Resources\SettlementResource\Pages;
 use App\Models\Settlement;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,17 +63,17 @@ class SettlementResource extends Resource
                     ->label('Net Settlement (₹)')
                     ->money('INR')
                     ->color('success')
-                    ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                    ->weight(FontWeight::Bold)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'pending' => 'warning',
-            'processed' => 'success',
-            'failed' => 'danger',
-            default => 'gray',
-        })
+                        'pending' => 'warning',
+                        'processed' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state)),
 
                 Tables\Columns\TextColumn::make('payout_reference')
@@ -81,13 +82,13 @@ class SettlementResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending'   => 'Pending',
-                        'processed' => 'Processed',
-                        'failed'    => 'Failed',
-                    ]),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options([
+                                    'pending' => 'Pending',
+                                    'processed' => 'Processed',
+                                    'failed' => 'Failed',
+                                ]),
+                        ])
             ->actions([])
             ->bulkActions([])
             ->defaultSort('created_at', 'desc');

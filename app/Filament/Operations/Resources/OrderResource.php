@@ -9,9 +9,11 @@ use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class OrderResource extends Resource
 {
@@ -115,24 +117,24 @@ class OrderResource extends Resource
                             ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
                             ->required(),
                     ])
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+                    ->action(function (Collection $records, array $data): void {
                         foreach ($records as $record) {
                             $record->update(['status' => $data['status']]);
                         }
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Orders status updated successfully.')
                             ->success()
                             ->send();
-                    })
+                    }),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListOrders::route('/'),
+            'index' => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
-            'edit'   => Pages\EditOrder::route('/{record}/edit'),
+            'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 }

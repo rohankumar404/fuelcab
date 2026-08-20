@@ -18,7 +18,7 @@ class RequestSignature
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $secret    = config('fuelcab.payment.webhook.secret');
+        $secret = config('fuelcab.payment.webhook.secret');
         $tolerance = (int) config('fuelcab.payment.webhook.tolerance', 300);
         $signature = $request->header('X-Signature');
 
@@ -26,8 +26,8 @@ class RequestSignature
             throw new UnauthorizedException('Missing webhook signature.');
         }
 
-        $payload  = $request->getContent();
-        $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret);
+        $payload = $request->getContent();
+        $expected = 'sha256='.hash_hmac('sha256', $payload, $secret);
 
         if (! hash_equals($expected, $signature)) {
             throw new UnauthorizedException('Invalid webhook signature.');

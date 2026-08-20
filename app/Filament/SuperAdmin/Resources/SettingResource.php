@@ -3,21 +3,25 @@
 namespace App\Filament\SuperAdmin\Resources;
 
 use App\Filament\SuperAdmin\Resources\SettingResource\Pages;
-use App\Models\Setting;
 use App\Models\Company;
+use App\Models\Setting;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 
 class SettingResource extends Resource
 {
     protected static ?string $model = Setting::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+
     protected static ?string $navigationGroup = 'SYSTEM';
+
     protected static ?string $navigationLabel = 'Settings';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -37,7 +41,7 @@ class SettingResource extends Resource
                         Forms\Components\TextInput::make('key')
                             ->required()
                             ->maxLength(100)
-                            ->unique(ignoreRecord: true, modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, Forms\Get $get) {
+                            ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule, Forms\Get $get) {
                                 return $rule->where('company_id', $get('company_id'));
                             })
                             ->helperText('Unique settings key (e.g. tax_rate, commission_rate).'),
@@ -45,11 +49,11 @@ class SettingResource extends Resource
                         Forms\Components\Select::make('cast_type')
                             ->label('Data Type')
                             ->options([
-                                'string'  => 'String',
+                                'string' => 'String',
                                 'integer' => 'Integer',
-                                'float'   => 'Float',
+                                'float' => 'Float',
                                 'boolean' => 'Boolean',
-                                'json'    => 'JSON / Array',
+                                'json' => 'JSON / Array',
                             ])
                             ->default('string')
                             ->required()
@@ -59,9 +63,9 @@ class SettingResource extends Resource
                             ->nullable()
                             ->helperText(fn (Forms\Get $get) => match ($get('cast_type')) {
                                 'boolean' => 'Enter "true", "false", "1", or "0".',
-                                'json'    => 'Enter a valid JSON string.',
+                                'json' => 'Enter a valid JSON string.',
                                 'integer', 'float' => 'Enter a numeric value.',
-                                default   => 'Enter string value.',
+                                default => 'Enter string value.',
                             })
                             ->columnSpanFull()
                             ->rows(4),
@@ -92,8 +96,8 @@ class SettingResource extends Resource
                     ->color(fn (string $state): string => match ($state) {
                         'integer', 'float' => 'warning',
                         'boolean' => 'success',
-                        'json'    => 'danger',
-                        default   => 'gray',
+                        'json' => 'danger',
+                        default => 'gray',
                     }),
 
                 Tables\Columns\TextColumn::make('created_at')

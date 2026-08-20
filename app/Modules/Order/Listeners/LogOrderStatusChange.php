@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Listeners;
 
-use App\Modules\Order\Models\OrderStatusLog;
 use App\Modules\Order\Enums\OrderStatus;
-use App\Modules\Order\Events\OrderCreated;
 use App\Modules\Order\Events\OrderAccepted;
 use App\Modules\Order\Events\OrderAssigned;
-use App\Modules\Order\Events\OrderDispatched;
-use App\Modules\Order\Events\OrderCompleted;
 use App\Modules\Order\Events\OrderCancelled;
+use App\Modules\Order\Events\OrderCompleted;
+use App\Modules\Order\Events\OrderCreated;
+use App\Modules\Order\Events\OrderDispatched;
+use App\Modules\Order\Models\OrderStatusLog;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Auth;
@@ -46,11 +46,11 @@ class LogOrderStatusChange implements ShouldQueue
         }
 
         OrderStatusLog::create([
-            'order_id'    => $order->id,
+            'order_id' => $order->id,
             'from_status' => $fromStatus,
-            'to_status'   => $toStatus,
-            'reason'      => $reason,
-            'changed_by'  => $changedBy,
+            'to_status' => $toStatus,
+            'reason' => $reason,
+            'changed_by' => $changedBy,
         ]);
     }
 }

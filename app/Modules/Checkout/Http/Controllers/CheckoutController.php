@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Modules\Checkout\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Checkout\Http\Requests\CheckoutInitializeRequest;
 use App\Modules\Checkout\Http\Requests\CheckoutAddressRequest;
-use App\Modules\Checkout\Http\Requests\CheckoutScheduleRequest;
+use App\Modules\Checkout\Http\Requests\CheckoutInitializeRequest;
 use App\Modules\Checkout\Http\Requests\CheckoutPaymentRequest;
+use App\Modules\Checkout\Http\Requests\CheckoutScheduleRequest;
 use App\Modules\Checkout\Http\Resources\CheckoutResource;
-use App\Modules\Order\Http\Resources\OrderResource;
 use App\Modules\Checkout\Services\CheckoutService;
+use App\Modules\Order\Http\Resources\OrderResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -35,7 +35,7 @@ class CheckoutController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Checkout initialized successfully.',
-                'data'    => new CheckoutResource($checkout),
+                'data' => new CheckoutResource($checkout),
             ]);
         } catch (\DomainException $e) {
             return response()->json([
@@ -60,7 +60,7 @@ class CheckoutController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Delivery address selected and coverage verified.',
-                'data'    => new CheckoutResource($checkout),
+                'data' => new CheckoutResource($checkout),
             ]);
         } catch (\DomainException $e) {
             return response()->json([
@@ -85,7 +85,7 @@ class CheckoutController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Delivery slot scheduled.',
-                'data'    => new CheckoutResource($checkout),
+                'data' => new CheckoutResource($checkout),
             ]);
         } catch (\DomainException $e) {
             return response()->json([
@@ -108,7 +108,7 @@ class CheckoutController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => new CheckoutResource($checkout),
+                'data' => new CheckoutResource($checkout),
             ]);
         } catch (\DomainException $e) {
             return response()->json([
@@ -135,11 +135,11 @@ class CheckoutController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Payment processed and order placed successfully.',
-                'data'    => [
+                'data' => [
                     'payment_id' => $result->payment->id,
-                    'orders'     => OrderResource::collection($result->orders),
-                    'id'         => $result->primaryOrder()->id,
-                    'status'     => $result->primaryOrder()->status->value,
+                    'orders' => OrderResource::collection($result->orders),
+                    'id' => $result->primaryOrder()->id,
+                    'status' => $result->primaryOrder()->status->value,
                 ],
             ]);
         } catch (\DomainException $e) {

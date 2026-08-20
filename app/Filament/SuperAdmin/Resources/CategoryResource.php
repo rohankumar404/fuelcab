@@ -11,14 +11,20 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+
     protected static ?string $navigationGroup = 'MARKETPLACE';
+
     protected static ?string $navigationLabel = 'Marketplace Categories';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
@@ -30,8 +36,7 @@ class CategoryResource extends Resource
                         ->required()
                         ->maxLength(100)
                         ->live(onBlur: true)
-                        ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => 
-                            $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null
+                        ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null
                         ),
                     Forms\Components\TextInput::make('slug')
                         ->required()
@@ -40,7 +45,7 @@ class CategoryResource extends Resource
                     Forms\Components\Textarea::make('description')
                         ->columnSpanFull()
                         ->nullable(),
-                ])->columns(2)
+                ])->columns(2),
         ]);
     }
 

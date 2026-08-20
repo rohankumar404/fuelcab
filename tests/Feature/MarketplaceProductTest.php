@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\UnitOfMeasure;
 use App\Models\Category;
 use App\Modules\Fuel\Models\MarketplaceProduct;
-use App\Enums\UnitOfMeasure;
+use Database\Seeders\MarketplaceProductSeeder;
+use Database\Seeders\ProductSeeder;
+use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class MarketplaceProductTest extends TestCase
@@ -18,7 +21,7 @@ class MarketplaceProductTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
     }
 
     /**
@@ -27,22 +30,22 @@ class MarketplaceProductTest extends TestCase
     public function test_categories_extended_columns(): void
     {
         $category = Category::create([
-            'name'            => 'Solid Fuels',
-            'slug'            => 'solid-fuels',
-            'image_path'      => 'https://images.fuelcab.com/categories/solid.jpg',
-            'display_order'   => 10,
-            'is_active'       => true,
-            'seo_title'       => 'Industrial Solid Fuels - FuelCab',
+            'name' => 'Solid Fuels',
+            'slug' => 'solid-fuels',
+            'image_path' => 'https://images.fuelcab.com/categories/solid.jpg',
+            'display_order' => 10,
+            'is_active' => true,
+            'seo_title' => 'Industrial Solid Fuels - FuelCab',
             'seo_description' => 'Best industrial solid fuels.',
         ]);
 
         $this->assertDatabaseHas('categories', [
-            'id'              => $category->id,
-            'name'            => 'Solid Fuels',
-            'image_path'      => 'https://images.fuelcab.com/categories/solid.jpg',
-            'display_order'   => 10,
-            'is_active'       => true,
-            'seo_title'       => 'Industrial Solid Fuels - FuelCab',
+            'id' => $category->id,
+            'name' => 'Solid Fuels',
+            'image_path' => 'https://images.fuelcab.com/categories/solid.jpg',
+            'display_order' => 10,
+            'is_active' => true,
+            'seo_title' => 'Industrial Solid Fuels - FuelCab',
         ]);
     }
 
@@ -58,29 +61,29 @@ class MarketplaceProductTest extends TestCase
 
         $specs = [
             'calorific_value_kcal_kg' => 'Min 3800 - 4500',
-            'ash_content_percentage'  => 'Max 8%',
+            'ash_content_percentage' => 'Max 8%',
         ];
 
         $product = MarketplaceProduct::create([
-            'category_id'           => $category->id,
-            'name'                  => 'Biomass Briquettes Grade A',
-            'slug'                  => 'biomass-briquettes-grade-a',
-            'description'           => 'Premium approved Biomass Briquettes.',
-            'unit_of_measure'       => UnitOfMeasure::MetricTonnes,
+            'category_id' => $category->id,
+            'name' => 'Biomass Briquettes Grade A',
+            'slug' => 'biomass-briquettes-grade-a',
+            'description' => 'Premium approved Biomass Briquettes.',
+            'unit_of_measure' => UnitOfMeasure::MetricTonnes,
             'specifications_schema' => $specs,
-            'is_active'             => true,
-            'is_coming_soon'        => false,
-            'ordering_enabled'      => true,
-            'display_order'         => 1,
-            'seo_title'             => 'Biomass Briquettes Grade A Master - FuelCab',
-            'seo_description'       => 'Approved grade A briquettes specifications.',
+            'is_active' => true,
+            'is_coming_soon' => false,
+            'ordering_enabled' => true,
+            'display_order' => 1,
+            'seo_title' => 'Biomass Briquettes Grade A Master - FuelCab',
+            'seo_description' => 'Approved grade A briquettes specifications.',
         ]);
 
         $this->assertDatabaseHas('marketplace_products', [
-            'id'         => $product->id,
-            'name'       => 'Biomass Briquettes Grade A',
-            'slug'       => 'biomass-briquettes-grade-a',
-            'is_active'  => true,
+            'id' => $product->id,
+            'name' => 'Biomass Briquettes Grade A',
+            'slug' => 'biomass-briquettes-grade-a',
+            'is_active' => true,
         ]);
 
         $fresh = $product->fresh();
@@ -100,19 +103,19 @@ class MarketplaceProductTest extends TestCase
         ]);
 
         MarketplaceProduct::create([
-            'category_id'     => $category->id,
-            'name'            => 'Biomass Briquettes Grade A',
-            'slug'            => 'biomass-briquettes-grade-a',
+            'category_id' => $category->id,
+            'name' => 'Biomass Briquettes Grade A',
+            'slug' => 'biomass-briquettes-grade-a',
             'unit_of_measure' => UnitOfMeasure::MetricTonnes,
         ]);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         // Attempting to create same name under same category will fail unique index
         MarketplaceProduct::create([
-            'category_id'     => $category->id,
-            'name'            => 'Biomass Briquettes Grade A',
-            'slug'            => 'biomass-briquettes-grade-a-2',
+            'category_id' => $category->id,
+            'name' => 'Biomass Briquettes Grade A',
+            'slug' => 'biomass-briquettes-grade-a-2',
             'unit_of_measure' => UnitOfMeasure::MetricTonnes,
         ]);
     }
@@ -123,18 +126,18 @@ class MarketplaceProductTest extends TestCase
     public function test_marketplace_product_seeder_is_idempotent(): void
     {
         // 1. Run seeder first time
-        $this->seed(\Database\Seeders\ProductSeeder::class);
-        $this->seed(\Database\Seeders\MarketplaceProductSeeder::class);
+        $this->seed(ProductSeeder::class);
+        $this->seed(MarketplaceProductSeeder::class);
 
         $initialCategoryCount = Category::count();
-        $initialProductCount  = MarketplaceProduct::count();
+        $initialProductCount = MarketplaceProduct::count();
 
         $this->assertGreaterThan(0, $initialCategoryCount);
         $this->assertGreaterThan(0, $initialProductCount);
 
         // 2. Run seeder second time
-        $this->seed(\Database\Seeders\ProductSeeder::class);
-        $this->seed(\Database\Seeders\MarketplaceProductSeeder::class);
+        $this->seed(ProductSeeder::class);
+        $this->seed(MarketplaceProductSeeder::class);
 
         // Counts should remain identical
         $this->assertEquals($initialCategoryCount, Category::count());

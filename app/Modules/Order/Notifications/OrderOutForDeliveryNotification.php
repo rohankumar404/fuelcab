@@ -27,9 +27,9 @@ class OrderOutForDeliveryNotification extends Notification implements ShouldQueu
     {
         return [
             'title' => "Out for Delivery 🚚 — #{$this->order->id}",
-            'body'  => "Your fuel order #{$this->order->id} is out for delivery! Track your driver in real-time.",
-            'data'  => [
-                'type'     => 'order_out_for_delivery',
+            'body' => "Your fuel order #{$this->order->id} is out for delivery! Track your driver in real-time.",
+            'data' => [
+                'type' => 'order_out_for_delivery',
                 'order_id' => $this->order->id,
             ],
         ];
@@ -40,9 +40,9 @@ class OrderOutForDeliveryNotification extends Notification implements ShouldQueu
         return (new MailMessage)
             ->subject("Your Fuel Is On The Way — #{$this->order->id}")
             ->greeting("Hello {$notifiable->name}!")
-            ->line("Your fuel delivery is now **out for delivery**.")
+            ->line('Your fuel delivery is now **out for delivery**.')
             ->line("**Order ID:** {$this->order->id}")
-            ->line("Please ensure someone is available at the delivery address.")
+            ->line('Please ensure someone is available at the delivery address.')
             ->action('Track Live Location', url("/orders/{$this->order->id}/tracking"))
             ->line('Estimated delivery: within the scheduled window.');
     }
@@ -50,9 +50,9 @@ class OrderOutForDeliveryNotification extends Notification implements ShouldQueu
     public function toArray(object $notifiable): array
     {
         return [
-            'type'     => 'order_out_for_delivery',
+            'type' => 'order_out_for_delivery',
             'order_id' => $this->order->id,
-            'message'  => "Your fuel order #{$this->order->id} is out for delivery. Track your driver in real-time.",
+            'message' => "Your fuel order #{$this->order->id} is out for delivery. Track your driver in real-time.",
         ];
     }
 }

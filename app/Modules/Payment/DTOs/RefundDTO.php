@@ -10,7 +10,7 @@ final class RefundDTO extends BaseDTO
 {
     public static function fromArray(array $data): static
     {
-        return new static();
+        return new self;
     }
 
     public function toArray(): array

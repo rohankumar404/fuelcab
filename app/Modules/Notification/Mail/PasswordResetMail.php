@@ -16,7 +16,9 @@ class PasswordResetMail extends Mailable
     use SerializesModels;
 
     public ?string $name;
+
     public ?string $otp;
+
     public ?int $expiry;
 
     public function __construct(
@@ -24,8 +26,8 @@ class PasswordResetMail extends Mailable
         ?string $otp = '000000',
         ?int $expiry = 10
     ) {
-        $this->name   = $name ?? 'User';
-        $this->otp    = $otp ?? '000000';
+        $this->name = $name ?? 'User';
+        $this->otp = $otp ?? '000000';
         $this->expiry = $expiry ?? 10;
     }
 

@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Marketplace;
 
-use App\Enums\SalesChannel;
 use App\Enums\UserRole;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\User;
-use App\Models\UserFavorite;
-use App\Models\UserRecentlyViewed;
-use App\Models\VendorRating;
 use App\Modules\Vendor\Models\Vendor;
 use App\Modules\Vendor\Models\VendorListing;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -25,37 +22,42 @@ class MarketplaceTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private Address $address;
+
     private Vendor $vendor;
+
     private VendorListing $listing1;
+
     private VendorListing $listing2;
+
     private Category $category;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
 
         // Create customer
         $this->customer = User::create([
-            'name'      => 'Marketplace Customer',
-            'email'     => 'cust@marketplace.com',
-            'mobile'    => '9988776655',
-            'password'  => bcrypt('password'),
+            'name' => 'Marketplace Customer',
+            'email' => 'cust@marketplace.com',
+            'mobile' => '9988776655',
+            'password' => bcrypt('password'),
             'role_type' => UserRole::Customer,
         ]);
         $this->customer->assignRole(UserRole::Customer->value);
 
         // Create address
         $this->address = Address::create([
-            'user_id'          => $this->customer->id,
+            'user_id' => $this->customer->id,
             'addressable_type' => User::class,
-            'address_line_1'   => '123 Test St',
-            'city'             => 'Mumbai',
-            'state'            => 'Maharashtra',
-            'postal_code'      => '400001',
-            'latitude'         => 19.076,
-            'longitude'        => 72.8777,
+            'address_line_1' => '123 Test St',
+            'city' => 'Mumbai',
+            'state' => 'Maharashtra',
+            'postal_code' => '400001',
+            'latitude' => 19.076,
+            'longitude' => 72.8777,
         ]);
 
         // Create category
@@ -67,66 +69,66 @@ class MarketplaceTest extends TestCase
         // Create Company and Vendor
         $companyId = Str::uuid()->toString();
         DB::table('companies')->insert([
-            'id'         => $companyId,
-            'name'       => 'Super Vendor Corp',
-            'status'     => 'active',
+            'id' => $companyId,
+            'name' => 'Super Vendor Corp',
+            'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $this->vendor = Vendor::create([
             'company_id' => $companyId,
             'brand_name' => 'Super Fuel Vendor',
-            'status'     => 'approved',
+            'status' => 'approved',
         ]);
 
         // Create products
         $productId1 = Str::uuid()->toString();
         DB::table('marketplace_products')->insert([
-            'id'          => $productId1,
+            'id' => $productId1,
             'category_id' => $this->category->id,
-            'name'        => 'Bio Diesel',
-            'slug'        => 'bio-diesel',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'name' => 'Bio Diesel',
+            'slug' => 'bio-diesel',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $productId2 = Str::uuid()->toString();
         DB::table('marketplace_products')->insert([
-            'id'          => $productId2,
+            'id' => $productId2,
             'category_id' => $this->category->id,
-            'name'        => 'Ethanol Blend',
-            'slug'        => 'ethanol-blend',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'name' => 'Ethanol Blend',
+            'slug' => 'ethanol-blend',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // Create listings
         $this->listing1 = VendorListing::create([
-            'vendor_id'              => $this->vendor->id,
+            'vendor_id' => $this->vendor->id,
             'marketplace_product_id' => $productId1,
-            'listing_title'          => 'Premium Bio Diesel',
-            'slug'                   => 'premium-bio-diesel',
-            'sku'                    => 'LST-BIO-01',
-            'base_price'             => 95.00,
-            'tax_rate'               => 18.00,
-            'unit'                   => 'litres',
-            'approval_status'        => 'APPROVED',
-            'is_active'              => true,
-            'seo_title'              => 'Bio Diesel SEO',
-            'seo_description'        => 'Bio Diesel SEO Desc',
+            'listing_title' => 'Premium Bio Diesel',
+            'slug' => 'premium-bio-diesel',
+            'sku' => 'LST-BIO-01',
+            'base_price' => 95.00,
+            'tax_rate' => 18.00,
+            'unit' => 'litres',
+            'approval_status' => 'APPROVED',
+            'is_active' => true,
+            'seo_title' => 'Bio Diesel SEO',
+            'seo_description' => 'Bio Diesel SEO Desc',
         ]);
 
         $this->listing2 = VendorListing::create([
-            'vendor_id'              => $this->vendor->id,
+            'vendor_id' => $this->vendor->id,
             'marketplace_product_id' => $productId2,
-            'listing_title'          => 'Eco Ethanol Blend',
-            'slug'                   => 'eco-ethanol-blend',
-            'sku'                    => 'LST-ETH-02',
-            'base_price'             => 80.00,
-            'tax_rate'               => 18.00,
-            'unit'                   => 'litres',
-            'approval_status'        => 'APPROVED',
-            'is_active'              => true,
+            'listing_title' => 'Eco Ethanol Blend',
+            'slug' => 'eco-ethanol-blend',
+            'sku' => 'LST-ETH-02',
+            'base_price' => 80.00,
+            'tax_rate' => 18.00,
+            'unit' => 'litres',
+            'approval_status' => 'APPROVED',
+            'is_active' => true,
         ]);
     }
 
@@ -212,13 +214,13 @@ class MarketplaceTest extends TestCase
         Sanctum::actingAs($this->customer);
 
         $this->postJson("/api/v1/marketplace/listings/{$this->listing1->slug}/order", [
-            'quantity'            => 10,
+            'quantity' => 10,
             'delivery_address_id' => $this->address->id,
-            'notes'               => 'Deliver by tomorrow morning',
+            'notes' => 'Deliver by tomorrow morning',
         ])->assertStatus(201)
-          ->assertJsonPath('data.listing_slug', $this->listing1->slug)
-          ->assertJsonPath('data.quantity', 10)
-          ->assertJsonPath('data.total_amount', 1121); // 95 * 1.18 * 10 = 1121
+            ->assertJsonPath('data.listing_slug', $this->listing1->slug)
+            ->assertJsonPath('data.quantity', 10)
+            ->assertJsonPath('data.total_amount', 1121); // 95 * 1.18 * 10 = 1121
     }
 
     /** @test */

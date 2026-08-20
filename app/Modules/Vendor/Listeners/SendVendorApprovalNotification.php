@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Vendor\Listeners;
 
-use App\Modules\Vendor\Events\VendorApproved;
 use App\Modules\Notification\Jobs\SendEmailJob;
 use App\Modules\Notification\Mail\VendorApprovedMail;
+use App\Modules\Vendor\Events\VendorApproved;
+use App\Modules\Vendor\Notifications\VendorApprovedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +16,7 @@ class SendVendorApprovalNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'default';
+    public $queue = 'default';
 
     public function handle(VendorApproved $event): void
     {
@@ -32,12 +33,12 @@ class SendVendorApprovalNotification implements ShouldQueue
             // Notify all vendor users (database + FCM)
             $vendor->loadMissing('users');
             foreach ($vendor->users as $user) {
-                $user->notify(new \App\Modules\Vendor\Notifications\VendorApprovedNotification($vendor));
+                $user->notify(new VendorApprovedNotification($vendor));
             }
         } catch (\Throwable $e) {
             Log::error('[SendVendorApprovalNotification] Failed to queue vendor approval email', [
                 'vendor_id' => $event->vendor->id ?? null,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Models;
 
+use App\Models\User;
+use App\Modules\Order\Enums\OrderStatus;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HasUuid;
-use App\Models\User;
 
 class OrderStatusLog extends Model
 {
@@ -27,8 +28,8 @@ class OrderStatusLog extends Model
     protected function casts(): array
     {
         return [
-            'from_status' => \App\Modules\Order\Enums\OrderStatus::class,
-            'to_status' => \App\Modules\Order\Enums\OrderStatus::class,
+            'from_status' => OrderStatus::class,
+            'to_status' => OrderStatus::class,
             'changed_at' => 'datetime',
         ];
     }

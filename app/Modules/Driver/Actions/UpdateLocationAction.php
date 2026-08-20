@@ -37,27 +37,27 @@ class UpdateLocationAction
         $location = DriverLocation::updateOrCreate(
             ['driver_id' => $driverId],
             [
-                'latitude'    => $dto->latitude,
-                'longitude'   => $dto->longitude,
-                'heading'     => $dto->heading,
-                'speed_kmh'   => $dto->speedKmh,
+                'latitude' => $dto->latitude,
+                'longitude' => $dto->longitude,
+                'heading' => $dto->heading,
+                'speed_kmh' => $dto->speedKmh,
                 'recorded_at' => now(),
             ]
         );
 
         event(new DriverLocationUpdated(DriverLocationDTO::fromArray([
             'driver_id' => $driverId,
-            'latitude'  => $dto->latitude,
+            'latitude' => $dto->latitude,
             'longitude' => $dto->longitude,
-            'heading'   => $dto->heading,
-            'speed'     => $dto->speedKmh,
-            'order_id'  => $dto->orderId,
+            'heading' => $dto->heading,
+            'speed' => $dto->speedKmh,
+            'order_id' => $dto->orderId,
         ])));
 
         Log::info('[UpdateLocationAction] Driver location updated', [
             'driver_id' => $driverId,
-            'lat'       => $dto->latitude,
-            'lng'       => $dto->longitude,
+            'lat' => $dto->latitude,
+            'lng' => $dto->longitude,
         ]);
 
         return $location;

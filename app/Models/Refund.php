@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
+use App\Modules\Payment\Models\Payment;
 use App\Traits\Auditable;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Refund proxy model for Filament SuperAdmin panel.
@@ -15,8 +17,8 @@ use App\Traits\Auditable;
  */
 class Refund extends Model
 {
+    use Auditable, HasUuid;
     use SoftDeletes;
-    use HasUuid, Auditable;
 
     protected $table = 'refunds';
 
@@ -25,8 +27,13 @@ class Refund extends Model
     protected function casts(): array
     {
         return [
-            'amount'       => 'decimal:2',
+            'amount' => 'float',
             'processed_at' => 'datetime',
         ];
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class, 'payment_id');
     }
 }

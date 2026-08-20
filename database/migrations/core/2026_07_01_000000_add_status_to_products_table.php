@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table): void {
-            if (!Schema::hasColumn('products', 'status')) {
+            if (! Schema::hasColumn('products', 'status')) {
                 $table->string('status', 50)->default('active'); // active, disabled, soon
             }
         });

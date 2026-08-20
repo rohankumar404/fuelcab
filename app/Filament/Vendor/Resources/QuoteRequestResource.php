@@ -51,23 +51,19 @@ class QuoteRequestResource extends Resource
             Forms\Components\Section::make('Request Details')->schema([
                 Forms\Components\Placeholder::make('customer')
                     ->label('Requested By')
-                    ->content(fn (?BulkInquiry $record): string =>
-                        $record?->user?->name . ' — ' . $record?->user?->email ?? '—'),
+                    ->content(fn (?BulkInquiry $record): string => $record?->user?->name.' — '.$record?->user?->email ?? '—'),
 
                 Forms\Components\Placeholder::make('product_name')
                     ->label('Product / Listing')
-                    ->content(fn (?BulkInquiry $record): string =>
-                        $record?->listing?->listing_title ?? $record?->product?->name ?? '—'),
+                    ->content(fn (?BulkInquiry $record): string => $record?->listing?->listing_title ?? $record?->product?->name ?? '—'),
 
                 Forms\Components\Placeholder::make('requested_qty')
                     ->label('Requested Quantity')
-                    ->content(fn (?BulkInquiry $record): string =>
-                        number_format((float) ($record?->quantity ?? 0), 2)),
+                    ->content(fn (?BulkInquiry $record): string => number_format((float) ($record?->quantity ?? 0), 2)),
 
                 Forms\Components\Placeholder::make('preferred_delivery')
                     ->label('Preferred Delivery Date')
-                    ->content(fn (?BulkInquiry $record): string =>
-                        $record?->preferred_delivery_date?->format('d M Y') ?? '—'),
+                    ->content(fn (?BulkInquiry $record): string => $record?->preferred_delivery_date?->format('d M Y') ?? '—'),
 
                 Forms\Components\Textarea::make('message')
                     ->label('Customer Message')
@@ -142,11 +138,11 @@ class QuoteRequestResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'pending' => 'warning',
-            'responded' => 'success',
-            'closed' => 'gray',
-            default => 'gray',
-        }),
+                        'pending' => 'warning',
+                        'responded' => 'success',
+                        'closed' => 'gray',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('quoted_price')
                     ->label('Quoted Price (₹)')
@@ -165,100 +161,101 @@ class QuoteRequestResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending'   => 'Pending',
-                        'responded' => 'Responded',
-                        'closed'    => 'Closed',
-                    ]),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options([
+                                    'pending' => 'Pending',
+                                    'responded' => 'Responded',
+                                    'closed' => 'Closed',
+                                ]),
+                        ])
             ->actions([
-                Tables\Actions\Action::make('submit_quotation')
-                    ->label('Submit Quotation')
-                    ->icon('heroicon-o-paper-airplane')
-                    ->color('primary')
-                    ->visible(fn (BulkInquiry $record): bool => $record->status === 'pending')
-                    ->form([
-                        Forms\Components\TextInput::make('quoted_price')
-                            ->label('Price per Unit (₹)')
-                            ->prefix('₹')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0),
+                            Tables\Actions\Action::make('submit_quotation')
+                                ->label('Submit Quotation')
+                                ->icon('heroicon-o-paper-airplane')
+                                ->color('primary')
+                                ->visible(fn (BulkInquiry $record): bool => $record->status === 'pending')
+                                ->form([
+                                    Forms\Components\TextInput::make('quoted_price')
+                                        ->label('Price per Unit (₹)')
+                                        ->prefix('₹')
+                                        ->numeric()
+                                        ->required()
+                                        ->minValue(0),
 
-                        Forms\Components\TextInput::make('quoted_unit')
-                            ->label('Unit')
-                            ->placeholder('e.g. Metric Tonnes, Litres')
-                            ->required(),
+                                    Forms\Components\TextInput::make('quoted_unit')
+                                        ->label('Unit')
+                                        ->placeholder('e.g. Metric Tonnes, Litres')
+                                        ->required(),
 
-                        Forms\Components\TextInput::make('quoted_min_quantity')
-                            ->label('Minimum Order Quantity')
-                            ->numeric()
-                            ->required(),
+                                    Forms\Components\TextInput::make('quoted_min_quantity')
+                                        ->label('Minimum Order Quantity')
+                                        ->numeric()
+                                        ->required(),
 
-                        Forms\Components\DatePicker::make('validity_date')
-                            ->label('Quote Valid Until')
-                            ->required()
-                            ->minDate(now()),
+                                    Forms\Components\DatePicker::make('validity_date')
+                                        ->label('Quote Valid Until')
+                                        ->required()
+                                        ->minDate(now()),
 
-                        Forms\Components\TextInput::make('dispatch_time')
-                            ->label('Estimated Dispatch Time')
-                            ->placeholder('e.g. 3-5 business days')
-                            ->required(),
+                                    Forms\Components\TextInput::make('dispatch_time')
+                                        ->label('Estimated Dispatch Time')
+                                        ->placeholder('e.g. 3-5 business days')
+                                        ->required(),
 
-                        Forms\Components\Textarea::make('terms')
-                            ->label('Terms & Conditions')
-                            ->rows(2)
-                            ->nullable()
-                            ->columnSpanFull(),
+                                    Forms\Components\Textarea::make('terms')
+                                        ->label('Terms & Conditions')
+                                        ->rows(2)
+                                        ->nullable()
+                                        ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Additional Notes')
-                            ->rows(2)
-                            ->nullable()
-                            ->columnSpanFull(),
-                    ])
-                    ->action(function (BulkInquiry $record, array $data): void {
-                        // SECURITY: Re-verify ownership before mutating
-                        if ($record->vendor_id !== auth()->user()->vendor_id) {
-                            Notification::make()->title('Unauthorized action.')->danger()->send();
-                            return;
-                        }
+                                    Forms\Components\Textarea::make('notes')
+                                        ->label('Additional Notes')
+                                        ->rows(2)
+                                        ->nullable()
+                                        ->columnSpanFull(),
+                                ])
+                                ->action(function (BulkInquiry $record, array $data): void {
+                                    // SECURITY: Re-verify ownership before mutating
+                                    if ($record->vendor_id !== auth()->user()->vendor_id) {
+                                        Notification::make()->title('Unauthorized action.')->danger()->send();
 
-                        $record->update(array_merge($data, ['status' => 'responded']));
+                                        return;
+                                    }
 
-                        // Notify customer via email if they have an email address
-                        $customer = $record->user;
-                        if ($customer?->email) {
-                            try {
-                                SendEmailJob::dispatch(
-                                    $customer->email,
-                                    new QuoteMail(
-                                        type:         'response',
-                                        productName:  $record->product?->name ?? 'Bulk Fuel',
-                                        quantity:     (float) $record->quantity,
-                                        price:        (float) $data['quoted_price'],
-                                        unit:         $data['quoted_unit'],
-                                        minQty:       (float) $data['quoted_min_quantity'],
-                                        validity:     $data['validity_date'] ?? null,
-                                        dispatch:     $data['dispatch_time'] ?? null,
-                                        terms:        $data['terms'] ?? null,
-                                    )
-                                );
-                            } catch (\Throwable) {
-                                // Silent fail — don't block vendor submit
-                            }
-                        }
+                                    $record->update(array_merge($data, ['status' => 'responded']));
 
-                        Notification::make()
-                            ->title('Quotation submitted successfully.')
-                            ->success()
-                            ->send();
-                    }),
+                                    // Notify customer via email if they have an email address
+                                    $customer = $record->user;
+                                    if ($customer?->email) {
+                                        try {
+                                            SendEmailJob::dispatch(
+                                                $customer->email,
+                                                new QuoteMail(
+                                                    type: 'response',
+                                                    productName: $record->product?->name ?? 'Bulk Fuel',
+                                                    quantity: (float) $record->quantity,
+                                                    price: (float) $data['quoted_price'],
+                                                    unit: $data['quoted_unit'],
+                                                    minQty: (float) $data['quoted_min_quantity'],
+                                                    validity: $data['validity_date'] ?? null,
+                                                    dispatch: $data['dispatch_time'] ?? null,
+                                                    terms: $data['terms'] ?? null,
+                                                )
+                                            );
+                                        } catch (\Throwable) {
+                                            // Silent fail — don't block vendor submit
+                                        }
+                                    }
 
-                Tables\Actions\ViewAction::make()
-                    ->label('View'),
-            ])
+                                    Notification::make()
+                                        ->title('Quotation submitted successfully.')
+                                        ->success()
+                                        ->send();
+                                }),
+
+                            Tables\Actions\ViewAction::make()
+                                ->label('View'),
+                        ])
             ->bulkActions([])
             ->defaultSort('created_at', 'desc');
     }
@@ -267,7 +264,7 @@ class QuoteRequestResource extends Resource
     {
         return [
             'index' => Pages\ListQuoteRequests::route('/'),
-            'view'  => Pages\ViewQuoteRequest::route('/{record}'),
+            'view' => Pages\ViewQuoteRequest::route('/{record}'),
         ];
     }
 }

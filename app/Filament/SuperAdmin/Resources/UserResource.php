@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\SuperAdmin\Resources;
 
-use App\Filament\SuperAdmin\Resources\UserResource\Pages;
 use App\Enums\UserRole;
+use App\Filament\SuperAdmin\Resources\UserResource\Pages;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,11 +15,16 @@ use Filament\Tables\Table;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = \App\Models\User::class;
+    protected static ?string $model = User::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationGroup = 'CUSTOMERS';
+
     protected static ?string $navigationLabel = 'Users';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
@@ -54,20 +60,20 @@ class UserResource extends Resource
                     ->formatStateUsing(fn ($state) => is_string($state) ? $state : $state?->value),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'active' => 'success',
-            'inactive' => 'warning',
-            'suspended' => 'danger',
-            default => 'gray',
-        }),
+                        'active' => 'success',
+                        'inactive' => 'warning',
+                        'suspended' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\IconColumn::make('email_verified_at')->boolean()->label('Verified'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role_type')
-                    ->options(collect(UserRole::cases())->mapWithKeys(fn ($r) => [$r->value => $r->label()])),
-                Tables\Filters\SelectFilter::make('status')
-                    ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
-            ])
+                            Tables\Filters\SelectFilter::make('role_type')
+                                ->options(collect(UserRole::cases())->mapWithKeys(fn ($r) => [$r->value => $r->label()])),
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options(['active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended']),
+                        ])
             ->actions([Tables\Actions\EditAction::make(), Tables\Actions\DeleteAction::make()])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
@@ -75,9 +81,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListUsers::route('/'),
+            'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'edit'   => Pages\EditUser::route('/{record}/edit'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

@@ -23,8 +23,8 @@ class UserSeeder extends Seeder
         $superAdmin = User::updateOrCreate(
             ['email' => 'admin@fuelcab.com'],
             [
-                'name'      => 'Super Admin',
-                'password'  => $password,
+                'name' => 'Super Admin',
+                'password' => $password,
                 'role_type' => UserRole::SuperAdmin,
             ]
         );
@@ -33,8 +33,8 @@ class UserSeeder extends Seeder
         $superAdminAlt = User::updateOrCreate(
             ['email' => 'superadmin@fuelcab.com'],
             [
-                'name'      => 'Super Admin',
-                'password'  => $password,
+                'name' => 'Super Admin',
+                'password' => $password,
                 'role_type' => UserRole::SuperAdmin,
             ]
         );
@@ -44,8 +44,8 @@ class UserSeeder extends Seeder
         $operations = User::updateOrCreate(
             ['email' => 'operations@fuelcab.com'],
             [
-                'name'      => 'Operations Manager',
-                'password'  => $password,
+                'name' => 'Operations Manager',
+                'password' => $password,
                 'role_type' => UserRole::OperationsTeam,
             ]
         );
@@ -58,9 +58,9 @@ class UserSeeder extends Seeder
             $companyId = $companyExists->id;
         } else {
             DB::table('companies')->insert([
-                'id'         => $companyId,
-                'name'       => 'EcoFuel Logistics Pvt Ltd',
-                'status'     => 'active',
+                'id' => $companyId,
+                'name' => 'EcoFuel Logistics Pvt Ltd',
+                'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -69,10 +69,10 @@ class UserSeeder extends Seeder
         $vendor = Vendor::firstOrCreate(
             ['company_id' => $companyId],
             [
-                'brand_name'            => 'EcoFuel Energy Corp',
-                'status'                => VendorStatus::Approved,
-                'commission_rate'        => 5.00,
-                'is_first_party'        => false,
+                'brand_name' => 'EcoFuel Energy Corp',
+                'status' => VendorStatus::Approved,
+                'commission_rate' => 5.00,
+                'is_first_party' => false,
                 'service_radius_meters' => 50000,
             ]
         );
@@ -81,8 +81,8 @@ class UserSeeder extends Seeder
         $vendorAdmin = User::updateOrCreate(
             ['email' => 'vendor@fuelcab.com'],
             [
-                'name'      => 'Vendor Administrator',
-                'password'  => $password,
+                'name' => 'Vendor Administrator',
+                'password' => $password,
                 'role_type' => UserRole::VendorAdmin,
                 'vendor_id' => $vendor->id,
             ]
@@ -94,8 +94,8 @@ class UserSeeder extends Seeder
         $customer = User::updateOrCreate(
             ['email' => 'customer@fuelcab.com'],
             [
-                'name'      => 'Test Customer',
-                'password'  => $password,
+                'name' => 'Test Customer',
+                'password' => $password,
                 'role_type' => UserRole::Customer,
             ]
         );

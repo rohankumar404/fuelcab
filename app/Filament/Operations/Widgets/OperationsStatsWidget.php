@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Operations\Widgets;
 
-use App\Modules\Order\Models\Order;
-use App\Modules\Driver\Models\Driver;
-use App\Modules\Vendor\Models\Vendor;
 use App\Enums\DriverStatus;
+use App\Modules\Driver\Models\Driver;
+use App\Modules\Order\Models\Order;
+use App\Modules\Vendor\Models\Vendor;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -17,12 +17,12 @@ class OperationsStatsWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        $pendingOrders     = Order::where('status', 'pending')->count();
-        $unassignedOrders  = Order::where('status', 'confirmed')->whereNull('driver_id')->count();
-        $onlineDrivers     = Driver::where('status', DriverStatus::Active->value)->count();
-        $pendingVendors    = Vendor::where('status', 'pending')->count();
-        $pendingDrivers    = Driver::where('is_approved', false)->count();
-        $todayCompleted    = Order::where('status', 'completed')->whereDate('updated_at', today())->count();
+        $pendingOrders = Order::where('status', 'pending')->count();
+        $unassignedOrders = Order::where('status', 'confirmed')->whereNull('driver_id')->count();
+        $onlineDrivers = Driver::where('status', DriverStatus::Active->value)->count();
+        $pendingVendors = Vendor::where('status', 'pending')->count();
+        $pendingDrivers = Driver::where('is_approved', false)->count();
+        $todayCompleted = Order::where('status', 'completed')->whereDate('updated_at', today())->count();
 
         return [
             Stat::make('Pending Orders', $pendingOrders)

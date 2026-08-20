@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\SuperAdmin\Resources;
 
+use App\Enums\UnitOfMeasure;
 use App\Filament\SuperAdmin\Resources\MarketplaceProductResource\Pages;
 use App\Modules\Fuel\Models\MarketplaceProduct;
 use Filament\Forms;
@@ -11,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class MarketplaceProductResource extends Resource
 {
@@ -34,7 +36,7 @@ class MarketplaceProductResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                         Forms\Components\TextInput::make('slug')
                             ->required()
                             ->maxLength(255),
@@ -43,7 +45,7 @@ class MarketplaceProductResource extends Resource
                             ->relationship('category', 'name', fn ($query) => $query->whereNotNull('parent_id')->orWhere('slug', 'ev'))
                             ->required(),
                         Forms\Components\Select::make('unit_of_measure')
-                            ->options(\App\Enums\UnitOfMeasure::class)
+                            ->options(UnitOfMeasure::class)
                             ->required(),
                         Forms\Components\Textarea::make('description')
                             ->rows(3)
@@ -145,9 +147,9 @@ class MarketplaceProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMarketplaceProducts::route('/'),
+            'index' => Pages\ListMarketplaceProducts::route('/'),
             'create' => Pages\CreateMarketplaceProduct::route('/create'),
-            'edit'   => Pages\EditMarketplaceProduct::route('/{record}/edit'),
+            'edit' => Pages\EditMarketplaceProduct::route('/{record}/edit'),
         ];
     }
 }

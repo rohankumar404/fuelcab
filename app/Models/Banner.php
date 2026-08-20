@@ -23,10 +23,10 @@ class Banner extends Model
     ];
 
     protected $casts = [
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
         'sort_order' => 'integer',
-        'starts_at'  => 'datetime',
-        'ends_at'    => 'datetime',
+        'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
     ];
 
     public function isLive(): bool

@@ -15,7 +15,7 @@ class CartItemRemoved
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public readonly Cart     $cart,
+        public readonly Cart $cart,
         public readonly CartItem $item,
     ) {}
 }

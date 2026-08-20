@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Modules\Auth\Http\Controllers\GoogleAuthController;
 use App\Modules\Auth\Http\Controllers\AuthController;
+use App\Modules\Auth\Http\Controllers\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,17 +19,17 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
 
     // Strict throttle for registration and login attempts
     Route::middleware('throttle:auth')->group(function (): void {
-        Route::post('register',          [AuthController::class, 'register']);
-        Route::post('login',             [AuthController::class, 'login']);
-        Route::post('forgot-password',   [AuthController::class, 'forgotPassword']);
-        Route::post('reset-password',    [AuthController::class, 'resetPassword']);
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('reset-password', [AuthController::class, 'resetPassword']);
     });
 
     // Special rate limits for OTP actions to prevent SMS flooding
     Route::middleware('throttle:otp')->group(function (): void {
-        Route::post('send-otp',          [AuthController::class, 'sendOtp']);
-        Route::post('resend-otp',        [AuthController::class, 'resendOtp']);
-        Route::post('verify-otp',        [AuthController::class, 'verifyOtp']);
-        Route::post('verify-reset-otp',  [AuthController::class, 'verifyResetOtp']);
+        Route::post('send-otp', [AuthController::class, 'sendOtp']);
+        Route::post('resend-otp', [AuthController::class, 'resendOtp']);
+        Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+        Route::post('verify-reset-otp', [AuthController::class, 'verifyResetOtp']);
     });
 });

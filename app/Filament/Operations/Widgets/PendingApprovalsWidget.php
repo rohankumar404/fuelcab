@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Operations\Widgets;
 
 use App\Modules\Vendor\Models\Vendor;
-use App\Modules\Driver\Models\Driver;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -13,8 +12,10 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class PendingApprovalsWidget extends BaseWidget
 {
     protected static ?string $heading = 'Pending Approvals';
+
     protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {

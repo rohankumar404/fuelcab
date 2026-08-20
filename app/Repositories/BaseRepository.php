@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Interfaces\Repositories\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Collection;
 

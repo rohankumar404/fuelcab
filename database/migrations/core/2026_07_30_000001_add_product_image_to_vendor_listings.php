@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('vendor_listings', function (Blueprint $table) {
-            if (!Schema::hasColumn('vendor_listings', 'product_image')) {
+            if (! Schema::hasColumn('vendor_listings', 'product_image')) {
                 $table->string('product_image', 2048)->nullable()->after('product_images');
             }
         });

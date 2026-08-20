@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class BlogResource extends Resource
 {
@@ -36,8 +37,7 @@ class BlogResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => 
-                                $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null
+                            ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null
                             ),
                         Forms\Components\TextInput::make('slug')
                             ->required()
@@ -50,7 +50,7 @@ class BlogResource extends Resource
                             ->maxLength(65535)
                             ->columnSpanFull(),
                     ])->columns(2),
-                
+
                 Forms\Components\Section::make('Meta & Publishing')
                     ->schema([
                         Forms\Components\FileUpload::make('featured_image')
@@ -72,7 +72,7 @@ class BlogResource extends Resource
                             ->nullable(),
                         Forms\Components\DateTimePicker::make('published_at')
                             ->nullable(),
-                    ])->columns(2)
+                    ])->columns(2),
             ]);
     }
 
@@ -95,11 +95,11 @@ class BlogResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()->color(fn ($state) => match ($state instanceof \BackedEnum ? $state->value : $state) {
-            'draft' => 'warning',
-            'published' => 'success',
-            'archived' => 'danger',
-            default => 'gray',
-        })
+                        'draft' => 'warning',
+                        'published' => 'success',
+                        'archived' => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime()
@@ -110,22 +110,22 @@ class BlogResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                        'archived' => 'Archived',
-                    ]),
-            ])
+                            Tables\Filters\SelectFilter::make('status')
+                                ->options([
+                                    'draft' => 'Draft',
+                                    'published' => 'Published',
+                                    'archived' => 'Archived',
+                                ]),
+                        ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
+                            Tables\Actions\EditAction::make(),
+                            Tables\Actions\DeleteAction::make(),
+                        ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                            Tables\Actions\BulkActionGroup::make([
+                                Tables\Actions\DeleteBulkAction::make(),
+                            ]),
+                        ]);
     }
 
     public static function getRelations(): array

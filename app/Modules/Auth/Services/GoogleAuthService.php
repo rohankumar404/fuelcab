@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Services;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Modules\Auth\DTOs\GoogleLoginDTO;
-use App\Enums\UserRole;
 use Illuminate\Support\Str;
 
 class GoogleAuthService
@@ -14,7 +14,6 @@ class GoogleAuthService
     /**
      * Handle authentication/registration of Google User.
      *
-     * @param GoogleLoginDTO $dto
      * @return array{user: User, token: string}
      */
     public function handleGoogleUser(GoogleLoginDTO $dto): array

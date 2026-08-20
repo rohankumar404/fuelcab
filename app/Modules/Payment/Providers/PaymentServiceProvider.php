@@ -28,7 +28,7 @@ class PaymentServiceProvider extends ServiceProvider
 
             return new PaymentGatewayFactory([
                 'razorpay' => $razorpay,
-                'stripe'   => $stripe,
+                'stripe' => $stripe,
             ]);
         });
     }

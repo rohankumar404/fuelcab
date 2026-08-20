@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Order\Actions;
 
-use App\Modules\Order\Models\Order;
+use App\Models\User;
 use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Events\OrderAssigned;
-use App\Models\User;
+use App\Modules\Order\Models\Order;
 use Illuminate\Support\Facades\DB;
 
 class AssignDriverAction
@@ -20,7 +20,7 @@ class AssignDriverAction
 
             // Ensure the user has the 'driver' role
             if (! $driver->hasRole('driver')) {
-                throw new \InvalidArgumentException("User is not a driver.");
+                throw new \InvalidArgumentException('User is not a driver.');
             }
 
             if (! $order->status->canTransitionTo(OrderStatus::Assigned)) {
@@ -29,7 +29,7 @@ class AssignDriverAction
 
             $order->update([
                 'driver_id' => $driver->id,
-                'status'    => OrderStatus::Assigned,
+                'status' => OrderStatus::Assigned,
             ]);
 
             event(new OrderAssigned($order));

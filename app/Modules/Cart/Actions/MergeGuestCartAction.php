@@ -27,7 +27,7 @@ class MergeGuestCartAction
             }
 
             $userCart = $this->repository->findOrCreateForUser($user);
-            $merged   = 0;
+            $merged = 0;
 
             foreach ($guestCart->items as $guestItem) {
                 $existing = CartItem::where('cart_id', $userCart->id)
@@ -39,10 +39,10 @@ class MergeGuestCartAction
                     $existing->update(['quantity' => $existing->quantity + $guestItem->quantity]);
                 } else {
                     CartItem::create([
-                        'cart_id'         => $userCart->id,
-                        'product_id'      => $guestItem->product_id,
-                        'quantity'        => $guestItem->quantity,
-                        'price_snapshot'  => $guestItem->price_snapshot,
+                        'cart_id' => $userCart->id,
+                        'product_id' => $guestItem->product_id,
+                        'quantity' => $guestItem->quantity,
+                        'price_snapshot' => $guestItem->price_snapshot,
                         'unit_of_measure' => $guestItem->unit_of_measure,
                     ]);
                 }
