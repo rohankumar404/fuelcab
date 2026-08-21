@@ -36,6 +36,7 @@ export default function ForgotPasswordPage() {
   const [confirmPwd, setConfirmPwd] = useState("");
   const [showPwd, setShowPwd]   = useState(false);
   const [t3, setT3]             = useState({ pwd: false, confirm: false });
+  const [resetToken, setResetToken] = useState("");
 
   const [loading, setLoading]   = useState(false);
   const [apiError, setApiError] = useState("");
@@ -68,10 +69,21 @@ export default function ForgotPasswordPage() {
         setLogId(res.logId ?? "");
         startTimer();
       } else {
-        // TODO: POST /api/v1/auth/forgot-password { email }
-        await new Promise((r) => setTimeout(r, 1000));
+        const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002").replace(/\/$/, "");
+        const res = await fetch(`${API_BASE}/api/v1/auth/forgot-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setApiError(data?.message ?? data?.errors ?? "User not found or error occurred.");
+          return;
+        }
       }
       setStep("otp");
+    } catch {
+      setApiError("Could not connect to server. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -89,14 +101,26 @@ export default function ForgotPasswordPage() {
         const res = await verifyOtp(otp, logId);
         if (!res.success) { setOtpError(res.error ?? "Invalid OTP"); return; }
       } else {
-        // TODO: verify email OTP via /api/v1/auth/verify-reset-otp
-        await new Promise((r) => setTimeout(r, 800));
+        const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002").replace(/\/$/, "");
+        const res = await fetch(`${API_BASE}/api/v1/auth/verify-reset-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ email, otp }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setOtpError(data?.message ?? data?.errors ?? "Invalid or expired OTP code.");
+          return;
+        }
+        setResetToken(data?.data?.reset_token ?? "");
       }
       setStep("reset");
+    } catch {
+      setOtpError("Could not connect to server. Please check your connection.");
     } finally {
       setLoading(false);
     }
-  }, [otpV, otp, logId, mode]);
+  }, [otpV, otp, logId, mode, email]);
 
   // Step 3 — Set new password
   const handleReset = useCallback(async (e: React.FormEvent) => {
@@ -104,14 +128,36 @@ export default function ForgotPasswordPage() {
     setT3({ pwd: true, confirm: true });
     if (!newPwdV.valid || !confirmV.valid) return;
     setLoading(true);
+    setApiError("");
     try {
-      // TODO: POST /api/v1/auth/reset-password { token/otp, password, password_confirmation }
-      await new Promise((r) => setTimeout(r, 1200));
-      setStep("done");
+      if (mode === "email") {
+        const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002").replace(/\/$/, "");
+        const res = await fetch(`${API_BASE}/api/v1/auth/reset-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({
+            reset_token: resetToken,
+            password: newPwd,
+            password_confirmation: confirmPwd,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setApiError(data?.message ?? data?.errors ?? "Failed to reset password.");
+          return;
+        }
+        setStep("done");
+      } else {
+        // Phone mode reset
+        await new Promise((r) => setTimeout(r, 1200));
+        setStep("done");
+      }
+    } catch {
+      setApiError("Could not connect to server. Please check your connection.");
     } finally {
       setLoading(false);
     }
-  }, [newPwdV, confirmV]);
+  }, [newPwdV, confirmV, resetToken, newPwd, confirmPwd, mode]);
 
   const handleResend = async () => {
     if (resendTimer > 0) return;
@@ -228,6 +274,7 @@ export default function ForgotPasswordPage() {
 
       {step === "reset" && (
         <form onSubmit={handleReset} className="space-y-4" noValidate>
+          {apiError && <Alert type="error" message={apiError} />}
           <Alert type="success" message="Identity verified! Set your new password." />
 
           <Field id="fp-newpwd" label="New Password *"

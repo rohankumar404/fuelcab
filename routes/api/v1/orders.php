@@ -21,8 +21,9 @@ Route::middleware('auth:sanctum')->prefix('orders')->group(function (): void {
     Route::patch('subscriptions/{id}', [CustomerOrderController::class, 'updateSubscription']);
     Route::delete('subscriptions/{id}', [CustomerOrderController::class, 'cancelSubscription']);
 
-    // ── List & Show ─────────────────────────────────────────────────────────
-    Route::get('/', [OrderController::class, 'index']);
+    // ── Create & List & Show ─────────────────────────────────────────────────
+    Route::post('/', [OrderController::class, 'store']);   // POST /api/v1/orders
+    Route::get('/', [OrderController::class, 'index']);    // GET  /api/v1/orders
     Route::get('{id}', [OrderController::class, 'show']);
 
     // ── Status Transitions (vendor/driver-facing) ───────────────────────────

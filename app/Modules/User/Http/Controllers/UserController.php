@@ -32,12 +32,20 @@ class UserController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|max:255|unique:users,email,'.$user->id,
-            'mobile' => 'sometimes|required|string|max:20|unique:users,mobile,'.$user->id,
+            'name'   => 'sometimes|required|string|max:255',
+            'email'  => 'sometimes|required|email|max:255|unique:users,email,'.$user->id,
+            'phone'  => 'sometimes|nullable|string|max:20|unique:users,mobile,'.$user->id,
+            'mobile' => 'sometimes|nullable|string|max:20|unique:users,mobile,'.$user->id,
         ]);
 
+        // Allow 'phone' as alias for 'mobile'
+        if (isset($validated['phone']) && !isset($validated['mobile'])) {
+            $validated['mobile'] = $validated['phone'];
+        }
+        unset($validated['phone']);
+
         $user->update($validated);
+        $user->refresh();
 
         return $this->success($user, 'Profile updated successfully.');
     }
@@ -56,16 +64,18 @@ class UserController extends Controller
         $validated = $request->validate([
             'address_line_1' => 'required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'city'           => 'required|string|max:100',
+            'state'          => 'nullable|string|max:100',
+            'postal_code'    => 'required|string|max:20',
+            'country'        => 'nullable|string|max:100',
+            'latitude'       => 'nullable|numeric',
+            'longitude'      => 'nullable|numeric',
         ]);
 
         $address = Address::create(array_merge($validated, [
             'addressable_type' => User::class,
-            'user_id' => $request->user()->id,
+            'user_id'          => $request->user()->id,
+            'country'          => $validated['country'] ?? 'India',
         ]));
 
         return $this->success($address, 'Address created successfully.', 201);

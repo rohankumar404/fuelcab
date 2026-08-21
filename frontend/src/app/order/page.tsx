@@ -165,6 +165,58 @@ export default function OrderPage() {
   const [confirmed, setConfirmed] = useState(false);
   const [orderId] = useState(() => "FC" + Math.random().toString(36).slice(2, 8).toUpperCase());
 
+  // ── Auth ──
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authUser, setAuthUser]   = useState<{ name?: string; email?: string } | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  // Inline login form inside modal
+  const [authEmail, setAuthEmail]       = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authLoading, setAuthLoading]   = useState(false);
+  const [authError, setAuthError]       = useState("");
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("fc_token");
+      const user  = localStorage.getItem("fc_user");
+      if (token) setAuthToken(token);
+      if (user)  setAuthUser(JSON.parse(user));
+    } catch { /* ignore */ }
+  }, []);
+
+  const isLoggedIn = Boolean(authToken);
+
+  const handleInlineLogin = async () => {
+    if (!authEmail || !authPassword) { setAuthError("Please enter your email and password."); return; }
+    setAuthLoading(true);
+    setAuthError("");
+    const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002").replace(/\/$/, "");
+    try {
+      const res  = await fetch(`${API_BASE}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email: authEmail, password: authPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.data?.access_token) {
+        const token = data.data.access_token;
+        const user  = data.data.user ?? {};
+        localStorage.setItem("fc_token", token);
+        localStorage.setItem("fc_user", JSON.stringify(user));
+        setAuthToken(token);
+        setAuthUser(user);
+        setShowAuthModal(false);
+        setStep(6); // proceed to payment
+      } else {
+        setAuthError(data?.message ?? "Invalid credentials. Please try again.");
+      }
+    } catch {
+      setAuthError("Cannot connect to server. Please check your connection.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   // Step 1 — Fuel
   const [fuelId, setFuelId] = useState("diesel");
 
@@ -305,6 +357,8 @@ export default function OrderPage() {
     if (step === 2 && (qtyError || qty < fuel.minQty)) { applyQty(qty); return; }
     if (step === 3 && !validateAddress()) return;
     if (step === 4 && !validateSchedule()) return;
+    // ── Auth guard: require login before Payment step ──
+    if (step === 5 && !isLoggedIn) { setShowAuthModal(true); return; }
     if (step === 6) { handlePlaceOrder(); return; }
     setStep((s) => s + 1);
   };
@@ -545,6 +599,124 @@ export default function OrderPage() {
   return (
     <div className="min-h-screen bg-[#f3f5f4] flex flex-col">
       <Navbar />
+
+      {/* ─── AUTH MODAL ─────────────────────────────────────────────────────── */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowAuthModal(false)}
+          />
+          {/* Card */}
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-br from-[#155c32] to-[#22863a] px-8 py-6 text-white">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-extrabold">Sign in to Continue</h2>
+                  <p className="text-white/70 text-sm">Your order is saved — just sign in to pay</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="px-8 py-6 space-y-4">
+              {/* Progress reminder */}
+              <div className="flex items-center gap-2 bg-[#f0f7f3] rounded-xl px-4 py-3 text-sm text-[#155c32] font-medium">
+                <CircleCheck className="w-4 h-4 flex-shrink-0" />
+                Order details saved · Next: Secure Payment
+              </div>
+
+              {authError && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {authError}
+                </div>
+              )}
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-[#555] mb-1.5 uppercase tracking-wide">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#aaa]" />
+                  <input
+                    type="email"
+                    placeholder="you@company.com"
+                    value={authEmail}
+                    onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleInlineLogin()}
+                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#e2e8e4] bg-[#f9fbfa] text-sm focus:outline-none focus:ring-2 focus:ring-[#155c32]/30 focus:border-[#155c32] transition"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-[#555] mb-1.5 uppercase tracking-wide">
+                  Password
+                </label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#aaa]" />
+                  <input
+                    type="password"
+                    placeholder="Your password"
+                    value={authPassword}
+                    onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleInlineLogin()}
+                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#e2e8e4] bg-[#f9fbfa] text-sm focus:outline-none focus:ring-2 focus:ring-[#155c32]/30 focus:border-[#155c32] transition"
+                  />
+                </div>
+              </div>
+
+              {/* Submit */}
+              <button
+                onClick={handleInlineLogin}
+                disabled={authLoading}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-[#155c32] to-[#22863a] text-white font-bold text-sm hover:shadow-lg hover:shadow-[#155c32]/30 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {authLoading ? (
+                  <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Signing in…</>
+                ) : (
+                  <>Sign In &amp; Proceed to Payment <ArrowRight className="w-4 h-4" /></>
+                )}
+              </button>
+
+              {/* Divider */}
+              <div className="relative flex items-center gap-3">
+                <div className="flex-1 h-px bg-[#e7ece8]" />
+                <span className="text-xs text-[#aaa] font-medium">or</span>
+                <div className="flex-1 h-px bg-[#e7ece8]" />
+              </div>
+
+              <div className="flex gap-3">
+                <a
+                  href="/register"
+                  className="flex-1 h-10 rounded-xl border-2 border-[#e7ece8] text-[#555] font-semibold text-sm hover:border-[#155c32] hover:text-[#155c32] transition flex items-center justify-center"
+                >
+                  Create Account
+                </a>
+                <a
+                  href="/login"
+                  className="flex-1 h-10 rounded-xl border-2 border-[#e7ece8] text-[#555] font-semibold text-sm hover:border-[#155c32] hover:text-[#155c32] transition flex items-center justify-center"
+                >
+                  Full Sign In Page
+                </a>
+              </div>
+
+              <p className="text-center text-xs text-[#bbb]">
+                🔒 Your order is saved. You can sign in and return to payment anytime.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* ── Top stepper bar ── */}
       <div className="sticky top-[80px] z-40 bg-white border-b border-[#e7ece8] shadow-sm">

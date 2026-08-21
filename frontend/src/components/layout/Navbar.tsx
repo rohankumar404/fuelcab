@@ -31,11 +31,26 @@ export default function Navbar() {
   const [mounted, setMounted]       = useState(false);
   const pathname                     = usePathname();
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName]     = useState("");
+
   const { cart, fetchCart } = useCartStore();
 
   useEffect(() => {
     setMounted(true);
     fetchCart();
+
+    try {
+      const token = localStorage.getItem("fc_token");
+      const userStr = localStorage.getItem("fc_user");
+      if (token) {
+        setIsLoggedIn(true);
+        if (userStr) {
+          const u = JSON.parse(userStr);
+          setUserName(u.name ?? "User");
+        }
+      }
+    } catch {}
   }, [fetchCart]);
 
   useEffect(() => {
@@ -151,24 +166,41 @@ export default function Navbar() {
           >
             Become a Vendor
           </Link>
-          <Link
-            href="/login"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "h-10 px-5 rounded-xl border-[#e7ece8] text-[#1a1a1a] font-semibold text-sm hover:border-[#155c32] hover:text-[#155c32] transition-all duration-200"
-            )}
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className={cn(
-              buttonVariants({ variant: "default", size: "sm" }),
-              "h-10 px-5 rounded-xl bg-[#155c32] text-white font-semibold text-sm hover:bg-[#0d3a1f] hover:shadow-lg hover:shadow-[#155c32]/20 transition-all duration-200 hover:-translate-y-px"
-            )}
-          >
-            Register
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants({ variant: "default", size: "sm" }),
+                "h-10 px-5 rounded-xl bg-[#155c32] text-white font-semibold text-sm hover:bg-[#0d3a1f] hover:shadow-lg hover:shadow-[#155c32]/20 transition-all duration-200 flex items-center gap-2"
+              )}
+            >
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">
+                {userName.charAt(0).toUpperCase() || "U"}
+              </div>
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "h-10 px-5 rounded-xl border-[#e7ece8] text-[#1a1a1a] font-semibold text-sm hover:border-[#155c32] hover:text-[#155c32] transition-all duration-200"
+                )}
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className={cn(
+                  buttonVariants({ variant: "default", size: "sm" }),
+                  "h-10 px-5 rounded-xl bg-[#155c32] text-white font-semibold text-sm hover:bg-[#0d3a1f] hover:shadow-lg hover:shadow-[#155c32]/20 transition-all duration-200 hover:-translate-y-px"
+                )}
+              >
+                Register
+              </Link>
+            </>
+          )}
         </div>
 
         {/* ── Mobile Header Actions (Cart + Menu Toggle) ── */}
@@ -262,26 +294,41 @@ export default function Navbar() {
             >
               Become a Vendor
             </Link>
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "w-full h-11 rounded-xl border-[#e7ece8] text-[#1a1a1a] font-semibold flex items-center justify-center text-sm"
-              )}
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                buttonVariants({ variant: "default" }),
-                "w-full h-11 rounded-xl bg-[#155c32] text-white font-semibold hover:bg-[#0d3a1f] flex items-center justify-center text-sm"
-              )}
-            >
-              Register
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  buttonVariants({ variant: "default" }),
+                  "w-full h-11 rounded-xl bg-[#155c32] text-white font-semibold hover:bg-[#0d3a1f] flex items-center justify-center text-sm"
+                )}
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "w-full h-11 rounded-xl border-[#e7ece8] text-[#1a1a1a] font-semibold flex items-center justify-center text-sm"
+                  )}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    buttonVariants({ variant: "default" }),
+                    "w-full h-11 rounded-xl bg-[#155c32] text-white font-semibold hover:bg-[#0d3a1f] flex items-center justify-center text-sm"
+                  )}
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

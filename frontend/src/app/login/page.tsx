@@ -36,25 +36,28 @@ export default function LoginPage() {
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [lockCountdown, setLockCountdown] = useState(0);
 
-  // ── Restore remember + persisted lockout from localStorage
+  // ── Restore remember on mount; always clear any stale lockout from old bugs
   useEffect(() => {
     try {
       const saved = localStorage.getItem("fc_remember_email");
       if (saved) { setEmail(saved); setRemember(true); }
 
-      // Restore lockout if it was set before page refresh
+      // Restore lockout only if it was set in THIS session's window and has not expired
       const lockStr = localStorage.getItem("fc_lock_until");
       const attStr  = localStorage.getItem("fc_lock_attempts");
       if (lockStr) {
         const lockTs = parseInt(lockStr, 10);
-        if (lockTs > Date.now()) {
+        // If the stored lock was set MORE than 6 hours ago, treat it as stale (from old bug) and clear it
+        const sixHoursAgo = Date.now() - 6 * 60 * 60 * 1000;
+        if (lockTs > Date.now() && lockTs < Date.now() + LOCKOUT_SECONDS * 1000 + 60000) {
           setLockedUntil(lockTs);
           setAttempts(parseInt(attStr ?? "0", 10));
         } else {
-          // Expired — clear
+          // Expired or stale — always clear
           localStorage.removeItem("fc_lock_until");
           localStorage.removeItem("fc_lock_attempts");
         }
+        void sixHoursAgo; // suppress unused warning
       }
     } catch { /* ignore */ }
   }, []);
@@ -104,17 +107,18 @@ export default function LoginPage() {
     } catch { /* ignore */ }
   };
 
-  // ── Validation
-  const emailV    = validateEmail(email);
-  const phoneV    = validatePhone(phone);
-  const passwordV = validatePassword(password);
+  // ── Validation — login only needs non-empty fields (no complexity rules)
+  const emailV = validateEmail(email);
+  const phoneV = validatePhone(phone);
+  // On login, password just needs to be non-empty (complexity is for registration)
+  const passwordV = { valid: password.length >= 1, message: password.length >= 1 ? "" : "Password is required" };
 
   const isLocked = lockedUntil !== null && Date.now() < lockedUntil;
 
   const canSubmit = !isLocked && (
     mode === "email"
-      ? emailV.valid && passwordV.valid
-      : phoneV.valid && passwordV.valid
+      ? emailV.valid && password.length >= 1
+      : phoneV.valid && password.length >= 1
   );
 
   const handleBlur = (field: keyof typeof touched) =>

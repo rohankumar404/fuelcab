@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Order\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Address;
+use App\Modules\Fuel\Models\Product;
+use App\Modules\Order\Actions\CreateOrderAction;
 use App\Modules\Order\Enums\OrderStatus;
 use App\Modules\Order\Events\OrderCompleted;
 use App\Modules\Order\Http\Requests\AssignDriverRequest;
@@ -13,15 +16,118 @@ use App\Modules\Order\Http\Resources\OrderResource;
 use App\Modules\Order\Models\Order;
 use App\Modules\Order\Models\OrderStatusLog;
 use App\Modules\Order\Services\OrderService;
+use App\Modules\Vendor\Models\Vendor;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private readonly OrderService $orderService,
     ) {}
+
+    /**
+     * POST /api/v1/orders
+     * Create a new fuel order directly from the storefront order flow.
+     * Accepts a simple payload and orchestrates address, product, and order creation.
+     */
+    public function store(Request $request, CreateOrderAction $action): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'fuel_type'       => 'required|string',          // diesel, petrol, cng …
+            'quantity'        => 'required|numeric|min:1',
+            'payment_method'  => 'required|string',
+            'total_amount'    => 'required|numeric|min:0',
+            'delivery_date'   => 'nullable|string',
+            'delivery_slot_id'=> 'nullable|string',
+            'notes'           => 'nullable|string|max:1000',
+            // Address fields (flat or nested)
+            'address'         => 'nullable|array',
+        ]);
+
+        // ── 1. Resolve delivery address ──────────────────────────────────────
+        // Use the first saved address, or create an ephemeral one from payload
+        $address = Address::where('user_id', $user->id)->first();
+
+        if (! $address) {
+            $addrData = $validated['address'] ?? [];
+            $address = Address::create([
+                'user_id'        => $user->id,
+                'label'          => 'Delivery',
+                'address_line_1' => $addrData['line1'] ?? ($addrData['address_line_1'] ?? 'Main Address'),
+                'address_line_2' => $addrData['line2'] ?? ($addrData['address_line_2'] ?? null),
+                'city'           => $addrData['city']   ?? 'India',
+                'state'          => $addrData['state']  ?? 'India',
+                'postal_code'    => $addrData['pincode'] ?? ($addrData['postal_code'] ?? '000000'),
+                'country'        => 'India',
+                'is_default'     => true,
+            ]);
+        }
+
+        // ── 2. Resolve fuel product ──────────────────────────────────────────
+        $slugMap = [
+            'diesel'  => 'diesel-hsd',
+            'petrol'  => 'petrol',
+            'cng'     => 'cng',
+            'lpg'     => 'lpg',
+        ];
+        $slug    = $slugMap[strtolower((string) $validated['fuel_type'])] ?? ('diesel-hsd');
+        $product = Product::where('slug', $slug)->first() ?? Product::first();
+
+        if (! $product) {
+            return $this->error('No fuel products configured in the system.', null, 422);
+        }
+
+        $qty      = (float) $validated['quantity'];
+        $price    = (float) $product->price_per_unit;
+        $subtotal = round($qty * $price, 2);
+        $total    = (float) $validated['total_amount'];
+        $tax      = round($total - $subtotal - 500, 2); // approx: total - subtotal - delivery
+
+        // ── 3. Resolve vendor (FuelCab Direct) ──────────────────────────────
+        $vendor = Vendor::first();
+
+        // ── 4. Create order via action (fires confirmation email) ────────────
+        try {
+            $order = $action->execute([
+                'customer_id'          => $user->id,
+                'vendor_id'            => $vendor?->id,
+                'delivery_address_id'  => $address->id,
+                'payment_method'       => $validated['payment_method'],
+                'channel'              => 'direct',
+                'delivery_fee'         => 500.00,
+                'tax_amount'           => max($tax, 0),
+                'notes'                => $validated['notes'] ?? null,
+                'scheduled_delivery_at'=> $validated['delivery_date'] ?? null,
+                'items' => [[
+                    'product_id'              => $product->id,
+                    'vendor_id'               => $vendor?->id,
+                    'quantity'                => $qty,
+                    'price_per_unit'          => $price,
+                    'unit_of_measure'         => 'liter',
+                    'unit_snapshot'           => 'liter',
+                    'sales_channel'           => 'direct',
+                    'product_name_snapshot'   => $product->name,
+                    'product_sku_snapshot'    => $product->sku ?? $product->slug,
+                ]],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order placed successfully.',
+                'data'    => new OrderResource($order),
+            ], 201);
+        } catch (\Throwable $e) {
+            return $this->error('Failed to place order: '.$e->getMessage(), null, 422);
+        }
+    }
 
     /**
      * GET /api/v1/orders
