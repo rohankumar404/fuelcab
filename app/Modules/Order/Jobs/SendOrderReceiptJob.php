@@ -33,7 +33,7 @@ class SendOrderReceiptJob implements ShouldQueue
 
     public function handle(): void
     {
-        $order = Order::with(['customer', 'items'])->find($this->orderId);
+        $order = Order::with(['customer', 'items', 'deliveryAddress'])->find($this->orderId);
 
         if (! $order) {
             Log::warning('[SendOrderReceiptJob] Order not found.', ['order_id' => $this->orderId]);
@@ -42,21 +42,62 @@ class SendOrderReceiptJob implements ShouldQueue
         }
 
         $customer = $order->customer;
+        $item     = $order->items->first();
+        $productName = $item?->product_name_snapshot ?? ($item?->product?->name ?? 'Fuel Product');
+        $quantity    = (float) ($item?->quantity ?? 0);
+        $status      = method_exists($order->status, 'label') ? $order->status->label() : ucwords(str_replace('_', ' ', (string) $order->status?->value ?? 'Pending'));
+        $address     = $order->deliveryAddress?->full_address
+            ?? implode(', ', array_filter([
+                $order->deliveryAddress?->address_line_1,
+                $order->deliveryAddress?->city,
+                $order->deliveryAddress?->state,
+            ])) ?: 'N/A';
 
-        if (! $customer || ! $customer->email) {
-            Log::warning('[SendOrderReceiptJob] Customer has no email — skipping receipt.', [
+        $mail = new \App\Modules\Notification\Mail\OrderConfirmationMail(
+            customerName:    $customer?->name ?? 'Customer',
+            orderNumber:     $order->order_number ?? $order->id,
+            productName:     $productName,
+            quantity:        $quantity,
+            status:          $status,
+            total:           (float) $order->total_amount,
+            deliveryAddress: $address,
+            orderId:         (string) $order->id,
+        );
+
+        // ── Customer email ──────────────────────────────────────────
+        if ($customer && $customer->email) {
+            SendEmailJob::dispatch($customer->email, $mail);
+
+            Log::info('[SendOrderReceiptJob] Customer receipt dispatched.', [
                 'order_id' => $this->orderId,
+                'email'    => $customer->email,
+            ]);
+        } else {
+            Log::warning('[SendOrderReceiptJob] Customer has no email — skipping customer receipt.', [
+                'order_id'    => $this->orderId,
                 'customer_id' => $order->customer_id,
             ]);
-
-            return;
         }
 
-        SendEmailJob::dispatch($customer->email, new OrderConfirmationMail($order));
+        // ── Admin notification email ────────────────────────────────
+        $adminEmail = config('fuelcab.notifications.email.admin_email', 'admin@fuelcab.com');
 
-        Log::info('[SendOrderReceiptJob] Order receipt dispatched.', [
-            'order_id' => $this->orderId,
-            'email' => $customer->email,
+        $adminMail = new \App\Modules\Notification\Mail\OrderConfirmationMail(
+            customerName:    'Admin',
+            orderNumber:     $order->order_number ?? $order->id,
+            productName:     $productName,
+            quantity:        $quantity,
+            status:          $status,
+            total:           (float) $order->total_amount,
+            deliveryAddress: $address,
+            orderId:         (string) $order->id,
+        );
+
+        SendEmailJob::dispatch($adminEmail, $adminMail);
+
+        Log::info('[SendOrderReceiptJob] Admin notification dispatched.', [
+            'order_id'    => $this->orderId,
+            'admin_email' => $adminEmail,
         ]);
     }
 

@@ -79,6 +79,37 @@ class OrderResource extends Resource
                 Forms\Components\DateTimePicker::make('delivered_at')->nullable(),
                 Forms\Components\Textarea::make('delivery_notes')->nullable()->columnSpanFull(),
             ])->columns(2),
+
+            Forms\Components\Section::make('Order Items')->schema([
+                Forms\Components\Repeater::make('items')
+                    ->relationship('items')
+                    ->schema([
+                        Forms\Components\TextInput::make('product_name_snapshot')
+                            ->label('Product Name')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('quantity')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('price_per_unit')
+                            ->label('Price per Unit')
+                            ->numeric()
+                            ->prefix('₹')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('total_price')
+                            ->label('Total Price')
+                            ->numeric()
+                            ->prefix('₹')
+                            ->disabled()
+                            ->dehydrated(false),
+                    ])
+                    ->columns(4)
+                    ->addable(false)
+                    ->deletable(false)
+                    ->reorderable(false),
+            ]),
         ]);
     }
 
@@ -123,40 +154,40 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([
-                            Tables\Filters\SelectFilter::make('channel')
-                                ->label('Sales Channel')
-                                ->options(['direct' => 'Direct Commerce', 'marketplace' => 'Marketplace']),
-                            Tables\Filters\SelectFilter::make('status')
-                                ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))])),
-                            Tables\Filters\Filter::make('created_today')
-                                ->label('Created Today')
-                                ->query(fn ($query) => $query->whereDate('created_at', today())),
-                        ])
+                Tables\Filters\SelectFilter::make('channel')
+                    ->label('Sales Channel')
+                    ->options(['direct' => 'Direct Commerce', 'marketplace' => 'Marketplace']),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))])),
+                Tables\Filters\Filter::make('created_today')
+                    ->label('Created Today')
+                    ->query(fn ($query) => $query->whereDate('created_at', today())),
+            ])
             ->actions([
-                            Tables\Actions\ViewAction::make(),
-                            Tables\Actions\EditAction::make(),
-                            // No DeleteAction — orders are financial records
-                        ])
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                // No DeleteAction — orders are financial records
+            ])
             ->bulkActions([
-                            Tables\Actions\BulkAction::make('updateStatus')
-                                ->label('Update Status')
-                                ->icon('heroicon-o-check-circle')
-                                ->requiresConfirmation()
-                                ->form([
-                                    Forms\Components\Select::make('status')
-                                        ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
-                                        ->required(),
-                                ])
-                                ->action(function (Collection $records, array $data): void {
-                                    foreach ($records as $record) {
-                                        $record->update(['status' => $data['status']]);
-                                    }
-                                    Notification::make()
-                                        ->title('Orders status updated successfully.')
-                                        ->success()
-                                        ->send();
-                                }),
-                        ]);
+                Tables\Actions\BulkAction::make('updateStatus')
+                    ->label('Update Status')
+                    ->icon('heroicon-o-check-circle')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Select::make('status')
+                            ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
+                            ->required(),
+                    ])
+                    ->action(function (Collection $records, array $data): void {
+                        foreach ($records as $record) {
+                            $record->update(['status' => $data['status']]);
+                        }
+                        Notification::make()
+                            ->title('Orders status updated successfully.')
+                            ->success()
+                            ->send();
+                    }),
+            ]);
     }
 
     public static function getPages(): array

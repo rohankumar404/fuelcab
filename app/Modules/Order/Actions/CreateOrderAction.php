@@ -6,7 +6,7 @@ namespace App\Modules\Order\Actions;
 
 use App\Enums\SalesChannel;
 use App\Modules\Order\Enums\OrderStatus;
-use App\Modules\Order\Events\OrderPlaced;
+use App\Modules\Order\Events\OrderCreated;
 use App\Modules\Order\Jobs\AssignDriverJob;
 use App\Modules\Order\Jobs\SendOrderReceiptJob;
 use App\Modules\Order\Models\Order;
@@ -95,8 +95,8 @@ class CreateOrderAction
                 'items_count' => count($items),
             ]);
 
-            // Fire order placed event (notifies vendor, etc.)
-            event(new OrderPlaced($order));
+            // Fire order created event (triggers confirmation emails, driver notification, etc.)
+            event(new OrderCreated($order));
 
             // Auto-assign a driver asynchronously
             AssignDriverJob::dispatch($order->id)->delay(now()->addSeconds(10));

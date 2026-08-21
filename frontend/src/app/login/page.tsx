@@ -36,26 +36,73 @@ export default function LoginPage() {
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [lockCountdown, setLockCountdown] = useState(0);
 
-  // ── Restore remember
+  // ── Restore remember + persisted lockout from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem("fc_remember_email");
       if (saved) { setEmail(saved); setRemember(true); }
+
+      // Restore lockout if it was set before page refresh
+      const lockStr = localStorage.getItem("fc_lock_until");
+      const attStr  = localStorage.getItem("fc_lock_attempts");
+      if (lockStr) {
+        const lockTs = parseInt(lockStr, 10);
+        if (lockTs > Date.now()) {
+          setLockedUntil(lockTs);
+          setAttempts(parseInt(attStr ?? "0", 10));
+        } else {
+          // Expired — clear
+          localStorage.removeItem("fc_lock_until");
+          localStorage.removeItem("fc_lock_attempts");
+        }
+      }
     } catch { /* ignore */ }
   }, []);
+
+  // ── Persist lockout to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (lockedUntil) {
+        localStorage.setItem("fc_lock_until", String(lockedUntil));
+        localStorage.setItem("fc_lock_attempts", String(attempts));
+      } else {
+        localStorage.removeItem("fc_lock_until");
+        localStorage.removeItem("fc_lock_attempts");
+      }
+    } catch { /* ignore */ }
+  }, [lockedUntil, attempts]);
 
   // ── Lockout countdown
   useEffect(() => {
     if (!lockedUntil) return;
     const tick = () => {
       const remaining = Math.ceil((lockedUntil - Date.now()) / 1000);
-      if (remaining <= 0) { setLockedUntil(null); setAttempts(0); setLockCountdown(0); return; }
+      if (remaining <= 0) {
+        setLockedUntil(null);
+        setAttempts(0);
+        setLockCountdown(0);
+        localStorage.removeItem("fc_lock_until");
+        localStorage.removeItem("fc_lock_attempts");
+        return;
+      }
       setLockCountdown(remaining);
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [lockedUntil]);
+
+  // ── Manual lockout clear (dev / support helper)
+  const clearLockout = () => {
+    setLockedUntil(null);
+    setAttempts(0);
+    setLockCountdown(0);
+    setApiError("");
+    try {
+      localStorage.removeItem("fc_lock_until");
+      localStorage.removeItem("fc_lock_attempts");
+    } catch { /* ignore */ }
+  };
 
   // ── Validation
   const emailV    = validateEmail(email);
@@ -81,34 +128,52 @@ export default function LoginPage() {
     setLoading(true);
     setApiError("");
 
-    try {
-      // TODO: Replace with actual Laravel Sanctum login call
-      await new Promise((r) => setTimeout(r, 1200));
+    const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002").replace(/\/$/, "");
 
-      // Simulate wrong credentials on first 2 attempts for demo
-      const simulateFail = attempts < 2;
-      if (simulateFail) {
-        const next = attempts + 1;
-        setAttempts(next);
-        if (next >= MAX_ATTEMPTS) {
-          setLockedUntil(Date.now() + LOCKOUT_SECONDS * 1000);
-          setApiError(`Too many failed attempts. Account locked for ${LOCKOUT_SECONDS / 60} minutes.`);
-        } else {
-          setApiError(`Invalid credentials. ${MAX_ATTEMPTS - next} attempt(s) remaining before lockout.`);
-        }
+    try {
+      const body: Record<string, string> = { password };
+      if (mode === "email") body.email = email;
+      else body.phone = phone;
+
+      const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data?.data?.access_token) {
+        // ── SUCCESS ──
+        if (remember) localStorage.setItem("fc_remember_email", email);
+        else          localStorage.removeItem("fc_remember_email");
+
+        // Store token for subsequent API calls
+        localStorage.setItem("fc_token", data.data.access_token);
+        localStorage.setItem("fc_user", JSON.stringify(data.data.user ?? {}));
+
+        // Redirect to customer dashboard
+        window.location.href = "/dashboard";
         return;
       }
 
-      // ── SUCCESS ──
-      if (remember) localStorage.setItem("fc_remember_email", email);
-      else          localStorage.removeItem("fc_remember_email");
-      window.location.href = "/dashboard"; // TODO: router.push after auth context
+      // ── FAILURE ──
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      if (newAttempts >= MAX_ATTEMPTS) {
+        setLockedUntil(Date.now() + LOCKOUT_SECONDS * 1000);
+        setApiError(`Too many failed attempts. Account locked for ${LOCKOUT_SECONDS / 60} minutes.`);
+      } else {
+        const msg = data?.message ?? "Invalid credentials.";
+        setApiError(`${msg} ${MAX_ATTEMPTS - newAttempts} attempt(s) remaining before lockout.`);
+      }
     } catch {
-      setApiError("Something went wrong. Please try again.");
+      // Network error — do NOT increment the attempt counter
+      setApiError("Could not connect to server. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
-  }, [canSubmit, attempts, remember, email]);
+  }, [canSubmit, attempts, remember, email, phone, password, mode]);
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
@@ -131,11 +196,20 @@ export default function LoginPage() {
 
       {/* ── Lockout alert ── */}
       {isLocked && (
-        <div className="mb-5">
-          <Alert
-            type="error"
-            message={`Account temporarily locked. Try again in ${formatTime(lockCountdown)}.`}
-          />
+        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm text-red-700 font-medium">
+              🔒 Account temporarily locked. Try again in{" "}
+              <span className="font-bold tabular-nums">{formatTime(lockCountdown)}</span>.
+            </p>
+            <button
+              type="button"
+              onClick={clearLockout}
+              className="shrink-0 text-xs text-red-600 underline hover:text-red-800 font-semibold transition"
+            >
+              Reset
+            </button>
+          </div>
         </div>
       )}
 
@@ -145,6 +219,7 @@ export default function LoginPage() {
           <Alert type="error" message={apiError} />
         </div>
       )}
+
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {/* Email OR Phone */}

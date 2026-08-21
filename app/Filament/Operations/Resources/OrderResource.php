@@ -72,6 +72,37 @@ class OrderResource extends Resource
                     ->columnSpanFull()
                     ->disabled(),
             ])->columns(3),
+
+            Forms\Components\Section::make('Order Items')->schema([
+                Forms\Components\Repeater::make('items')
+                    ->relationship('items')
+                    ->schema([
+                        Forms\Components\TextInput::make('product_name_snapshot')
+                            ->label('Product Name')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('quantity')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('price_per_unit')
+                            ->label('Price per Unit')
+                            ->numeric()
+                            ->prefix('₹')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('total_price')
+                            ->label('Total Price')
+                            ->numeric()
+                            ->prefix('₹')
+                            ->disabled()
+                            ->dehydrated(false),
+                    ])
+                    ->columns(4)
+                    ->addable(false)
+                    ->deletable(false)
+                    ->reorderable(false),
+            ]),
         ]);
     }
 

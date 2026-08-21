@@ -56,6 +56,48 @@ class MarketplaceOrderResource extends Resource
                     ->nullable()
                     ->columnSpanFull(),
             ])->columns(2),
+
+            Forms\Components\Section::make('Pricing Summary')->schema([
+                Forms\Components\Placeholder::make('subtotal_amount')
+                    ->content(fn ($record) => $record?->subtotal_amount ? '₹'.number_format((float) $record->subtotal_amount, 2) : '—'),
+                Forms\Components\Placeholder::make('delivery_fee')
+                    ->content(fn ($record) => $record?->delivery_fee ? '₹'.number_format((float) $record->delivery_fee, 2) : '—'),
+                Forms\Components\Placeholder::make('tax_amount')
+                    ->content(fn ($record) => $record?->tax_amount ? '₹'.number_format((float) $record->tax_amount, 2) : '—'),
+                Forms\Components\Placeholder::make('total_amount')
+                    ->content(fn ($record) => $record?->total_amount ? '₹'.number_format((float) $record->total_amount, 2) : '—'),
+            ])->columns(2),
+
+            Forms\Components\Section::make('Order Items')->schema([
+                Forms\Components\Repeater::make('items')
+                    ->relationship('items')
+                    ->schema([
+                        Forms\Components\TextInput::make('product_name_snapshot')
+                            ->label('Product Name')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('quantity')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('price_per_unit')
+                            ->label('Price per Unit')
+                            ->numeric()
+                            ->prefix('₹')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('total_price')
+                            ->label('Total Price')
+                            ->numeric()
+                            ->prefix('₹')
+                            ->disabled()
+                            ->dehydrated(false),
+                    ])
+                    ->columns(4)
+                    ->addable(false)
+                    ->deletable(false)
+                    ->reorderable(false),
+            ]),
         ]);
     }
 
@@ -100,37 +142,37 @@ class MarketplaceOrderResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                            Tables\Filters\SelectFilter::make('status')
-                                ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))])),
-                            Tables\Filters\Filter::make('created_today')
-                                ->label('Today')
-                                ->query(fn ($query) => $query->whereDate('created_at', today())),
-                        ])
+                Tables\Filters\SelectFilter::make('status')
+                    ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))])),
+                Tables\Filters\Filter::make('created_today')
+                    ->label('Today')
+                    ->query(fn ($query) => $query->whereDate('created_at', today())),
+            ])
             ->actions([
-                            Tables\Actions\ViewAction::make(),
-                            Tables\Actions\EditAction::make(),
-                            // No delete — marketplace orders are financial records
-                        ])
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                // No delete — marketplace orders are financial records
+            ])
             ->bulkActions([
-                            Tables\Actions\BulkAction::make('updateStatus')
-                                ->label('Update Status')
-                                ->icon('heroicon-o-check-circle')
-                                ->requiresConfirmation()
-                                ->form([
-                                    Forms\Components\Select::make('status')
-                                        ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
-                                        ->required(),
-                                ])
-                                ->action(function (Collection $records, array $data): void {
-                                    foreach ($records as $record) {
-                                        $record->update(['status' => $data['status']]);
-                                    }
-                                    Notification::make()
-                                        ->title('Orders status updated successfully.')
-                                        ->success()
-                                        ->send();
-                                }),
-                        ]);
+                Tables\Actions\BulkAction::make('updateStatus')
+                    ->label('Update Status')
+                    ->icon('heroicon-o-check-circle')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Select::make('status')
+                            ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => ucwords(str_replace('_', ' ', $s->value))]))
+                            ->required(),
+                    ])
+                    ->action(function (Collection $records, array $data): void {
+                        foreach ($records as $record) {
+                            $record->update(['status' => $data['status']]);
+                        }
+                        Notification::make()
+                            ->title('Orders status updated successfully.')
+                            ->success()
+                            ->send();
+                    }),
+            ]);
     }
 
     public static function getPages(): array

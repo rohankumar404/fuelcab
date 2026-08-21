@@ -126,16 +126,40 @@ export default function RegisterPage() {
     if (!passwordV.valid || !confirmV.valid || !agreeTerms) return;
     setLoading(true);
     setApiError("");
+
+    const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002").replace(/\/$/, "");
+
     try {
-      // TODO: POST /api/v1/auth/register with { name, company, email, phone, password }
-      await new Promise((r) => setTimeout(r, 1500));
-      setStep("done");
+      const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone: otpLogId || phone,
+          password,
+          password_confirmation: confirmPwd,
+          company_name: company, // optional metadata
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data?.success) {
+        setStep("done");
+      } else {
+        const msg = data?.message ?? data?.errors?.email?.[0] ?? data?.errors?.phone?.[0] ?? "Registration failed.";
+        setApiError(msg);
+      }
     } catch {
-      setApiError("Registration failed. Please try again.");
+      setApiError("Could not connect to server. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [passwordV, confirmV, agreeTerms]);
+  }, [passwordV, confirmV, agreeTerms, name, email, phone, otpLogId, password, confirmPwd, company]);
 
   // ─── STEP LABELS ────────────────────────────────────────────
   const STEPS = [
