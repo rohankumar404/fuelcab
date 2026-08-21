@@ -72,7 +72,10 @@ class UserController extends Controller
             'longitude'      => 'nullable|numeric',
         ]);
 
-        $address = Address::create(array_merge($validated, [
+        $address = Address::create(array_merge([
+            'latitude'  => 0.00,
+            'longitude' => 0.00,
+        ], $validated, [
             'addressable_type' => User::class,
             'user_id'          => $request->user()->id,
             'country'          => $validated['country'] ?? 'India',
@@ -88,14 +91,17 @@ class UserController extends Controller
         $validated = $request->validate([
             'address_line_1' => 'sometimes|required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
-            'city' => 'sometimes|required|string|max:100',
-            'state' => 'sometimes|required|string|max:100',
-            'postal_code' => 'sometimes|required|string|max:20',
-            'latitude' => 'sometimes|required|numeric',
-            'longitude' => 'sometimes|required|numeric',
+            'city'           => 'sometimes|required|string|max:100',
+            'state'          => 'sometimes|required|string|max:100',
+            'postal_code'    => 'sometimes|required|string|max:20',
+            'latitude'       => 'sometimes|nullable|numeric',
+            'longitude'      => 'sometimes|nullable|numeric',
         ]);
 
-        $address->update($validated);
+        $address->update(array_merge([
+            'latitude'  => $address->latitude ?? 0.00,
+            'longitude' => $address->longitude ?? 0.00,
+        ], $validated));
 
         return $this->success($address, 'Address updated successfully.');
     }

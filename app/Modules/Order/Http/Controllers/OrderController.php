@@ -53,21 +53,31 @@ class OrderController extends Controller
         ]);
 
         // ── 1. Resolve delivery address ──────────────────────────────────────
-        // Use the first saved address, or create an ephemeral one from payload
-        $address = Address::where('user_id', $user->id)->first();
+        $addrData = $validated['address'] ?? [];
+        $line1 = $addrData['line1'] ?? ($addrData['address_line_1'] ?? 'Main Address');
+        $city = $addrData['city'] ?? 'India';
+        $postal_code = $addrData['pincode'] ?? ($addrData['postal_code'] ?? '000000');
+
+        $address = Address::where('user_id', $user->id)
+            ->where('address_line_1', $line1)
+            ->where('city', $city)
+            ->where('postal_code', $postal_code)
+            ->first();
 
         if (! $address) {
-            $addrData = $validated['address'] ?? [];
             $address = Address::create([
-                'user_id'        => $user->id,
-                'label'          => 'Delivery',
-                'address_line_1' => $addrData['line1'] ?? ($addrData['address_line_1'] ?? 'Main Address'),
-                'address_line_2' => $addrData['line2'] ?? ($addrData['address_line_2'] ?? null),
-                'city'           => $addrData['city']   ?? 'India',
-                'state'          => $addrData['state']  ?? 'India',
-                'postal_code'    => $addrData['pincode'] ?? ($addrData['postal_code'] ?? '000000'),
-                'country'        => 'India',
-                'is_default'     => true,
+                'user_id'          => $user->id,
+                'addressable_type' => \App\Models\User::class,
+                'label'            => 'Delivery',
+                'address_line_1'   => $line1,
+                'address_line_2'   => $addrData['line2'] ?? ($addrData['address_line_2'] ?? null),
+                'city'             => $city,
+                'state'            => $addrData['state'] ?? 'India',
+                'postal_code'      => $postal_code,
+                'country'          => 'India',
+                'latitude'         => 0.000000,
+                'longitude'        => 0.000000,
+                'is_default'       => true,
             ]);
         }
 

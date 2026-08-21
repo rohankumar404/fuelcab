@@ -381,12 +381,11 @@ export default function OrderPage() {
   const handlePlaceOrder = async () => {
     if (!validatePayment()) return;
 
-    // "Pay on Delivery" — skip Razorpay, place order directly
     if (paymentMethod === "cod") {
       setPlacing(true);
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("fc_token") : null;
-        await fetch(`${API_BASE}/api/v1/orders`, {
+        const res = await fetch(`${API_BASE}/api/v1/orders`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -403,9 +402,16 @@ export default function OrderPage() {
             total_amount: total,
           }),
         });
-      } catch {/* backend offline in dev — still confirm */} finally {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data?.success !== false) {
+          setConfirmed(true);
+        } else {
+          alert(data?.message ?? "Failed to place order. Please verify your details.");
+        }
+      } catch {
+        alert("Cannot connect to server. Please try again.");
+      } finally {
         setPlacing(false);
-        setConfirmed(true);
       }
       return;
     }
